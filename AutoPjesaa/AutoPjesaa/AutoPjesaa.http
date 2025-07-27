@@ -1,0 +1,6 @@
+@AutoPjesaa_HostAddress = http://localhost:5298
+
+GET {{AutoPjesaa_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
