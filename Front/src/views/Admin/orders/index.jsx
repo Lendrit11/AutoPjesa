@@ -1,95 +1,92 @@
+import { Table, Card, Modal, Descriptions, Tag, Button, Input, Select, Space } from 'antd';
 import React, { useState } from 'react';
-import { Card, Table, Tag, Button, Modal, Form, Input, InputNumber, Select } from 'antd';
-
-const { Option } = Select;
 
 const OrdersPage = () => {
-  const [orders, setOrders] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [form] = Form.useForm();
+  const [orders] = useState([
+    {
+      id: 1,
+      orderNumber: 'ORD-001',
+      customer: 'John Doe',
+      status: 'Completed'
+    },
+    {
+      id: 2,
+      orderNumber: 'ORD-002',
+      customer: 'Jane Smith',
+      status: 'Processing'
+    }
+  ]);
 
-  const showOrderDetails = (record) => {
-    console.log('Order Details:', record);
-    Modal.info({
-      title: 'Order Details',
-      content: (
-        <div>
-          <p><strong>Customer:</strong> {record.customer}</p>
-          <p><strong>Status:</strong> {record.status}</p>
-          <p><strong>Total:</strong> ${record.total}</p>
-        </div>
-      ),
-    });
-  };
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  const handleAddOrder = () => {
-    form.validateFields().then(values => {
-      const newOrder = {
-        key: Date.now(),
-        ...values,
-        status: 'Pending',
-      };
-      setOrders([...orders, newOrder]);
-      form.resetFields();
-      setIsModalVisible(false);
-    });
-  };
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = order.customer.toLowerCase().includes(searchText.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const columns = [
+    { title: 'Nr. Porosisë', dataIndex: 'orderNumber' },
+    { title: 'Klienti', dataIndex: 'customer' },
+    { title: 'Statusi', dataIndex: 'status' },
     {
-      title: 'Customer',
-      dataIndex: 'customer',
-      key: 'customer',
-    },
-    {
-      title: 'Total ($)',
-      dataIndex: 'total',
-      key: 'total',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: status => {
-        let color = status === 'Delivered' ? 'green' : 'volcano';
-        return <Tag color={color}>{status}</Tag>;
-      },
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
+      title: 'Veprime',
       render: (_, record) => (
-        <Button onClick={() => showOrderDetails(record)}>Details</Button>
-      ),
-    },
+        <Button onClick={() => {
+          setSelectedOrder(record);
+          setIsModalOpen(true);
+        }}>Shiko</Button>
+      )
+    }
   ];
 
   return (
-    <Card title="Orders Management" extra={<Button onClick={() => setIsModalVisible(true)}>Add Order</Button>}>
-      <Table columns={columns} dataSource={orders} />
-      
-      <Modal
-        title="Add New Order"
-        visible={isModalVisible}
-        onOk={handleAddOrder}
-        onCancel={() => setIsModalVisible(false)}
+    <>
+      <Card 
+        title="Porositë" 
+        extra={
+          <Space>
+            <Input.Search
+              placeholder="Kërko klient..."
+              onSearch={setSearchText}
+              allowClear
+            />
+            <Select
+              defaultValue="all"
+              onChange={setStatusFilter}
+              options={[
+                { value: 'all', label: 'Të gjitha' },
+                { value: 'Completed', label: 'Përfunduar' },
+                { value: 'Processing', label: 'Në proces' }
+              ]}
+            />
+          </Space>
+        }
       >
-        <Form layout="vertical" form={form}>
-          <Form.Item name="customer" label="Customer Name" rules={[{ required: true, message: 'Please enter customer name' }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="total" label="Total ($)" rules={[{ required: true, message: 'Please enter total amount' }]}>
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="status" label="Status" rules={[{ required: true }]}>
-            <Select>
-              <Option value="Pending">Pending</Option>
-              <Option value="Delivered">Delivered</Option>
-            </Select>
-          </Form.Item>
-        </Form>
+        <Table dataSource={filteredOrders} columns={columns} rowKey="id" />
+      </Card>
+
+      <Modal
+        title={`Detajet e Porosisë ${selectedOrder?.orderNumber}`}
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+      >
+        {selectedOrder && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Nr. Porosisë">{selectedOrder.orderNumber}</Descriptions.Item>
+            <Descriptions.Item label="Klienti">{selectedOrder.customer}</Descriptions.Item>
+            <Descriptions.Item label="Statusi">
+              <Tag color={selectedOrder.status === 'Completed' ? 'green' : 'blue'}>
+                {selectedOrder.status}
+              </Tag>
+            </Descriptions.Item>
+          </Descriptions>
+        )}
       </Modal>
-    </Card>
+    </>
   );
 };
 
