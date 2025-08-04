@@ -1,5 +1,33 @@
-import { Table, Card, Modal, Descriptions, Tag, Button, Input, Select, Space, Form, DatePicker, Grid, Statistic, Row, Col, Dropdown, InputNumber, Typography } from 'antd';
-import { PlusOutlined, FileExcelOutlined, MoreOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  Card,
+  Table,
+  Button,
+  Space,
+  Tag,
+  Input,
+  Select,
+  Modal,
+  Descriptions,
+  Typography,
+  Row,
+  Col,
+  Form,
+  DatePicker,
+  InputNumber,
+  Dropdown,
+  message,
+  Grid
+} from 'antd';
+import {
+  ShoppingCartOutlined,
+  ClockCircleOutlined,
+  SyncOutlined,
+  CheckCircleOutlined,
+  MoreOutlined,
+  SearchOutlined,
+  FileExcelOutlined,
+  PlusOutlined
+} from '@ant-design/icons';
 import React, { useState } from 'react';
 
 const { Text } = Typography;
@@ -46,7 +74,6 @@ const OrdersPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form] = Form.useForm();
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderNumber.includes(searchText) ||
@@ -69,7 +96,7 @@ const OrdersPage = () => {
   };
 
   const editOrder = (order) => {
-    console.log(`Editimi i porosisë ${order.orderNumber}`);
+    message.info(`Editimi i porosisë ${order.orderNumber}`);
   };
 
   const updateOrderStatus = (orderId, newStatus) => {
@@ -78,19 +105,14 @@ const OrdersPage = () => {
       setOrders(orders.map(order =>
         order.id === orderId ? { ...order, status: newStatus } : order
       ));
+      message.success(`Statusi i porosisë u përditësua në ${newStatus}`);
       setLoading(false);
     }, 500);
   };
 
   const handleExport = () => {
-    console.log('Eksporto të dhënat');
+    message.info('Funksionaliteti i eksportit do të implementohet këtu');
   };
-
-  const stats = [
-    { title: 'Porosi Totale', value: orders.length },
-    { title: 'Përfunduar', value: orders.filter(o => o.status === 'Completed').length },
-    { title: 'Në Proces', value: orders.filter(o => o.status === 'Processing').length }
-  ];
 
   const columns = [
     {
@@ -165,6 +187,28 @@ const OrdersPage = () => {
                 key: 'edit',
                 label: 'Edito',
                 onClick: () => editOrder(record)
+              },
+              { type: 'divider' },
+              {
+                key: 'process',
+                label: 'Shëno si Proces',
+                onClick: () => updateOrderStatus(record.id, 'Processing')
+              },
+              {
+                key: 'ship',
+                label: 'Shëno si Dërguar',
+                onClick: () => updateOrderStatus(record.id, 'Shipped')
+              },
+              {
+                key: 'complete',
+                label: 'Shëno si Përfunduar',
+                onClick: () => updateOrderStatus(record.id, 'Completed')
+              },
+              {
+                key: 'cancel',
+                label: 'Anulo Porosinë',
+                danger: true,
+                onClick: () => updateOrderStatus(record.id, 'Cancelled')
               }
             ]
           }}
@@ -174,6 +218,13 @@ const OrdersPage = () => {
         </Dropdown>
       ),
     },
+  ];
+
+  const stats = [
+    { title: 'Porosi Totale', value: orders.length, icon: <ShoppingCartOutlined /> },
+    { title: 'Në Pritje', value: orders.filter(o => o.status === 'Pending').length, icon: <ClockCircleOutlined /> },
+    { title: 'Në Proces', value: orders.filter(o => o.status === 'Processing').length, icon: <SyncOutlined spin /> },
+    { title: 'Përfunduar', value: orders.filter(o => o.status === 'Completed').length, icon: <CheckCircleOutlined /> }
   ];
 
   return (
@@ -196,225 +247,233 @@ const OrdersPage = () => {
               size={isMobile ? 'small' : 'middle'}
               options={[
                 { value: 'all', label: isMobile ? 'Të gjitha' : 'Të gjitha statuset' },
+                { value: 'Pending', label: isMobile ? 'Pritje' : 'Në pritje' },
+                { value: 'Processing', label: isMobile ? 'Proces' : 'Në proces' },
+                { value: 'Shipped', label: isMobile ? 'Dërguar' : 'Dërguar' },
                 { value: 'Completed', label: isMobile ? 'Përfunduar' : 'Përfunduar' },
-                { value: 'Processing', label: isMobile ? 'Proces' : 'Në proces' }
+                { value: 'Cancelled', label: isMobile ? 'Anuluar' : 'Anuluar' }
               ]}
             />
             <Button
-              icon={<FileExcelOutlined />}
-              onClick={handleExport}
-              size={isMobile ? 'small' : 'middle'}
-            >
-              Eksporto
-            </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsCreateModalOpen(true)}
-              size={isMobile ? 'small' : 'middle'}
-            >
-              Porosi e Re
-            </Button>
-          </Space>
-        }
-      >
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          {stats.map(({ title, value }) => (
-            <Col
-              xs={24}
-              sm={12}
-              md={8}
-              key={title}
-              style={{
-                backgroundColor: '#f5f5f5',
-                borderRadius: 8,
-                padding: 16,
-                textAlign: 'center',
-              }}
-            >
-              <Statistic title={title} value={value} />
-            </Col>
-          ))}
-        </Row>
-        <Table
-          columns={columns}
-          dataSource={filteredOrders}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: isMobile ? 5 : 10 }}
-          scroll={{ x: 'max-content' }}
-        />
-      </Card>
-
-      <Modal
-        title={`Detajet e Porosisë ${selectedOrder ? selectedOrder.orderNumber : ''}`}
-        open={isModalOpen}
-        footer={null}
-        onCancel={() => setIsModalOpen(false)}
-        width={isMobile ? '90%' : 700}
-      >
-        {selectedOrder && (
-          <Descriptions
-            bordered
-            column={isMobile ? 1 : 2}
-            size="small"
-            layout={isMobile ? 'vertical' : 'horizontal'}
-          >
-            <Descriptions.Item label="Nr. Porosisë">{selectedOrder.orderNumber}</Descriptions.Item>
-            <Descriptions.Item label="Data">{selectedOrder.orderDate}</Descriptions.Item>
-            <Descriptions.Item label="Klienti">{selectedOrder.customer}</Descriptions.Item>
-            <Descriptions.Item label="Telefon">{selectedOrder.customerPhone}</Descriptions.Item>
-            <Descriptions.Item label="Adresa për Dërgesë" span={2}>
-              {selectedOrder.shippingAddress}
-            </Descriptions.Item>
-            <Descriptions.Item label="Pjesët" span={2}>
-              <ul style={{ paddingLeft: 20, margin: 0 }}>
-                {selectedOrder.parts.map(part => (
-                  <li key={part.partId}>
-                    {part.name} - Sasi: {part.quantity} - Çmim: ${part.price.toFixed(2)}
-                  </li>
-                ))}
-              </ul>
-            </Descriptions.Item>
-            <Descriptions.Item label="Totali" span={2}>
-              <Text strong>${selectedOrder.total.toFixed(2)}</Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="Statusi" span={2}>
-              <Tag color={statusColors[selectedOrder.status]}>{selectedOrder.status}</Tag>
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Modal>
-
-      <Modal
-        title="Krijo Porosi të Re"
-        open={isCreateModalOpen}
-        onCancel={() => setIsCreateModalOpen(false)}
-        footer={null}
-        width={isMobile ? '90%' : 600}
-      >
-        <Form
-          layout="vertical"
-          onFinish={(values) => {
-            const newOrder = {
-              id: orders.length + 1,
-              orderNumber: `ORD-${(orders.length + 1).toString().padStart(3, '0')}`,
-              customer: values.customer,
-              customerPhone: values.customerPhone,
-              orderDate: values.orderDate.format('YYYY-MM-DD'),
-              parts: values.parts,
-              total: values.parts.reduce((sum, p) => sum + p.quantity * p.price, 0),
-              status: 'Pending',
-              shippingAddress: values.shippingAddress
-            };
-            setOrders([...orders, newOrder]);
-            setIsCreateModalOpen(false);
-          }}
-          initialValues={{
-            parts: [{ partId: '', name: '', quantity: 1, price: 0 }]
+          icon={<FileExcelOutlined />}
+          onClick={handleExport}
+          size={isMobile ? 'small' : 'middle'}
+        >
+          Eksporto
+        </Button>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setIsCreateModalOpen(true)}
+          size={isMobile ? 'small' : 'middle'}
+        >
+          Porosi e Re
+        </Button>
+      </Space>
+    }
+  >
+    <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+      {stats.map(({ title, value, icon }) => (
+        <Col
+          xs={24}
+          sm={12}
+          md={6}
+          key={title}
+          style={{
+            backgroundColor: '#f5f5f5',
+            borderRadius: 8,
+            padding: 16,
+            textAlign: 'center',
           }}
         >
-          <Form.Item
-            label="Klienti"
-            name="customer"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
+          <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
+          <Text strong>{value}</Text>
+          <div>{title}</div>
+        </Col>
+      ))}
+    </Row>
+    <Table
+      columns={columns}
+      dataSource={filteredOrders}
+      rowKey="id"
+      loading={loading}
+      pagination={{ pageSize: isMobile ? 5 : 10 }}
+      scroll={{ x: 'max-content' }}
+    />
+  </Card>
 
-          <Form.Item
-            label="Telefon"
-            name="customerPhone"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
+  {/* Modal për detajet e porosisë */}
+  <Modal
+    title={`Detajet e Porosisë ${selectedOrder ? selectedOrder.orderNumber : ''}`}
+    open={isModalOpen}
+    footer={null}
+    onCancel={() => setIsModalOpen(false)}
+    width={isMobile ? '90%' : 700}
+  >
+    {selectedOrder && (
+      <Descriptions
+        bordered
+        column={isMobile ? 1 : 2}
+        size="small"
+        layout={isMobile ? 'vertical' : 'horizontal'}
+      >
+        <Descriptions.Item label="Nr. Porosisë">{selectedOrder.orderNumber}</Descriptions.Item>
+        <Descriptions.Item label="Data">{selectedOrder.orderDate}</Descriptions.Item>
+        <Descriptions.Item label="Klienti">{selectedOrder.customer}</Descriptions.Item>
+        <Descriptions.Item label="Telefon">{selectedOrder.customerPhone}</Descriptions.Item>
+        <Descriptions.Item label="Adresa për Dërgesë" span={2}>
+          {selectedOrder.shippingAddress}
+        </Descriptions.Item>
+        <Descriptions.Item label="Pjesët" span={2}>
+          <ul style={{ paddingLeft: 20, margin: 0 }}>
+            {selectedOrder.parts.map(part => (
+              <li key={part.partId}>
+                {part.name} - Sasi: {part.quantity} - Çmim: ${part.price.toFixed(2)}
+              </li>
+            ))}
+          </ul>
+        </Descriptions.Item>
+        <Descriptions.Item label="Totali" span={2}>
+          <Text strong>${selectedOrder.total.toFixed(2)}</Text>
+        </Descriptions.Item>
+        <Descriptions.Item label="Statusi" span={2}>
+          <Tag color={statusColors[selectedOrder.status]}>{selectedOrder.status}</Tag>
+        </Descriptions.Item>
+      </Descriptions>
+    )}
+  </Modal>
 
-          <Form.Item
-            label="Data e Porosisë"
-            name="orderDate"
-            rules={[{ required: true }]}
-          >
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
+  {/* Modal për krijimin e porosisë së re */}
+  <Modal
+    title="Krijo Porosi të Re"
+    open={isCreateModalOpen}
+    onCancel={() => setIsCreateModalOpen(false)}
+    footer={null}
+    width={isMobile ? '90%' : 600}
+  >
+    <Form
+      layout="vertical"
+      onFinish={(values) => {
+        const newOrder = {
+          id: orders.length + 1,
+          orderNumber: `ORD-${(orders.length + 1).toString().padStart(3, '0')}`,
+          customer: values.customer,
+          customerPhone: values.customerPhone,
+          orderDate: values.orderDate.format('YYYY-MM-DD'),
+          parts: values.parts,
+          total: values.parts.reduce((sum, p) => sum + p.quantity * p.price, 0),
+          status: 'Pending',
+          shippingAddress: values.shippingAddress
+        };
+        setOrders([...orders, newOrder]);
+        message.success('Porosia u krijua me sukses!');
+        setIsCreateModalOpen(false);
+      }}
+      initialValues={{
+        parts: [{ partId: '', name: '', quantity: 1, price: 0 }]
+      }}
+    >
+      <Form.Item
+        label="Klienti"
+        name="customer"
+        rules={[{ required: true, message: 'Ju lutem shkruani emrin e klientit' }]}
+      >
+        <Input />
+      </Form.Item>
 
-          <Form.List name="parts">
-            {(fields, { add, remove }) => (
-              <>
-                <Text strong>Pjesët</Text>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Space
-                    key={key}
-                    style={{ display: 'flex', marginBottom: 8 }}
-                    align="baseline"
-                  >
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'partId']}
-                      rules={[{ required: true }]}
-                    >
-                      <Input placeholder="ID Pjese" />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'name']}
-                      rules={[{ required: true }]}
-                    >
-                      <Input placeholder="Emri i pjesës" />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'quantity']}
-                      rules={[{ required: true }]}
-                      initialValue={1}
-                    >
-                      <InputNumber min={1} placeholder="Sasia" />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'price']}
-                      rules={[{ required: true }]}
-                      initialValue={0}
-                    >
-                      <InputNumber
-                        min={0}
-                        step={0.01}
-                        placeholder="Çmimi"
-                        formatter={value => `$ ${value}`}
-                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                      />
-                    </Form.Item>
-                    {fields.length > 1 && (
-                      <Button danger onClick={() => remove(name)}>
-                        Hiq
-                      </Button>
-                    )}
-                  </Space>
-                ))}
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                  Shto pjesë të re
-                </Button>
-              </>
-            )}
-          </Form.List>
+      <Form.Item
+        label="Telefon"
+        name="customerPhone"
+        rules={[{ required: true, message: 'Ju lutem shkruani numrin e telefonit' }]}
+      >
+        <Input />
+      </Form.Item>
 
-          <Form.Item
-            label="Adresa për Dërgesë"
-            name="shippingAddress"
-            rules={[{ required: true }]}
-          >
-            <Input.TextArea rows={2} />
-          </Form.Item>
+      <Form.Item
+        label="Data e Porosisë"
+        name="orderDate"
+        rules={[{ required: true, message: 'Ju lutem zgjidhni datën e porosisë' }]}
+      >
+        <DatePicker style={{ width: '100%' }} />
+      </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              Krijo Porosi
+      <Form.List name="parts">
+        {(fields, { add, remove }) => (
+          <>
+            <Text strong>Pjesët</Text>
+            {fields.map(({ key, name, ...restField }) => (
+              <Space
+                key={key}
+                style={{ display: 'flex', marginBottom: 8 }}
+                align="baseline"
+              >
+                <Form.Item
+                  {...restField}
+                  name={[name, 'partId']}
+                  rules={[{ required: true, message: 'Shkruani ID-në e pjesës' }]}
+                >
+                  <Input placeholder="ID Pjese" />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'name']}
+                  rules={[{ required: true, message: 'Shkruani emrin e pjesës' }]}
+                >
+                  <Input placeholder="Emri i pjesës" />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'quantity']}
+                  rules={[{ required: true, message: 'Sasia duhet të jetë > 0' }]}
+                  initialValue={1}
+                >
+                  <InputNumber min={1} placeholder="Sasia" />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, 'price']}
+                  rules={[{ required: true, message: 'Shkruani çmimin' }]}
+                  initialValue={0}
+                >
+                  <InputNumber
+                    min={0}
+                    step={0.01}
+                    placeholder="Çmimi"
+                    formatter={value => `$ ${value}`}
+                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                  />
+                </Form.Item>
+                {fields.length > 1 && (
+                  <Button danger onClick={() => remove(name)}>
+                    Hiq
+                  </Button>
+                )}
+              </Space>
+            ))}
+            <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+              Shto pjesë të re
             </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
-  );
+          </>
+        )}
+      </Form.List>
+
+      <Form.Item
+        label="Adresa për Dërgesë"
+        name="shippingAddress"
+        rules={[{ required: true, message: 'Ju lutem shkruani adresën' }]}
+      >
+        <Input.TextArea rows={2} />
+      </Form.Item>
+
+      <Form.Item>
+        <Button type="primary" htmlType="submit" block>
+          Krijo Porosi
+        </Button>
+      </Form.Item>
+    </Form>
+  </Modal>
+</div>
+);
 };
 
 export default OrdersPage;
