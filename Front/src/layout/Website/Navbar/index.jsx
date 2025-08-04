@@ -1,0 +1,163 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";  // Import Link
+import '../../../assets/css/vendor/bootstrap.min.css';
+import '../../../assets/css/vendor/font-awesome.css';
+import '../../../assets/css/vendor/fontawesome-stars.css';
+import '../../../assets/css/vendor/ion-fonts.css';
+import '../../../assets/css/plugins/slick.css';
+import '../../../assets/css/plugins/animate.css';
+import '../../../assets/css/plugins/jquery-ui.min.css';
+import '../../../assets/css/plugins/lightgallery.min.css';
+import '../../../assets/css/plugins/nice-select.css';
+import '../../../assets/css/style.css';
+import logo from '../../../assets/images/car.png';
+import Category from'./category-menu/index';
+import Search from './search/index';
+import Cart from './minicart/index';
+import Mobile from "./mobile-nav";
+
+const Navbar = () => {
+  const [showCart, setShowCart] = useState(false);
+  const [showMobile, setShowMobile] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  return (
+    <header className="header-main_area bg--sapphire">
+      <div className="header-top_area d-lg-block d-none">
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col-xl-7 col-lg-8">
+              <div className="main-menu_area position-relative">
+                <nav className="main-nav">
+                  <ul>
+                    <li><Link to="/Home">Home</Link></li>
+                    <li className="megamenu-holder"><Link to="/Shop">Shop</Link></li>
+                    <li><Link to="/Shop" >Specials</Link></li>
+                    <li><Link to="/About">About Us</Link></li>
+                    <li><Link to="/Contact">Contact</Link></li>
+                    <li><Link to="/Blog">Blog</Link></li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+            <div className="col-xl-5 col-lg-4">
+              <div className="ht-right_area">
+                <div className="ht-menu">
+                  <ul>
+                    <li>
+                      <a href="#currency" onClick={e => e.preventDefault()}>
+                        Currency <i className="fa fa-chevron-down"></i>
+                      </a>
+                      <ul className="ht-dropdown ht-currency">
+                        <li><a href="#eur" onClick={e => e.preventDefault()}>€ EUR</a></li>
+                        <li className="active"><a href="#pound" onClick={e => e.preventDefault()}>£ Pound Sterling</a></li>
+                        <li><a href="#usd" onClick={e => e.preventDefault()}>$ Us Dollar</a></li>
+                      </ul>
+                    </li>
+                    <li>
+                      <a href="#language" onClick={e => e.preventDefault()}>
+                        Language <i className="fa fa-chevron-down"></i>
+                      </a>
+                      <ul className="ht-dropdown">
+                        <li className="active">
+                          <a href="#english" onClick={e => e.preventDefault()}>
+                            <img src="assets/images/menu/icon/1.jpg" alt="Language Icon" /> English
+                          </a>
+                        </li>
+                        <li>
+                          <a href="#francais" onClick={e => e.preventDefault()}>
+                            <img src="assets/images/menu/icon/2.jpg" alt="Language Icon" /> Français
+                          </a>
+                        </li>
+                      </ul>
+                    </li>
+                    <li>
+                      <Link to="/Profile">My Account <i className="fa fa-chevron-down"></i></Link>
+                      <ul className="ht-dropdown ht-my_account">
+                        <li className="active"><Link to="/login">Login</Link></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="header-middle_area">
+        <div className="container-fluid">
+          <div className="row">
+            <div className="custom-logo_col col-12">
+<div className="header-logo_area" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+  <Link to="/Home" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+    <img 
+      src={logo} 
+      alt="Car" 
+      style={{ 
+        filter: 'invert(68%) sepia(89%) saturate(500%) hue-rotate(10deg) brightness(95%) contrast(90%)', 
+        width: '40px', 
+        height: '40px',
+        objectFit: 'contain'
+      }} 
+    />
+    <h3 style={{ color: '#FFD700', margin: 0, fontWeight: 'bold' }}>FixFlow-Auto</h3>
+  </Link>
+</div>
+
+            </div>
+            <Category/>
+            <Search />
+            <div className="custom-cart_col col-12">
+              <div className="header-right_area">
+                <ul>
+                  <li className="mobile-menu_wrap d-flex d-lg-none">
+                    <a
+                      href="#mobileMenu"
+                      className="mobile-menu_btn toolbar-btn color--white"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowMobile(true);
+                      }}
+                    >
+                      <i className="ion-navicon"></i>
+                    </a>
+                  </li>
+                  <li className="minicart-wrap">
+                    <a
+                      href="#miniCart"
+                      className="minicart-btn toolbar-btn"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowCart(true);
+                      }}
+                    >
+                      <div className="minicart-count_area">
+                        <span className="item-count">3</span>
+                        <i className="ion-bag"></i>
+                      </div>
+                      <div className="minicart-front_text">
+                        <span>Cart:</span>
+                        <span className="total-price">462.4</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li className="contact-us_wrap">
+                    <a href="tel:+123321345">
+                      <i className="ion-android-call"></i>+123 321 345
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Cart className={showCart ? 'show-cart' : ''} onClose={() => setShowCart(false)} />
+<Mobile className={showMobile ? 'open' : ''} onClose={() => setShowMobile(false)} />
+    </header>
+  );
+};
+
+export default Navbar;
