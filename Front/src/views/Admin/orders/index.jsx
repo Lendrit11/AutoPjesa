@@ -1,5 +1,5 @@
-import { Table, Card, Modal, Descriptions, Tag, Button, Input, Select, Space, Form, DatePicker, Grid } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Table, Card, Modal, Descriptions, Tag, Button, Input, Select, Space, Form, DatePicker, Grid, Statistic, Row, Col } from 'antd';
+import { PlusOutlined, FileExcelOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 
 const { useBreakpoint } = Grid;
@@ -51,6 +51,16 @@ const OrdersPage = () => {
     form.resetFields();
   };
 
+  const handleExport = () => {
+    console.log('Eksporto të dhënat');
+  };
+
+  const stats = [
+    { title: 'Porosi Totale', value: orders.length },
+    { title: 'Përfunduar', value: orders.filter(o => o.status === 'Completed').length },
+    { title: 'Në Proces', value: orders.filter(o => o.status === 'Processing').length }
+  ];
+
   const columns = [
     {
       title: 'Data',
@@ -72,36 +82,72 @@ const OrdersPage = () => {
   ];
 
   return (
-    <>
+    <div style={{ padding: isMobile ? 8 : 24 }}>
       <Card 
         title="Porositë" 
         extra={
-          <Space>
+          <Space wrap>
             <Button 
               type="primary" 
               icon={<PlusOutlined />}
               onClick={() => setIsCreateModalOpen(true)}
+              size={isMobile ? 'small' : 'middle'}
             >
               Porosi e Re
             </Button>
             <Input.Search
-              placeholder="Kërko klient..."
+              placeholder="Kërko..."
               onSearch={setSearchText}
               allowClear
+              style={{ width: isMobile ? 150 : 200 }}
+              size={isMobile ? 'small' : 'middle'}
             />
             <Select
               defaultValue="all"
               onChange={setStatusFilter}
+              style={{ minWidth: isMobile ? 120 : 150 }}
+              size={isMobile ? 'small' : 'middle'}
               options={[
-                { value: 'all', label: 'Të gjitha' },
-                { value: 'Completed', label: 'Përfunduar' },
-                { value: 'Processing', label: 'Në proces' }
+                { value: 'all', label: isMobile ? 'Të gjitha' : 'Të gjitha statuset' },
+                { value: 'Completed', label: isMobile ? 'Përfunduar' : 'Përfunduar' },
+                { value: 'Processing', label: isMobile ? 'Proces' : 'Në proces' }
               ]}
             />
+            <Button
+              icon={<FileExcelOutlined />}
+              onClick={handleExport}
+              size={isMobile ? 'small' : 'middle'}
+            >
+              Eksporto
+            </Button>
           </Space>
         }
       >
-        <Table dataSource={filteredOrders} columns={columns} rowKey="id" />
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          {stats.map(({ title, value }) => (
+            <Col
+              xs={24}
+              sm={12}
+              md={8}
+              key={title}
+              style={{
+                backgroundColor: '#f5f5f5',
+                borderRadius: 8,
+                padding: 16,
+                textAlign: 'center',
+              }}
+            >
+              <Statistic title={title} value={value} />
+            </Col>
+          ))}
+        </Row>
+        <Table
+          columns={columns}
+          dataSource={filteredOrders}
+          rowKey="id"
+          pagination={{ pageSize: isMobile ? 5 : 10 }}
+          scroll={{ x: 'max-content' }}
+        />
       </Card>
 
       <Modal
@@ -151,7 +197,7 @@ const OrdersPage = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   );
 };
 
