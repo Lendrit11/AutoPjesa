@@ -1,0 +1,5 @@
+  .no-caret-toggle::after {
+  display: none !important;
+  content: none !important;
+}
+

@@ -1,0 +1,149 @@
+/* Wrapper për menunë */
+.mobile-menu_wrapper {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 0;
+  overflow-x: hidden;
+  z-index: 9999;
+  background-color: rgba(255, 255, 255, 0.98);
+  transition: width 0.3s ease;
+}
+
+/* Kur është hapur menuja */
+.mobile-menu_wrapper.open {
+  width: 280px;
+}
+
+.offcanvas-menu-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* vertikalisht në qendër */
+  align-items: center;       /* horizontalisht në qendër */
+  width: 100%;
+  height: 100%;
+  padding: 100px 20px 20px; /* më shumë hapësirë nga lart për ta ulur */
+  box-sizing: border-box;
+}
+/* Sigurohu që menuja të mbushet në gjerësi të plotë */
+.offcanvas-navigation {
+  width: 100%;
+}
+
+
+/* Butoni për mbyllje */
+.btn-close {
+  position: absolute;
+  top: 0;
+  left: -50px;
+  background-color: #333;
+  color: #fff;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  line-height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Search box */
+.offcanvas-inner_search {
+  margin-bottom: 20px;
+}
+
+.inner-searchbox {
+  position: relative;
+}
+
+.inner-searchbox input {
+  width: 100%;
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search_btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #888;
+}
+
+/* Navigimi */
+/* Mobile menu si listë vertikale */
+.mobile-menu {
+  width: 100%; 
+  height: auto;
+  position: relative;
+  bottom: 10%; /* shtrij listën në gjerësi të plotë */
+}
+
+/* Linkat e menuse të jenë block dhe në linjë të vetme */
+.mobile-menu li a {
+  text-align: center;
+}
+
+.mobile-menu li a:hover {
+  color: #ffc400;
+}
+
+.mobile-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-menu li a {
+  display: block;
+  padding: 12px 15px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #eee;
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
+}
+
+.mobile-menu li a:hover {
+  color: #ffc400;
+}
+
+/* Submenu */
+.sub-menu {
+  display: none;
+  flex-direction: column;
+  padding-left: 15px;
+}
+
+.sub-menu.open {
+  display: flex;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .mobile-menu_wrapper.open {
+    width: 240px;
+  }
+
+  .btn-close {
+    left: -45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-menu_wrapper.open {
+    width: 200px;
+  }
+
+  .btn-close {
+    left: -40px;
+  }
+}
