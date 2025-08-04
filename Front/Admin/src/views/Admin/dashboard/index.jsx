@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Badge, Tooltip } from 'antd';
+import { Row, Col, Card, Badge, Progress, List, Radio, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import {
-  AreaChart, Area, BarChart, Bar,
-  ResponsiveContainer, Tooltip as RTooltip, XAxis
+  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  PieChart, Pie, Cell,
+  ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis,
+  CartesianGrid, Legend, Brush,
 } from 'recharts';
 import dayjs from 'dayjs';
 
@@ -16,6 +18,25 @@ const trendData = new Array(14).fill(null).map((_, index) => ({
   name: dayjs().add(index, 'day').format('YYYY-MM-DD'),
   number: Math.floor(Math.random() * 8 + 1),
 }));
+
+const trafficData = new Array(20).fill(null).map((_, index) => ({
+  name: dayjs().add(index * 30, 'minute').format('HH:mm'),
+  traffic: Math.floor(Math.random() * 120 + 1),
+  payments: Math.floor(Math.random() * 120 + 1),
+}));
+
+const pieData = {
+  all: [
+    { name: 'Brake Pads', value: 454, price: 89.99 },
+    { name: 'Oil Filters', value: 332, price: 24.99 },
+    { name: 'Spark Plugs', value: 287, price: 12.99 },
+    { name: 'Air Filters', value: 198, price: 32.50 },
+    { name: 'Timing Belts', value: 156, price: 45.75 },
+    { name: 'Others', value: 132, price: 0 },
+  ],
+};
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#E36E7E', '#8F66DE'];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
@@ -109,22 +130,112 @@ const Overview = ({ loading }) => (
       loading={loading}
       metaName="Operational Effect"
       metaCount="8846"
-      body={<div style={{ height: 100, display: 'flex', alignItems: 'center' }}>
-        <div style={{ width: '100%' }}>
-          <div style={{ 
-            height: 10, 
-            background: '#58BFC1', 
-            width: '85%',
-            borderRadius: 5 
-          }} />
-          <div style={{ textAlign: 'center', marginTop: 10 }}>85%</div>
-        </div>
-      </div>}
+      body={<Progress strokeColor="#58BFC1" percent={85} />}
       footer={<Trend wow="12%" dod="12%" style={{ position: 'inherit' }} />}
     />
   </Row>
 );
 
+const SalePercent = ({ loading }) => {
+  const [dataType, setDataType] = useState('all');
+  const dataSet = pieData[dataType];
+
+  return (
+    <Card
+      title="Top Selling Parts"
+      loading={loading}
+      extra={
+        <Radio.Group value={dataType} onChange={e => setDataType(e.target.value)} buttonStyle="solid">
+          <Radio.Button value="all">All Sales</Radio.Button>
+        </Radio.Group>
+      }
+    >
+      <Row gutter={20}>
+        <Col xs={24} sm={12}>
+          <ResponsiveContainer height={250}>
+            <PieChart>
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length > 0) {
+                    const { name, value, price } = payload[0].payload;
+                    const total = dataSet.reduce((sum, item) => sum + item.value, 0);
+                    const percent = ((value / total) * 100).toFixed(2) + '%';
+                    const revenue = (value * price).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                    });
+
+                    return (
+                      <div className="customTooltip">
+                        <p><strong>{name}</strong></p>
+                        <p>Sold: {value}</p>
+                        <p>Revenue: {revenue}</p>
+                        <p>Market Share: {percent}</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Pie
+                data={dataSet}
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+                strokeOpacity={0}
+              >
+                {dataSet.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </Col>
+        <Col xs={24} sm={12}>
+          <List
+            bordered
+            dataSource={dataSet}
+            renderItem={(item, i) => {
+              const total = dataSet.reduce((sum, part) => sum + part.value, 0);
+              const percent = ((item.value / total) * 100).toFixed(2) + '%';
+              const revenue = (item.value * item.price).toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              });
+              return (
+                <List.Item>
+                  <Badge color={COLORS[i % COLORS.length]} />
+                  <span style={{ width: 120, display: 'inline-block' }}>{item.name}</span>
+                  <span style={{ margin: '0 10px' }}>{item.value} sold</span>
+                  <span>{revenue}</span>
+                  <span style={{ float: 'right' }}>{percent}</span>
+                </List.Item>
+              );
+            }}
+          />
+        </Col>
+      </Row>
+    </Card>
+  );
+};
+
+const TimeLine = ({ loading }) => (
+  <Card loading={loading} style={{ marginTop: 12 }}>
+    <ResponsiveContainer height={400}>
+      <LineChart data={trafficData} syncId="anyId">
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip content={<CustomTooltip />} />
+        <Line type="monotone" dataKey="traffic" stroke="#3F90F7" />
+        <Line type="monotone" dataKey="payments" stroke="#61BE82" />
+        <Brush dataKey="name" fill="#13c2c2" />
+        <Legend />
+      </LineChart>
+    </ResponsiveContainer>
+  </Card>
+);
+
+// Page Component
 const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
@@ -136,6 +247,8 @@ const DashboardPage = () => {
   return (
     <div style={{ padding: 20 }}>
       <Overview loading={loading} />
+      <SalePercent loading={loading} />
+      <TimeLine loading={loading} />
     </div>
   );
 };
