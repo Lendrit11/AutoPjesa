@@ -7,10 +7,13 @@ import {
   Select,
   Space,
   Typography,
+  Card,
+  Form,
+  Input,
 } from "antd";
 
 const { Option } = Select;
-const { Text } = Typography;
+const { Title, Text } = Typography;
 
 const dummyUsers = [
   {
@@ -38,6 +41,8 @@ const dummyUsers = [
 
 const AccountUserControl = () => {
   const [users, setUsers] = useState(dummyUsers);
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
   const changeRole = (id, role) => {
     setUsers((prev) =>
@@ -65,6 +70,14 @@ const AccountUserControl = () => {
         Modal.success({ content: "Përdoruesi u fshi me sukses!" });
       },
     });
+  };
+
+  const handleEditProfile = (values) => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      Modal.success({ content: "Profili u përditësua me sukses!" });
+    }, 2000);
   };
 
   const columns = [
@@ -123,7 +136,47 @@ const AccountUserControl = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Table columns={columns} dataSource={users} rowKey="id" />
+      <Card style={{ marginBottom: 32 }}>
+        <Title level={2}>Profili i Administratorit</Title>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleEditProfile}
+          initialValues={{
+            name: "Admini Kryesor",
+            email: "admin@example.com",
+          }}
+        >
+          <Form.Item
+            label="Emri"
+            name="name"
+            rules={[{ required: true, message: "Ju lutem shkruani emrin!" }]}
+          >
+            <Input placeholder="Shkruani emrin" />
+          </Form.Item>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { type: "email", message: "Email i pavlefshëm!" },
+              { required: true, message: "Email është i detyrueshëm!" },
+            ]}
+          >
+            <Input placeholder="shembull@example.com" />
+          </Form.Item>
+          <Form.Item label="Fjalëkalimi i Ri" name="password">
+            <Input.Password placeholder="(Opsionale)" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Përditëso Profilin
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+      <Card title="Menaxhimi i Përdoruesve">
+        <Table columns={columns} dataSource={users} rowKey="id" />
+      </Card>
     </div>
   );
 };
