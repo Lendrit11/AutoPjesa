@@ -11,11 +11,13 @@ import {
   Select,
   message,
   Space,
-  Popconfirm
+  Popconfirm,
+  Tabs
 } from 'antd';
 
 const { Title } = Typography;
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 const SupplyInventoryDashboard = () => {
   const [categories, setCategories] = useState([
@@ -25,9 +27,19 @@ const SupplyInventoryDashboard = () => {
   ]);
 
   const [manufacturers, setManufacturers] = useState([
-    { id: 1, name: 'Bosch', country: 'Gjermani' },
-    { id: 2, name: 'Brembo', country: 'Itali' },
-    { id: 3, name: 'Valeo', country: 'Francë' }
+    { id: 1, name: 'Bosch', country: 'Gjermani', yearFounded: 1886 },
+    { id: 2, name: 'Valeo', country: 'Francë', yearFounded: 1923 }
+  ]);
+
+  const [suppliers, setSuppliers] = useState([
+    {
+      id: 1,
+      name: 'AutoParts Shpk',
+      contactPerson: 'Filan Fisteku',
+      phone: '+38344123456',
+      email: 'info@autoparts.com',
+      status: 'Aktiv'
+    }
   ]);
 
   const [parts, setParts] = useState([
@@ -36,7 +48,6 @@ const SupplyInventoryDashboard = () => {
       partNumber: 'BP-1001',
       name: 'Frena Disk',
       categoryId: 1,
-      manufacturerId: 1,
       price: 45.99,
       stock: 25
     }
@@ -44,15 +55,35 @@ const SupplyInventoryDashboard = () => {
 
   const [isPartModalVisible, setIsPartModalVisible] = useState(false);
   const [editingPart, setEditingPart] = useState(null);
+  const [activeTab, setActiveTab] = useState('inventory');
   const [form] = Form.useForm();
 
+  // Columns
   const categoryColumns = [
     { title: 'Emri', dataIndex: 'name', key: 'name' }
   ];
 
   const manufacturerColumns = [
     { title: 'Emri', dataIndex: 'name', key: 'name' },
-    { title: 'Vendi', dataIndex: 'country', key: 'country' }
+    { title: 'Shteti', dataIndex: 'country', key: 'country' },
+    { title: 'Viti', dataIndex: 'yearFounded', key: 'yearFounded' }
+  ];
+
+  const supplierColumns = [
+    { title: 'Emri', dataIndex: 'name', key: 'name' },
+    { title: 'Personi Kontaktues', dataIndex: 'contactPerson', key: 'contactPerson' },
+    { title: 'Telefoni', dataIndex: 'phone', key: 'phone' },
+    { title: 'Email', dataIndex: 'email', key: 'email' },
+    {
+      title: 'Statusi',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <span style={{ color: status === 'Aktiv' ? 'green' : 'red' }}>
+          {status}
+        </span>
+      )
+    }
   ];
 
   const partColumns = [
@@ -63,12 +94,6 @@ const SupplyInventoryDashboard = () => {
       dataIndex: 'categoryId',
       key: 'categoryId',
       render: (catId) => categories.find(c => c.id === catId)?.name || 'Pa Kategori'
-    },
-    {
-      title: 'Prodhuesi',
-      dataIndex: 'manufacturerId',
-      key: 'manufacturerId',
-      render: (manId) => manufacturers.find(m => m.id === manId)?.name || 'Pa Prodhues'
     },
     { title: 'Çmimi (€)', dataIndex: 'price', key: 'price' },
     { title: 'Stoku', dataIndex: 'stock', key: 'stock' },
@@ -82,8 +107,7 @@ const SupplyInventoryDashboard = () => {
               setEditingPart(record);
               form.setFieldsValue({
                 ...record,
-                categoryId: record.categoryId.toString(),
-                manufacturerId: record.manufacturerId?.toString()
+                categoryId: record.categoryId.toString()
               });
               setIsPartModalVisible(true);
             }}
@@ -108,8 +132,7 @@ const SupplyInventoryDashboard = () => {
     const newPart = {
       ...values,
       id: parts.length > 0 ? Math.max(...parts.map(p => p.id)) + 1 : 1,
-      categoryId: Number(values.categoryId),
-      manufacturerId: values.manufacturerId ? Number(values.manufacturerId) : null
+      categoryId: Number(values.categoryId)
     };
     setParts([...parts, newPart]);
     message.success('Pjesa u shtua me sukses!');
@@ -118,12 +141,7 @@ const SupplyInventoryDashboard = () => {
   };
 
   const handleEditPart = (values) => {
-    setParts(parts.map(p => (p.id === editingPart.id ? { 
-      ...editingPart, 
-      ...values, 
-      categoryId: Number(values.categoryId),
-      manufacturerId: values.manufacturerId ? Number(values.manufacturerId) : null
-    } : p)));
+    setParts(parts.map(p => (p.id === editingPart.id ? { ...editingPart, ...values, categoryId: Number(values.categoryId) } : p)));
     message.success('Pjesa u përditësua!');
     setIsPartModalVisible(false);
     setEditingPart(null);
@@ -131,49 +149,57 @@ const SupplyInventoryDashboard = () => {
   };
 
   return (
-    <div>
+    <div style={{ padding: 24 }}>
       <Title level={2}>Paneli i Inventarit dhe Furnitorëve</Title>
 
-      <Card title="Kategoriat" style={{ marginBottom: 20 }}>
-        <Table
-          dataSource={categories}
-          columns={categoryColumns}
-          rowKey="id"
-          pagination={false}
-        />
-      </Card>
-
-      <Card title="Prodhuesit" style={{ marginBottom: 20 }}>
-        <Table
-          dataSource={manufacturers}
-          columns={manufacturerColumns}
-          rowKey="id"
-          pagination={false}
-        />
-      </Card>
-
-      <Card
-        title="Pjesët"
-        extra={
-          <Button
-            type="primary"
-            onClick={() => {
-              setEditingPart(null);
-              form.resetFields();
-              setIsPartModalVisible(true);
-            }}
+      <Tabs activeKey={activeTab} onChange={setActiveTab}>
+        <TabPane tab="Inventari" key="inventory">
+          <Card
+            title="Pjesët"
+            extra={
+              <Button
+                type="primary"
+                onClick={() => {
+                  setEditingPart(null);
+                  form.resetFields();
+                  setIsPartModalVisible(true);
+                }}
+              >
+                Shto Pjesë
+              </Button>
+            }
           >
-            Shto Pjesë
-          </Button>
-        }
-      >
-        <Table
-          dataSource={parts}
-          columns={partColumns}
-          rowKey="id"
-          pagination={false}
-        />
-      </Card>
+            <Table
+              dataSource={parts}
+              columns={partColumns}
+              rowKey="id"
+              pagination={false}
+            />
+          </Card>
+        </TabPane>
+
+        <TabPane tab="Furnitorët" key="suppliers">
+          <Card title="Lista e Furnitorëve">
+            <Table
+              dataSource={suppliers}
+              columns={supplierColumns}
+              rowKey="id"
+              pagination={false}
+            />
+          </Card>
+        </TabPane>
+
+        <TabPane tab="Prodhuesit" key="manufacturers">
+          <Card title="Lista e Prodhuesve">
+            <Table
+              dataSource={manufacturers}
+              columns={manufacturerColumns}
+              rowKey="id"
+              pagination={false}
+            />
+          </Card>
+        </TabPane>
+      </Tabs>
 
       <Modal
         title={editingPart ? 'Edito Pjesë' : 'Shto Pjesë'}
@@ -221,19 +247,6 @@ const SupplyInventoryDashboard = () => {
               {categories.map(c => (
                 <Option key={c.id} value={c.id.toString()}>
                   {c.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="manufacturerId"
-            label="Prodhuesi"
-          >
-            <Select allowClear>
-              {manufacturers.map(m => (
-                <Option key={m.id} value={m.id.toString()}>
-                  {m.name} ({m.country})
                 </Option>
               ))}
             </Select>
