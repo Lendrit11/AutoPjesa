@@ -9,7 +9,9 @@ import {
   Input,
   InputNumber,
   Select,
-  message
+  message,
+  Space,
+  Popconfirm
 } from 'antd';
 
 const { Title } = Typography;
@@ -23,8 +25,9 @@ const SupplyInventoryDashboard = () => {
   ]);
 
   const [manufacturers, setManufacturers] = useState([
-    { id: 1, name: 'Bosch', country: 'Gjermani', yearFounded: 1886 },
-    { id: 2, name: 'Valeo', country: 'Francë', yearFounded: 1923 }
+    { id: 1, name: 'Bosch', country: 'Gjermani' },
+    { id: 2, name: 'Brembo', country: 'Itali' },
+    { id: 3, name: 'Valeo', country: 'Francë' }
   ]);
 
   const [parts, setParts] = useState([
@@ -33,12 +36,14 @@ const SupplyInventoryDashboard = () => {
       partNumber: 'BP-1001',
       name: 'Frena Disk',
       categoryId: 1,
+      manufacturerId: 1,
       price: 45.99,
       stock: 25
     }
   ]);
 
   const [isPartModalVisible, setIsPartModalVisible] = useState(false);
+  const [editingPart, setEditingPart] = useState(null);
   const [form] = Form.useForm();
 
   const categoryColumns = [
@@ -47,8 +52,7 @@ const SupplyInventoryDashboard = () => {
 
   const manufacturerColumns = [
     { title: 'Emri', dataIndex: 'name', key: 'name' },
-    { title: 'Shteti', dataIndex: 'country', key: 'country' },
-    { title: 'Viti', dataIndex: 'yearFounded', key: 'yearFounded' }
+    { title: 'Vendi', dataIndex: 'country', key: 'country' }
   ];
 
   const partColumns = [
@@ -60,19 +64,69 @@ const SupplyInventoryDashboard = () => {
       key: 'categoryId',
       render: (catId) => categories.find(c => c.id === catId)?.name || 'Pa Kategori'
     },
+    {
+      title: 'Prodhuesi',
+      dataIndex: 'manufacturerId',
+      key: 'manufacturerId',
+      render: (manId) => manufacturers.find(m => m.id === manId)?.name || 'Pa Prodhues'
+    },
     { title: 'Çmimi (€)', dataIndex: 'price', key: 'price' },
-    { title: 'Stoku', dataIndex: 'stock', key: 'stock' }
+    { title: 'Stoku', dataIndex: 'stock', key: 'stock' },
+    {
+      title: 'Veprime',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button
+            onClick={() => {
+              setEditingPart(record);
+              form.setFieldsValue({
+                ...record,
+                categoryId: record.categoryId.toString(),
+                manufacturerId: record.manufacturerId?.toString()
+              });
+              setIsPartModalVisible(true);
+            }}
+          >
+            Edito
+          </Button>
+          <Popconfirm
+            title="Jeni i sigurt?"
+            onConfirm={() => {
+              setParts(parts.filter(p => p.id !== record.id));
+              message.success('Pjesa u fshi!');
+            }}
+          >
+            <Button danger>Fshi</Button>
+          </Popconfirm>
+        </Space>
+      )
+    }
   ];
 
   const handleAddPart = (values) => {
     const newPart = {
       ...values,
       id: parts.length > 0 ? Math.max(...parts.map(p => p.id)) + 1 : 1,
-      categoryId: Number(values.categoryId)
+      categoryId: Number(values.categoryId),
+      manufacturerId: values.manufacturerId ? Number(values.manufacturerId) : null
     };
     setParts([...parts, newPart]);
     message.success('Pjesa u shtua me sukses!');
     setIsPartModalVisible(false);
+    form.resetFields();
+  };
+
+  const handleEditPart = (values) => {
+    setParts(parts.map(p => (p.id === editingPart.id ? { 
+      ...editingPart, 
+      ...values, 
+      categoryId: Number(values.categoryId),
+      manufacturerId: values.manufacturerId ? Number(values.manufacturerId) : null
+    } : p)));
+    message.success('Pjesa u përditësua!');
+    setIsPartModalVisible(false);
+    setEditingPart(null);
     form.resetFields();
   };
 
@@ -101,7 +155,14 @@ const SupplyInventoryDashboard = () => {
       <Card
         title="Pjesët"
         extra={
-          <Button type="primary" onClick={() => setIsPartModalVisible(true)}>
+          <Button
+            type="primary"
+            onClick={() => {
+              setEditingPart(null);
+              form.resetFields();
+              setIsPartModalVisible(true);
+            }}
+          >
             Shto Pjesë
           </Button>
         }
@@ -115,12 +176,26 @@ const SupplyInventoryDashboard = () => {
       </Card>
 
       <Modal
-        title="Shto Pjesë"
+        title={editingPart ? 'Edito Pjesë' : 'Shto Pjesë'}
         visible={isPartModalVisible}
-        onCancel={() => setIsPartModalVisible(false)}
+        onCancel={() => {
+          setIsPartModalVisible(false);
+          setEditingPart(null);
+        }}
         footer={null}
+        destroyOnClose
       >
-        <Form form={form} layout="vertical" onFinish={handleAddPart}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={(values) => {
+            if (editingPart) {
+              handleEditPart(values);
+            } else {
+              handleAddPart(values);
+            }
+          }}
+        >
           <Form.Item
             name="partNumber"
             label="Numri i Pjesës"
@@ -152,6 +227,19 @@ const SupplyInventoryDashboard = () => {
           </Form.Item>
 
           <Form.Item
+            name="manufacturerId"
+            label="Prodhuesi"
+          >
+            <Select allowClear>
+              {manufacturers.map(m => (
+                <Option key={m.id} value={m.id.toString()}>
+                  {m.name} ({m.country})
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
             name="price"
             label="Çmimi (€)"
             rules={[{ required: true, message: 'Ju lutem shkruani çmimin!' }]}
@@ -169,7 +257,7 @@ const SupplyInventoryDashboard = () => {
 
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
-              Shto Pjesë
+              {editingPart ? 'Ruaj Ndryshimet' : 'Shto Pjesë'}
             </Button>
           </Form.Item>
         </Form>
