@@ -2,10 +2,18 @@ import React, { useState } from 'react';
 import {
   Card,
   Table,
-  Typography
+  Typography,
+  Button,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  message
 } from 'antd';
 
 const { Title } = Typography;
+const { Option } = Select;
 
 const SupplyInventoryDashboard = () => {
   const [categories, setCategories] = useState([
@@ -30,6 +38,9 @@ const SupplyInventoryDashboard = () => {
     }
   ]);
 
+  const [isPartModalVisible, setIsPartModalVisible] = useState(false);
+  const [form] = Form.useForm();
+
   const categoryColumns = [
     { title: 'Emri', dataIndex: 'name', key: 'name' }
   ];
@@ -53,6 +64,18 @@ const SupplyInventoryDashboard = () => {
     { title: 'Stoku', dataIndex: 'stock', key: 'stock' }
   ];
 
+  const handleAddPart = (values) => {
+    const newPart = {
+      ...values,
+      id: parts.length > 0 ? Math.max(...parts.map(p => p.id)) + 1 : 1,
+      categoryId: Number(values.categoryId)
+    };
+    setParts([...parts, newPart]);
+    message.success('Pjesa u shtua me sukses!');
+    setIsPartModalVisible(false);
+    form.resetFields();
+  };
+
   return (
     <div>
       <Title level={2}>Paneli i Inventarit dhe Furnitorëve</Title>
@@ -75,6 +98,82 @@ const SupplyInventoryDashboard = () => {
         />
       </Card>
 
+      <Card
+        title="Pjesët"
+        extra={
+          <Button type="primary" onClick={() => setIsPartModalVisible(true)}>
+            Shto Pjesë
+          </Button>
+        }
+      >
+        <Table
+          dataSource={parts}
+          columns={partColumns}
+          rowKey="id"
+          pagination={false}
+        />
+      </Card>
+
+      <Modal
+        title="Shto Pjesë"
+        visible={isPartModalVisible}
+        onCancel={() => setIsPartModalVisible(false)}
+        footer={null}
+      >
+        <Form form={form} layout="vertical" onFinish={handleAddPart}>
+          <Form.Item
+            name="partNumber"
+            label="Numri i Pjesës"
+            rules={[{ required: true, message: 'Ju lutem shkruani numrin e pjesës!' }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="name"
+            label="Emri i Pjesës"
+            rules={[{ required: true, message: 'Ju lutem shkruani emrin e pjesës!' }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="categoryId"
+            label="Kategoria"
+            rules={[{ required: true, message: 'Ju lutem zgjidhni kategorinë!' }]}
+          >
+            <Select>
+              {categories.map(c => (
+                <Option key={c.id} value={c.id.toString()}>
+                  {c.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="price"
+            label="Çmimi (€)"
+            rules={[{ required: true, message: 'Ju lutem shkruani çmimin!' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item
+            name="stock"
+            label="Sasia në stok"
+            rules={[{ required: true, message: 'Ju lutem shkruani sasinë!' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Shto Pjesë
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
