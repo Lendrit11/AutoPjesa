@@ -1,4 +1,6 @@
 ﻿using AutoPjesa.Domain.Entities;
+using AutoPjesaa.model.Entities;
+using AutoPjesaa.model.Token;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoPjesa.Infrastructure.Persistence
@@ -11,8 +13,12 @@ namespace AutoPjesa.Infrastructure.Persistence
         public DbSet<CarModel> CarModels { get; set; }
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartCarModel> PartCarModels { get; set; }
+        public DbSet<FavoritePart> FavoriteParts { get; set; }
+
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<AppUser> AppUsers { get; set; }
+        public DbSet<Blog> Blogs { get; set; }
+        public DbSet<Token> Tokens { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<Address> Addresses { get; set; }
@@ -65,12 +71,32 @@ namespace AutoPjesa.Infrastructure.Persistence
             modelBuilder.Entity<AppUser>()
                 .HasMany(u => u.UserRoles)
                 .WithOne(ur => ur.User)
-                .HasForeignKey(ur => ur.roleId);
-
+                .HasForeignKey(ur => ur.userId);
             modelBuilder.Entity<Role>()
                 .HasMany(r => r.UserRoles)
                 .WithOne(ur => ur.Role)
                 .HasForeignKey(ur => ur.roleId);
+            modelBuilder.Entity<Blog>()
+              .HasOne(b => b.User)
+              .WithMany(u => u.Blogs)
+              .HasForeignKey(b => b.UserId)
+              .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<FavoritePart>()
+                 .HasIndex(fp => new { fp.userid, fp.partid })
+                     .IsUnique(); 
+
+            modelBuilder.Entity<FavoritePart>()
+                .HasOne(fp => fp.User)
+                .WithMany(u => u.FavoriteParts)
+                .HasForeignKey(fp => fp.userid)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FavoritePart>()
+                .HasOne(fp => fp.Part)
+                .WithMany(p => p.FavoritedByUsers)
+                .HasForeignKey(fp => fp.partid)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             base.OnModelCreating(modelBuilder);
         }
