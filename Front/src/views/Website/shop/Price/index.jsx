@@ -1,21 +1,15 @@
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { useState } from 'react';
-const Price_del = () => {
-  const [priceRange, setPriceRange] = useState([10, 1000]);
 
-  const handleChange = (value) => {
-    setPriceRange(value);
-  };
+const Price_del = ({ priceRange, onChange }) => {
+  const handleChange = (value) => onChange(value);
 
   return (
     <div className="uren-sidebar_categories">
-      <div className="uren-categories_title">
-        <h5>Price</h5>
-      </div>
+      <div className="uren-categories_title"><h5>Price</h5></div>
       <div className="price-filter">
         <Slider
-          range={true}
+          range
           min={0}
           max={1000}
           value={priceRange}
@@ -32,8 +26,8 @@ const Price_del = () => {
             <label>Price: </label>
             <input
               type="text"
-              value={`$${priceRange[0]} - $${priceRange[1]}`}
               readOnly
+              value={`€${priceRange[0]} - €${priceRange[1]}`}
             />
           </div>
         </div>
