@@ -11,7 +11,6 @@ import '../../../assets/css/plugins/nice-select.css';
 import '../../../assets/css/style.css';
 // importimet e komponentave
 import Slider from './Slider/index';
-import Feauterd from "./Featured-categories";
 import Arrivals from "./New-arrivals-products";
 import Deal from "./Deal-of-the-day";
 import Blog from "./Blog";
@@ -101,8 +100,7 @@ const Home =()=>{
             </div>
         </div>
  
-   <Feauterd/>
-
+  <Arrivals/>
         <div class="uren-banner_area ">
             <div class="container-fluid">
                 <div class="row">
@@ -167,7 +165,6 @@ const Home =()=>{
                 </div>
             </div>
         </div>
-<Arrivals/>
 
 <Deal/>
         <div class="uren-banner_area uren-banner_area-3">
