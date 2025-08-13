@@ -7,10 +7,9 @@
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public decimal Discount { get; set; }= 0;
+        public DateTime expireddiscount { get; set; }  
         public DateTime LastUpdated { get; set; }
-        // Navigation property to Part entity
         public Part Part { get; set; } = null!;
-        // Constructor to initialize LastUpdated to current time
      
     }
 }

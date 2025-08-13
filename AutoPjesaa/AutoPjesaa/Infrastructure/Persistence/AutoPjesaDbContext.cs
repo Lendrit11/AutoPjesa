@@ -14,7 +14,7 @@ namespace AutoPjesa.Infrastructure.Persistence
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartCarModel> PartCarModels { get; set; }
         public DbSet<FavoritePart> FavoriteParts { get; set; }
-
+        public DbSet<Category> Categories { get; set; }
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<AppUser> AppUsers { get; set; }
         public DbSet<Blog> Blogs { get; set; }
