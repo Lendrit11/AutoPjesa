@@ -15,7 +15,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173") // URL e frontend-it
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+             .AllowCredentials();
     });
 });
 builder.Services.AddAuthentication(options =>

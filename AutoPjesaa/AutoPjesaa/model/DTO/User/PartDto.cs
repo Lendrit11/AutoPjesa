@@ -7,6 +7,7 @@
         public string Description { get; set; }
         public string PartNumber { get; set; }
         public string Manufacturer { get; set; }
+
         public int CompatibleFromYear { get; set; }
         public int CompatibleToYear { get; set; }
         public string CategoryName { get; set; }

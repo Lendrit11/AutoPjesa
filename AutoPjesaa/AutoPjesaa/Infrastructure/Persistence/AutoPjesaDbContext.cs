@@ -11,6 +11,8 @@ namespace AutoPjesa.Infrastructure.Persistence
 
         public DbSet<Manufacturer> Manufacturers { get; set; }
         public DbSet<CarModel> CarModels { get; set; }
+        public DbSet<PartReview> PartReviews { get; set; }
+
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartCarModel> PartCarModels { get; set; }
         public DbSet<FavoritePart> FavoriteParts { get; set; }
@@ -95,6 +97,20 @@ namespace AutoPjesa.Infrastructure.Persistence
                 .HasOne(fp => fp.Part)
                 .WithMany(p => p.FavoritedByUsers)
                 .HasForeignKey(fp => fp.partid)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<PartReview>()
+              .HasKey(pr => pr.ReviewId);
+
+            modelBuilder.Entity<PartReview>()
+                .HasOne(pr => pr.Part)
+                .WithMany(p => p.Reviews)
+                .HasForeignKey(pr => pr.PartId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PartReview>()
+                .HasOne(pr => pr.User)
+                .WithMany(u => u.Reviews)
+                .HasForeignKey(pr => pr.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
 

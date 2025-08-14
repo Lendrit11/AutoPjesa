@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AutoPjesaa.model.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace AutoPjesa.Domain.Entities
 {
@@ -19,5 +20,9 @@ namespace AutoPjesa.Domain.Entities
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
         public ICollection<PartImage> PartImages { get; set; } = new List<PartImage>();
         public ICollection<PartCarModel> PartCarModels { get; set; } = new List<PartCarModel>();
+        public ICollection<FavoritePart> FavoritedByUsers { get; set; }
+        public ICollection<Stock> Stocks { get; set; } 
+
+        public ICollection<PartReview> Reviews { get; set; } = new List<PartReview>();
     }
 }
