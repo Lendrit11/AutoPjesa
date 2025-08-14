@@ -56,5 +56,34 @@ namespace AutoPjesaa.Controllers.User.Home
             await _context.SaveChangesAsync();
             return Ok(model);
         }
+
+        [HttpGet("latest-discounts")]
+        public async Task<ActionResult<List<DiscountedPartDto>>> GetLatestDiscountedParts()
+        {
+            var partswithDisc= await _context.Stocks
+                .Where(s => s.Discount > 0 && s.expireddiscount > DateTime.Now)
+                .OrderByDescending(s => s.LastUpdated)
+                .Include(s=>s.Part)
+                   .ThenInclude(p => p.PartImages)
+                   .Select(s => new DiscountedPartDto
+                     {
+                          PartId = s.Part.PartId,
+                          Name = s.Part.Name,
+                          Description = s.Part.Description,
+                          Price = s.Price,
+                          Discount = s.Discount,
+                          OldPrice = s.Price/(1-s.Discount/100),
+                          ImageUrl = s.Part.PartImages.FirstOrDefault().ImgUrl,
+                          ExpireDate = s.expireddiscount
+                     })
+                   .Take(10)
+                   .ToListAsync();
+            if (partswithDisc == null || partswithDisc.Count == 0)
+            {
+                return NotFound("Nuk ka asnjë pjesë me zbritje aktualisht.");
+            }
+            return Ok(partswithDisc);
+        }
+
     }
 }
