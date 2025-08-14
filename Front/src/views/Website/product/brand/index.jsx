@@ -25,7 +25,7 @@ const Brand = () => {
                       <div className="single-product">
                         <a href="javascript:void(0)">
                           <img
-                            src={`assets/images/brand/${brand}.jpg`}
+                            src={`../../../assets/images/brand/${brand}.jpg`}
                             alt="Uren's Brand Image"
                           />
                         </a>
