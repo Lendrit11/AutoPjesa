@@ -41,7 +41,7 @@ const routes = [
     element: lazy(() => import('./views/Website/login')),
   },
   {
-    path: '/Product',
+    path: '/Product/:id',
     layout: Website,
     element: lazy(() => import('./views/Website/product')),
   },
@@ -128,6 +128,11 @@ const routes = [
     layout: Admin,
     element: lazy(() => import('./views/Admin/user/index.jsx')),
   },
+    {
+    path: '*',
+    layout: Website,
+    element: lazy(() => import('./views/Website/Home'))
+  }
 ];
 
 export default routes;
