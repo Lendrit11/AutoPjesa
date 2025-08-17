@@ -15,9 +15,10 @@ import Loading from '../../../components/bread/loading';
 import Price_del from './Price';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { useNavigate } from 'react-router-dom';
 
 const Shop = () => {
+  const navigate = useNavigate();
   const [showLoading, setShowLoading] = useState(true);
   const [parts, setParts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -33,31 +34,28 @@ const Shop = () => {
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 9;
 
+  const handleAddToFavorites = async (partId) => {
+    const userId = localStorage.getItem('userId');
 
- const handleAddToFavorites = async (partId) => {
-  const userId = localStorage.getItem('userId');
-
-  if (!userId) {
-    toast.warning('Ju lutem kyçuni për të shtuar në favorites!');
-    return;
-  }
-
-  try {
-    const response = await axios.post('http://localhost:5298/api/favorites', {
-      partId: partId,
-      userId: userId
-    });
-
-    if (response.status === 200 || response.status === 201) {
-      toast.success('Produkti u shtua në favorites!');
+    if (!userId) {
+      toast.warning('Ju lutem kyçuni për të shtuar në favorites!');
+      return;
     }
-  } catch (error) {
-    console.error('Gabim gjatë shtimit në favorite:', error);
-    toast.error('Ky produkt ndoshta është shtuar më parë.');
-  }
-};
 
+    try {
+      const response = await axios.post('http://localhost:5298/api/favorites', {
+        partId,
+        userId,
+      });
 
+      if (response.status === 200 || response.status === 201) {
+        toast.success('Produkti u shtua në favorites!');
+      }
+    } catch (error) {
+      console.error('Gabim gjatë shtimit në favorite:', error);
+      toast.error('Ky produkt ndoshta është shtuar më parë.');
+    }
+  };
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -79,6 +77,7 @@ const Shop = () => {
     const timer = setTimeout(() => setShowLoading(false), 1000);
     fetchFilteredParts();
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const fetchFilteredParts = async () => {
@@ -141,7 +140,7 @@ const Shop = () => {
               <Select
                 options={[
                   { value: '', label: 'All' },
-                  ...manufacturers.map(manu => ({ value: manu, label: manu }))
+                  ...manufacturers.map((manu) => ({ value: manu, label: manu })),
                 ]}
                 value={{ value: selectedManufacturer, label: selectedManufacturer || 'All' }}
                 onChange={(option) => setSelectedManufacturer(option.value)}
@@ -164,14 +163,14 @@ const Shop = () => {
               <Select
                 options={[
                   { value: '', label: 'All' },
-                  ...categories.map(cat => ({
+                  ...categories.map((cat) => ({
                     value: cat.categoryId,
-                    label: cat.name
-                  }))
+                    label: cat.name,
+                  })),
                 ]}
                 value={{
                   value: selectedCategory,
-                  label: categories.find(cat => cat.categoryId == selectedCategory)?.name || 'All'
+                  label: categories.find((cat) => cat.categoryId == selectedCategory)?.name || 'All',
                 }}
                 onChange={(option) => setSelectedCategory(option.value)}
                 classNamePrefix="select"
@@ -199,10 +198,10 @@ const Shop = () => {
                 padding: '10px 0',
                 borderRadius: '4px',
                 transition: 'background-color 0.3s ease',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
-              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#cc6e00ff')}
-              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ff8800ff')}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#cc6e00ff')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#ff8800ff')}
               onClick={handleApplyFilters}
             >
               Apply Filters
@@ -223,12 +222,12 @@ const Shop = () => {
                         style={{ cursor: 'pointer' }}
                       >
                         <img
-                          src={part.primaryImages }
+                          src={part.primaryImages}
                           alt={part.name}
                           className="card-img-top object-fit-cover"
                           style={{ transition: 'transform 0.3s ease' }}
-                          onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
-                          onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+                          onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                          onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                         />
                       </div>
                       <div className="card-body d-flex flex-column">
@@ -241,23 +240,23 @@ const Shop = () => {
                             €{part.price ?? 'N/A'}
                           </span>
                           <button
-                           className="btn"
-                             style={{
-                             backgroundColor: '#ff8800ff',
+                            className="btn"
+                            style={{
+                              backgroundColor: '#ff8800ff',
                               borderColor: '#ff8800ff',
                               color: 'white',
                               fontWeight: '600',
                               padding: '5px 5px',
                               borderRadius: '4px',
                               transition: 'all 0.3s ease',
-                                cursor: 'pointer',
-                                marginLeft:'35px',
-                                 fontSize:'14px'   
-                             }}
-                       onClick={() => handleAddToFavorites(part.partId)}
+                              cursor: 'pointer',
+                              marginLeft: '35px',
+                              fontSize: '14px',
+                            }}
+                            onClick={() => handleAddToFavorites(part.partId)}
                           >
-                         Add to Favorites
-                           </button>
+                            Add to Favorites
+                          </button>
 
                           <button
                             className="btn btn-outline"
@@ -271,14 +270,15 @@ const Shop = () => {
                               cursor: 'pointer',
                               backgroundColor: 'transparent',
                             }}
-                            onMouseEnter={e => {
+                            onMouseEnter={(e) => {
                               e.currentTarget.style.backgroundColor = '#ff8800ff';
                               e.currentTarget.style.color = '#fff';
                             }}
-                            onMouseLeave={e => {
+                            onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = 'transparent';
                               e.currentTarget.style.color = '#ff8800ff';
                             }}
+                            onClick={() => navigate(`/Product/${part.partId}`)}
                           >
                             View Details
                           </button>
@@ -299,8 +299,14 @@ const Shop = () => {
                     onClick={goPrev}
                     aria-label="Previous"
                     style={{ color: '#ff8800ff', borderColor: '#ff8800ff' }}
-                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#ff8800ff', e.currentTarget.style.color = '#fff')}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent', e.currentTarget.style.color = '#ff8800ff')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ff8800ff';
+                      e.currentTarget.style.color = '#fff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = '#ff8800ff';
+                    }}
                   >
                     &laquo; Prev
                   </button>
@@ -316,8 +322,14 @@ const Shop = () => {
                     onClick={goNext}
                     aria-label="Next"
                     style={{ color: '#ff8800ff', borderColor: '#ff8800ff' }}
-                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#ff8800ff', e.currentTarget.style.color = '#fff')}
-                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent', e.currentTarget.style.color = '#ff8800ff')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ff8800ff';
+                      e.currentTarget.style.color = '#fff';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = '#ff8800ff';
+                    }}
                   >
                     Next &raquo;
                   </button>
@@ -327,9 +339,8 @@ const Shop = () => {
           </section>
         </div>
       </div>
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </div>
-    
   );
 };
 
