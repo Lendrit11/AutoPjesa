@@ -12,6 +12,7 @@ namespace AutoPjesa.Infrastructure.Persistence
         public DbSet<Manufacturer> Manufacturers { get; set; }
         public DbSet<CarModel> CarModels { get; set; }
         public DbSet<PartReview> PartReviews { get; set; }
+        public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
 
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartCarModel> PartCarModels { get; set; }
