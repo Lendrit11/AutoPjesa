@@ -1,275 +1,261 @@
-import React from "react";
+import React, { useState } from "react";
+import "./LoginRegisterPage.css";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const LoginRegisterPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+
+  // Reset password states
+  const [resetStep, setResetStep] = useState(1);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phoneNumber: ""
+  });
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (isLogin) {
+        const res = await axios.post("http://localhost:5298/api/center/login", {
+          email: formData.email,
+          password: formData.password
+        });
+
+        const { token, user } = res.data;
+        document.cookie = `token=${token}; path=/;`;
+
+        toast.success("✅ Login successful!");
+        console.log("User:", user);
+      } else {
+        const res = await axios.post("http://localhost:5298/api/center/register", {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+          phoneNumber: formData.phoneNumber
+        });
+
+        toast.success("🎉 Registration successful!");
+        setIsLogin(true);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(`❌ ${err.response?.data || "Something went wrong"}`);
+    }
+  };
+
+  // STEP 1: Send reset code
+  const handleSendResetCode = async () => {
+    try {
+      await axios.post("http://localhost:5298/api/center/request-password-reset", {
+        email: resetEmail
+      });
+      toast.success("📩 Code sent to your email.");
+      setResetStep(2);
+    } catch (err) {
+      toast.error(err.response?.data || "Failed to send code");
+    }
+  };
+
+  // STEP 2: Reset password with code
+  const handleResetPassword = async () => {
+    try {
+      await axios.post("http://localhost:5298/api/center/reset-password", {
+        email: resetEmail,
+        code: resetCode,
+        newPassword: newPassword
+      });
+      toast.success("🔐 Password has been reset.");
+      setShowResetPassword(false);
+      setResetStep(1);
+      setResetEmail("");
+      setResetCode("");
+      setNewPassword("");
+    } catch (err) {
+      toast.error(err.response?.data || "Reset failed");
+    }
+  };
+
   return (
-    <div className="template-color-1">
+    <div className="dark-auth-container">
+      <div className="dark-auth-card">
+        {showResetPassword ? (
+          <>
+            <h2 className="dark-auth-title">Reset Password</h2>
 
-      {/* Breadcrumb Area */}
-      <div className="breadcrumb-area">
-        <div className="container">
-          <div className="breadcrumb-content">
-            <h2>Other</h2>
-            <ul>
-              <li><a href="index.html">Home</a></li>
-              <li className="active">Login & Register</li>
-            </ul>
-          </div>
-        </div>
+            {resetStep === 1 ? (
+              <>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="dark-auth-input"
+                />
+                <button className="dark-auth-btn" onClick={handleSendResetCode}>
+                  Send Reset Code
+                </button>
+                <p className="back-link" onClick={() => setShowResetPassword(false)}>← Back to login</p>
+              </>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="Enter code from email"
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value)}
+                  className="dark-auth-input"
+                />
+                <div className="password-wrapper">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="New Password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="dark-auth-input"
+                  />
+                  <span className="toggle-eye" onClick={() => setShowNewPassword(!showNewPassword)}>
+                    {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                  </span>
+                </div>
+                <button className="dark-auth-btn" onClick={handleResetPassword}>
+                  Reset Password
+                </button>
+                <p className="back-link" onClick={() => setShowResetPassword(false)}>← Back to login</p>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <h2 className="dark-auth-title">{isLogin ? "Login To FixFlow-Auto" : "Register To FixFlow-Auto"}</h2>
+
+            <div className="switch-text">
+              {isLogin ? (
+                <>
+                  Don’t have an account?{" "}
+                  <span onClick={() => setIsLogin(false)} className="switch-link">Register</span>
+                </>
+              ) : (
+                <>
+                  Already registered?{" "}
+                  <span onClick={() => setIsLogin(true)} className="switch-link">Login</span>
+                </>
+              )}
+            </div>
+
+            <form className="dark-auth-form" onSubmit={handleSubmit}>
+              {!isLogin && (
+                <div className="form-row">
+                  <input
+                    name="firstName"
+                    type="text"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="dark-auth-input"
+                  />
+                  <input
+                    name="lastName"
+                    type="text"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="dark-auth-input"
+                  />
+                </div>
+              )}
+
+              <input
+                name="email"
+                type="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                className="dark-auth-input"
+              />
+
+              <div className="password-wrapper">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="dark-auth-input"
+                />
+                <span className="toggle-eye" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+
+              {!isLogin && (
+                <>
+                  <div className="password-wrapper">
+                    <input
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm Password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="dark-auth-input"
+                    />
+                    <span className="toggle-eye" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
+                  </div>
+
+                  <input
+                    name="phoneNumber"
+                    type="text"
+                    placeholder="Phone Number"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    className="dark-auth-input"
+                  />
+                </>
+              )}
+
+              {isLogin && (
+                <div className="form-options">
+                  <label>
+                    <input type="checkbox" /> Remember me
+                  </label>
+                  <span className="forgot-link" onClick={() => setShowResetPassword(true)}>Forgot password?</span>
+                </div>
+              )}
+
+              <button className="dark-auth-btn" type="submit">
+                {isLogin ? "Login" : "Register"}
+              </button>
+            </form>
+          </>
+        )}
       </div>
 
-      {/* Login Register Area */}
-      <div className="uren-login-register_area">
-        <div className="container-fluid">
-          <div className="row">
-
-            {/* Login Form */}
-            <div className="col-sm-12 col-md-12 col-xs-12 col-lg-6">
-              <form action="#">
-                <div className="login-form">
-                  <h4 className="login-title">Login</h4>
-                  <div className="row">
-                    <div className="col-md-12 col-12">
-                      <label>Email Address*</label>
-                      <input type="email" placeholder="Email Address" />
-                    </div>
-                    <div className="col-12 mb--20">
-                      <label>Password</label>
-                      <input type="password" placeholder="Password" />
-                    </div>
-                    <div className="col-md-8">
-                      <div className="check-box">
-                        <input type="checkbox" id="remember_me" />
-                        <label htmlFor="remember_me">Remember me</label>
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="forgotton-password_info">
-                        <a href="#">Forgotten password?</a>
-                      </div>
-                    </div>
-                    <div className="col-md-12">
-                      <button className="uren-login_btn">Login</button>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            {/* Register Form */}
-            <div className="col-sm-12 col-md-12 col-lg-6 col-xs-12">
-              <form action="#">
-                <div className="login-form">
-                  <h4 className="login-title">Register</h4>
-                  <div className="row">
-                    <div className="col-md-6 col-12 mb--20">
-                      <label>First Name</label>
-                      <input type="text" placeholder="First Name" />
-                    </div>
-                    <div className="col-md-6 col-12 mb--20">
-                      <label>Last Name</label>
-                      <input type="text" placeholder="Last Name" />
-                    </div>
-                    <div className="col-md-12">
-                      <label>Email Address*</label>
-                      <input type="email" placeholder="Email Address" />
-                    </div>
-                    <div className="col-md-6">
-                      <label>Password</label>
-                      <input type="password" placeholder="Password" />
-                    </div>
-                    <div className="col-md-6">
-                      <label>Confirm Password</label>
-                      <input type="password" placeholder="Confirm Password" />
-                    </div>
-                    <div className="col-12">
-                      <button className="uren-register_btn">Register</button>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Area */}
-      <div className="uren-footer_area">
-        <div className="footer-top_area">
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-lg-12">
-                <div className="newsletter-area">
-                  <h3 className="title">Join Our Newsletter Now</h3>
-                  <p className="short-desc">Get E-mail updates about our latest shop and special offers.</p>
-                  <div className="newsletter-form_wrap">
-                    <form
-                      action="http://devitems.us11.list-manage.com/subscribe/post?u=6bbb9b6f5827bd842d9640c82&amp;id=05d85f18ef"
-                      method="post"
-                      id="mc-embedded-subscribe-form"
-                      name="mc-embedded-subscribe-form"
-                      className="newsletters-form validate"
-                      target="_blank"
-                      noValidate
-                    >
-                      <div id="mc_embed_signup_scroll">
-                        <div id="mc-form" className="mc-form subscribe-form">
-                          <input
-                            id="mc-email"
-                            className="newsletter-input"
-                            type="email"
-                            autoComplete="off"
-                            placeholder="Enter your email"
-                          />
-                          <button className="newsletter-btn" id="mc-submit">Subscribe</button>
-                        </div>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="footer-middle_area">
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-lg-4">
-                <div className="footer-widgets_info">
-                  <div className="footer-widgets_logo">
-                    <a href="#">
-                      <img src="assets/images/menu/logo/1.png" alt="Uren's Footer Logo" />
-                    </a>
-                  </div>
-                  <div className="widget-short_desc">
-                    <p>
-                      We are a team of designers and developers that create high quality HTML Template & Woocommerce, Shopify Theme.
-                    </p>
-                  </div>
-                  <div className="widgets-essential_stuff">
-                    <ul>
-                      <li className="uren-address"><span>Address:</span> The Barn, Ullenhall, Henley in Arden B578 5CC, England</li>
-                      <li className="uren-phone"><span>Call Us:</span> <a href="tel://+123123321345">+123 321 345</a></li>
-                      <li className="uren-email"><span>Email:</span> <a href="mailto://info@yourdomain.com">info@yourdomain.com</a></li>
-                    </ul>
-                  </div>
-                  <div className="uren-social_link">
-                    <ul>
-                      <li className="facebook">
-                        <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" title="Facebook" data-toggle="tooltip">
-                          <i className="fab fa-facebook"></i>
-                        </a>
-                      </li>
-                      <li className="twitter">
-                        <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" title="Twitter" data-toggle="tooltip">
-                          <i className="fab fa-twitter-square"></i>
-                        </a>
-                      </li>
-                      <li className="google-plus">
-                        <a href="https://www.plus.google.com/discover" target="_blank" rel="noopener noreferrer" title="Google Plus" data-toggle="tooltip">
-                          <i className="fab fa-google-plus"></i>
-                        </a>
-                      </li>
-                      <li className="instagram">
-                        <a href="https://rss.com/" target="_blank" rel="noopener noreferrer" title="Instagram" data-toggle="tooltip">
-                          <i className="fab fa-instagram"></i>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="col-lg-8">
-                <div className="footer-widgets_area">
-                  <div className="row">
-
-                    <div className="col-lg-3 col-md-6">
-                      <div className="footer-widgets_title">
-                        <h3>Information</h3>
-                      </div>
-                      <div className="footer-widgets">
-                        <ul>
-                          <li><a href="javascript:void(0)">About Us</a></li>
-                          <li><a href="javascript:void(0)">Delivery Information</a></li>
-                          <li><a href="javascript:void(0)">Privacy Policy</a></li>
-                          <li><a href="javascript:void(0)">Terms & Conditions</a></li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="col-lg-3 col-md-6">
-                      <div className="footer-widgets_title">
-                        <h3>Customer Service</h3>
-                      </div>
-                      <div className="footer-widgets">
-                        <ul>
-                          <li><a href="javascript:void(0)">Contact Us</a></li>
-                          <li><a href="javascript:void(0)">Returns</a></li>
-                          <li><a href="javascript:void(0)">Site Map</a></li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="col-lg-3 col-md-6">
-                      <div className="footer-widgets_title">
-                        <h3>Extras</h3>
-                      </div>
-                      <div className="footer-widgets">
-                        <ul>
-                          <li><a href="javascript:void(0)">About Us</a></li>
-                          <li><a href="javascript:void(0)">Delivery Information</a></li>
-                          <li><a href="javascript:void(0)">Privacy Policy</a></li>
-                          <li><a href="javascript:void(0)">Terms & Conditions</a></li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="col-lg-3 col-md-6">
-                      <div className="footer-widgets_title">
-                        <h3>My Account</h3>
-                      </div>
-                      <div className="footer-widgets">
-                        <ul>
-                          <li><a href="javascript:void(0)">My Account</a></li>
-                          <li><a href="javascript:void(0)">Order History</a></li>
-                          <li><a href="javascript:void(0)">Wish List</a></li>
-                          <li><a href="javascript:void(0)">Newsletter</a></li>
-                        </ul>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div className="footer-bottom_area">
-          <div className="container-fluid">
-            <div className="footer-bottom_nav">
-              <div className="row">
-                <div className="col-lg-6 col-md-6">
-                  <div className="copyright">
-                    <span><a href="templateshub.net">Templateshub</a></span>
-                  </div>
-                </div>
-                <div className="col-lg-6 col-md-6">
-                  <div className="payment">
-                    <a href="#">
-                      <img src="assets/images/footer/payment/1.png" alt="Uren's Payment Method" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
     </div>
   );
 };
