@@ -18,6 +18,13 @@ namespace AutoPjesaa.Controllers.User.Product
         {
             _context = context;
         }
+        private int? GetUserIdFromToken()
+        {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "UserID");
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                return userId;
+            return null;
+        }
 
         [HttpGet("getproduct/{id}")]
         public IActionResult GetProductById(int id)
@@ -94,27 +101,50 @@ namespace AutoPjesaa.Controllers.User.Product
             return Ok(product);
         }
         [HttpPost("addreview")]
+        [Authorize]
         public async Task<IActionResult> AddReview([FromBody] ReviewDto reviewDto)
         {
-            var part = await _context.Parts.FindAsync(reviewDto.ProductId);
-            if (part == null)
-                return NotFound("Produkti nuk u gjet");
-
-            var review = new PartReview
+            try
             {
-                ReviewText = reviewDto.ReviewText,
-                Rating = reviewDto.Rating,
-                CreatedAt = DateTime.UtcNow,
-                UserId = 1, // këtë zakonisht e merr prej JWT ose nga email, për test mund ta hardcode-osh
-                PartId = reviewDto.ProductId,
-                Email = reviewDto.Email
-            };
+                var userid = GetUserIdFromToken();
+                if (userid == null)
+                    return Unauthorized();
 
-            _context.PartReviews.Add(review);
-            await _context.SaveChangesAsync();
+                var part = await _context.Parts.FindAsync(reviewDto.ProductId);
+                if (part == null)
+                    return NotFound("Produkti nuk u gjet");
 
-            return Ok(review);
+                var review = new PartReview
+                {
+                    ReviewText = reviewDto.ReviewText,
+                    Rating = reviewDto.Rating,
+                    CreatedAt = DateTime.UtcNow,
+                    UserId = userid.Value,
+                    PartId = reviewDto.ProductId,
+                    Email = reviewDto.Email
+                };
+
+                _context.PartReviews.Add(review);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    review.ReviewId,
+                    review.Rating,
+                    review.ReviewText,
+                    review.Email,
+                    review.CreatedAt,
+                    review.PartId,
+                    review.UserId
+                });
+            }
+            catch (Exception ex)
+            {
+                // Kjo do ta logojë gabimin e vërtetë
+                return StatusCode(500, $"Gabim i brendshëm: {ex.Message}");
+            }
         }
+
         [HttpGet("get-last")]
         public async Task<IActionResult> GetLatest(int count = 10)
         {
