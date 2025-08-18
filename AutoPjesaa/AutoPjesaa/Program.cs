@@ -1,14 +1,23 @@
-using Microsoft.EntityFrameworkCore;
+using AutoPjesaa.Infrastructure.authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
+// Lexo çelësin sekret nga konfigurimi
+var secretKey = configuration["JwtSettings:SecretKey"];
+if (string.IsNullOrEmpty(secretKey))
+    throw new Exception("JWT SecretKey nuk është caktuar në konfigurim.");
 
+var key = Encoding.UTF8.GetBytes(secretKey);
+var symmetricKey = new SymmetricSecurityKey(key);
+
+// Autentikimi dhe autorizimi
 builder.Services.AddAuthorization();
 
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -16,15 +25,17 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:5173") // URL e frontend-it
               .AllowAnyHeader()
               .AllowAnyMethod()
-             .AllowCredentials();
+              .AllowCredentials();
     });
 });
+
+// JWT Auth
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer(options =>
+.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -32,27 +43,42 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
+        ValidIssuer = configuration["JwtSettings:Issuer"],
+        ValidAudience = configuration["JwtSettings:Audience"],
+        IssuerSigningKey = symmetricKey
+    };
 
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]))
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var token = context.Request.Cookies["token"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
-
+// DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AutoPjesa.Infrastructure.Persistence.AutoPjesaDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-
+// Shërbimet
+builder.Services.AddScoped<TokenService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Middleware dhe konfigurime
 app.UseStaticFiles();
 
-// Endpoint për upload
+// Endpoint për upload file
 app.MapPost("/api", async (HttpRequest request, IWebHostEnvironment env) =>
 {
     if (!request.HasFormContentType)
@@ -79,18 +105,18 @@ app.MapPost("/api", async (HttpRequest request, IWebHostEnvironment env) =>
     return Results.Ok(new { url });
 });
 
+// Swagger vetëm në zhvillim
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseRouting();
 app.UseHttpsRedirection();
-
 app.UseCors("AllowFrontend");
-app.UseAuthentication();   
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
