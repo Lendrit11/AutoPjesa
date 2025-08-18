@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Shop = () => {
   const navigate = useNavigate();
+
   const [showLoading, setShowLoading] = useState(true);
   const [parts, setParts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -34,29 +35,7 @@ const Shop = () => {
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 9;
 
-  const handleAddToFavorites = async (partId) => {
-    const userId = localStorage.getItem('userId');
-
-    if (!userId) {
-      toast.warning('Ju lutem kyçuni për të shtuar në favorites!');
-      return;
-    }
-
-    try {
-      const response = await axios.post('http://localhost:5298/api/favorites', {
-        partId,
-        userId,
-      });
-
-      if (response.status === 200 || response.status === 201) {
-        toast.success('Produkti u shtua në favorites!');
-      }
-    } catch (error) {
-      console.error('Gabim gjatë shtimit në favorite:', error);
-      toast.error('Ky produkt ndoshta është shtuar më parë.');
-    }
-  };
-
+  // Fetch categories and manufacturers on mount
   useEffect(() => {
     const fetchFilters = async () => {
       try {
@@ -73,14 +52,16 @@ const Shop = () => {
     fetchFilters();
   }, []);
 
+  // Fetch parts whenever filters or page change
   useEffect(() => {
     const timer = setTimeout(() => setShowLoading(false), 1000);
     fetchFilteredParts();
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  }, [currentPage, priceRange, selectedManufacturer, selectedCategory]);
 
   const fetchFilteredParts = async () => {
+    setShowLoading(true);
     try {
       const params = new URLSearchParams();
       params.append('minPrice', priceRange[0]);
@@ -98,6 +79,26 @@ const Shop = () => {
       setTotalPages(Math.ceil(totalItems / pageSize));
     } catch (error) {
       console.error('Gabim gjatë marrjes së pjesëve:', error);
+      setParts([]);
+      setTotalPages(1);
+    } finally {
+      setShowLoading(false);
+    }
+  };
+
+  const handleAddToFavorites = async (partId) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5298/api/user/shop/add-favorites',
+        { partid: partId },
+        { withCredentials: true }
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success('Produkti u shtua në favorites!');
+      }
+    } catch (error) {
+      toast.error('ky produkt eshte shtuar ne favorites!');
     }
   };
 
@@ -138,10 +139,7 @@ const Shop = () => {
             <div className="mb-4">
               <h6 className="mb-2">Manufacturer</h6>
               <Select
-                options={[
-                  { value: '', label: 'All' },
-                  ...manufacturers.map((manu) => ({ value: manu, label: manu })),
-                ]}
+                options={[{ value: '', label: 'All' }, ...manufacturers.map((manu) => ({ value: manu, label: manu }))]}
                 value={{ value: selectedManufacturer, label: selectedManufacturer || 'All' }}
                 onChange={(option) => setSelectedManufacturer(option.value)}
                 classNamePrefix="select"
@@ -161,16 +159,13 @@ const Shop = () => {
             <div className="mb-4">
               <h6 className="mb-2">Category</h6>
               <Select
-                options={[
-                  { value: '', label: 'All' },
-                  ...categories.map((cat) => ({
-                    value: cat.categoryId,
-                    label: cat.name,
-                  })),
-                ]}
+                options={[{ value: '', label: 'All' }, ...categories.map((cat) => ({
+                  value: cat.categoryId,
+                  label: cat.name,
+                }))]}
                 value={{
                   value: selectedCategory,
-                  label: categories.find((cat) => cat.categoryId == selectedCategory)?.name || 'All',
+                  label: categories.find((cat) => cat.categoryId === selectedCategory)?.name || 'All',
                 }}
                 onChange={(option) => setSelectedCategory(option.value)}
                 classNamePrefix="select"
@@ -210,7 +205,7 @@ const Shop = () => {
 
           {/* Products Grid */}
           <section className="col-lg-9 col-md-7 order-1 order-lg-2 order-md-2">
-            {parts.length === 0 && !showLoading ? (
+            {!showLoading && parts.length === 0 ? (
               <p className="text-center fs-5 mt-5">No parts found with current filters.</p>
             ) : (
               <div className="row g-4">
@@ -220,6 +215,7 @@ const Shop = () => {
                       <div
                         className="ratio ratio-4x3 overflow-hidden rounded-top"
                         style={{ cursor: 'pointer' }}
+                        onClick={() => navigate(`/Product/${part.partId}`)}
                       >
                         <img
                           src={part.primaryImages}
@@ -239,6 +235,7 @@ const Shop = () => {
                           <span className="fw-bold fs-5" style={{ color: '#ff8800ff' }}>
                             €{part.price ?? 'N/A'}
                           </span>
+
                           <button
                             className="btn"
                             style={{
@@ -307,6 +304,7 @@ const Shop = () => {
                       e.currentTarget.style.backgroundColor = 'transparent';
                       e.currentTarget.style.color = '#ff8800ff';
                     }}
+                    disabled={currentPage === 1}
                   >
                     &laquo; Prev
                   </button>
@@ -330,6 +328,7 @@ const Shop = () => {
                       e.currentTarget.style.backgroundColor = 'transparent';
                       e.currentTarget.style.color = '#ff8800ff';
                     }}
+                    disabled={currentPage === totalPages}
                   >
                     Next &raquo;
                   </button>
@@ -339,6 +338,7 @@ const Shop = () => {
           </section>
         </div>
       </div>
+
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </div>
   );
