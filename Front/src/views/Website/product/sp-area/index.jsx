@@ -22,6 +22,31 @@ import '../../../../assets/css/style.css';
 const Single_Product_area = ({ product }) => {
   const sliderMainRef = useRef(null);
   const sliderNavRef = useRef(null);
+const handleAddToCart = async () => {
+  try {
+    const quantity = parseInt(document.querySelector('.cart-plus-minus-box').value) || 1;
+
+    await axios.post(
+      'http://localhost:5298/api/user/cart/add-cart',
+      {
+        partId: product.id,
+        quantity: quantity
+      },
+      {
+        withCredentials: true
+      }
+    );
+
+    toast.success("Produkti u shtua në cart!");
+    window.dispatchEvent(new Event("refresh-cart"));
+  } catch (err) {
+    if (err.response?.status === 401) {
+      toast.warn("Ju lutemi kyçuni për të shtuar në cart.");
+    } else {
+      toast.error("Gabim gjatë shtimit në cart.");
+    }
+  }
+};
 
   // 🧡 Shto në Favorites
   const handleAddToFavorites = () => {
@@ -163,7 +188,11 @@ const Single_Product_area = ({ product }) => {
 
                 <div className="qty-btn_area">
                   <ul>
-                    <li><a className="qty-cart_btn" href="#">Add To Cart</a></li>
+                   <li>
+                     <a className="qty-cart_btn" href="#" onClick={(e) => { e.preventDefault(); handleAddToCart(); }}>
+                          Add To Cart
+                         </a>
+                      </li>
                     <li>
                       <button className="qty-wishlist_btn" title="Add To Wishlist" onClick={handleAddToFavorites}>
                         <i className="ion-android-favorite-outline"></i> Add to Favorites

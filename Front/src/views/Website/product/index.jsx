@@ -16,6 +16,7 @@ import Others_Products from './product-related/index';
 import Brand from './brand/index';
 import axios from "axios";
 import Loader from "../../../components/Loader/Loader";
+import Related from './product-related/index';
 const Product =()=>{
      const { id } = useParams();
      const [part,setPart]= useState(null);
@@ -50,13 +51,17 @@ const descriptionArray = [
  
 <Sparea product={part} />
 
-<Description description={descriptionArray} reviews={reviews.reviews} partId={part.id}/>
-    <Others_Products/>
+<Description
+  description={descriptionArray}
+  reviews={reviews ? reviews.reviews || reviews : []}
+  partId={part.id}
+/>
+
 
    <Brand/>
  
 
-
+ <Related/>
 
 </div>
 

@@ -22,30 +22,37 @@ const Product_tab = ({ description, reviews, partId }) => {
     rating: '5',
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!formData.email || !formData.message || !formData.rating) {
-      alert('Ju lutem plotësoni të gjitha fushat.');
-      return;
-    }
+  if (!formData.email || !formData.message || !formData.rating) {
+    alert('Ju lutem plotësoni të gjitha fushat.');
+    return;
+  }
 
-    try {
-      await axios.post('http://localhost:5298/api/user/product/addreview', {
-        email: formData.email,
-        reviewText: formData.message,
-        rating: parseInt(formData.rating),
-        productId: partId,
-      });
-
-      alert("Review u shtua me sukses!");
-      setFormData({ email: '', message: '', rating: '5' });
-      window.location.reload(); // ose përdor state për me rifresku listën
-    } catch (err) {
-      console.error("Gabim në review submit:", err);
-      alert("Dështoi dërgimi i review.");
-    }
+  const payload = {
+    email: formData.email,
+    reviewText: formData.message,
+    rating: parseInt(formData.rating),
+    productId: Number(partId),
   };
+
+  console.log("Payload për dërgim:", payload);
+
+  try {
+await axios.post('http://localhost:5298/api/user/product/addreview', payload, {
+  withCredentials: true
+});
+
+    alert("Review u shtua me sukses!");
+    setFormData({ email: '', message: '', rating: '5' });
+    window.location.reload();
+  } catch (err) {
+    console.error("Gabim në review submit:", err);
+    alert("Dështoi dërgimi i review.");
+  }
+};
+
 
   return (
     <div className="sp-product-tab_area">
@@ -126,11 +133,11 @@ const Product_tab = ({ description, reviews, partId }) => {
                                 </td>
                               </tr>
                               <tr>
-                                <td colSpan="2">
+                                <td colSpan={2}>
                                   <p>{review.reviewText}</p>
                                   <div className="rating-box">
                                     <ul>
-                                      {[...Array(review.rating)].map((_, i) => (
+                                      {[...Array(review.rating || 0)].map((_, i) => (
                                         <li key={i}>
                                           <i className="ion-android-star"></i>
                                         </li>
