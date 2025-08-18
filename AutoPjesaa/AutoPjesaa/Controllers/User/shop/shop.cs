@@ -1,9 +1,11 @@
 ﻿using AutoPjesa.Infrastructure.Persistence;
 using AutoPjesaa.model.DTO.User;
+using AutoPjesaa.model.DTO.User.shop;
 using AutoPjesaa.model.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AutoPjesaa.Controllers.User.shop
 {
@@ -12,6 +14,13 @@ namespace AutoPjesaa.Controllers.User.shop
     public class Shop : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
+        private int? GetUserIdFromToken()
+        {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "UserID");
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                return userId;
+            return null;
+        }
 
         public Shop(AutoPjesaDbContext context)
         {
@@ -129,28 +138,32 @@ namespace AutoPjesaa.Controllers.User.shop
             return Ok(categories);
         }
 
-        [HttpPost]
-        [Authorize] 
-        public async Task<IActionResult> AddToFavorites([FromBody] FavoritePart model)
+        [HttpPost("add-favorites")]
+        [Authorize]
+        public async Task<IActionResult> AddToFavorites([FromBody] FavoritePartDto model)
         {
-            var userId = int.Parse(User.FindFirst("id").Value); // Merr userId nga token
+            var userId = GetUserIdFromToken();
+            if (userId == null)
+                return Unauthorized();
 
-            if (model.partid == 0)
+            if (model.PartId == 0)
                 return BadRequest("ID e pjesës mungon.");
 
-            bool exists = _context.FavoriteParts.Any(fp => fp.userid == userId && fp.partid == model.partid);
+            bool exists = _context.FavoriteParts.Any(fp => fp.userid == userId && fp.partid == model.PartId);
             if (exists)
                 return Conflict("Ky produkt është tashmë në favorites");
 
             var fav = new FavoritePart
             {
-                userid = userId,
-                partid = model.partid
+                userid = userId.Value,
+                partid = model.PartId
             };
 
             _context.FavoriteParts.Add(fav);
             await _context.SaveChangesAsync();
-            return Ok(fav);
+
+            return Ok(new { Message = "Pjesa u shtua në favorites", FavoritePartId = fav.favoriteid });
         }
+
     }
 }
