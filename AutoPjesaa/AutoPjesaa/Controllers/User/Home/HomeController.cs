@@ -1,8 +1,10 @@
 ﻿using AutoPjesa.Infrastructure.Persistence;
 using AutoPjesaa.model.DTO.User.Home;
 using AutoPjesaa.model.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AutoPjesaa.Controllers.User.Home
 {
@@ -11,6 +13,13 @@ namespace AutoPjesaa.Controllers.User.Home
     public class HomeController: ControllerBase
     {
         public readonly AutoPjesaDbContext _context;
+        private int? GetUserIdFromToken()
+        {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "UserID");
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                return userId;
+            return null;
+        }
         public HomeController(AutoPjesaDbContext context)
         {
             _context = context;
@@ -43,18 +52,30 @@ namespace AutoPjesaa.Controllers.User.Home
 
 
         [HttpPost("favorites")]
-        public async Task<IActionResult> AddToFavorites([FromBody] FavoritePart model)
+        [Authorize]
+        public async Task<IActionResult> AddToFavorites([FromBody] favoritePartHome model)
         {
-            if (model.userid == 0 || model.partid == 0)
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var userId = GetUserIdFromToken();
+            if (userId == null) { 
+                return Unauthorized("Ju lutemi identifikohuni për të shtuar në favorites.");
+            }
+
+            if ( model.FavoriteId == 0)
                 return BadRequest("Të dhëna të paplota");
 
             bool exists = _context.FavoriteParts
-                            .Any(fp => fp.userid == model.userid && fp.partid == model.partid);
+                            .Any(fp => fp.userid == userId && fp.partid == model.FavoriteId);
             if (exists) return Conflict("Tashmë në favorites");
-
-            _context.FavoriteParts.Add(model);
+            var result = new FavoritePart
+            {
+                userid = userId.Value,
+                partid = model.FavoriteId
+            };
+            _context.FavoriteParts.Add(result);
             await _context.SaveChangesAsync();
-            return Ok(model);
+            return Ok(new {message ="u shtua me sukses ne favorites " });
         }
 
         [HttpGet("latest-discounts")]
