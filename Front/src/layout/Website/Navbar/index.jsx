@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Link } from "react-router-dom";  // Import Link
 import '../../../assets/css/vendor/bootstrap.min.css';
 import '../../../assets/css/vendor/font-awesome.css';
@@ -20,6 +20,21 @@ const Navbar = () => {
   const [showCart, setShowCart] = useState(false);
   const [showMobile, setShowMobile] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+const [cartTotal, setCartTotal] = useState(0);
+const [cartCount, setCartCount] = useState(0);
+
+useEffect(() => {
+  const handleCartUpdate = (e) => {
+    setCartTotal(e.detail.total);
+    setCartCount(e.detail.count);
+  };
+
+  window.addEventListener("cart-updated", handleCartUpdate);
+
+  return () => {
+    window.removeEventListener("cart-updated", handleCartUpdate);
+  };
+}, []);
 
   return (
     <header className="header-main_area bg--sapphire">
@@ -132,14 +147,15 @@ const Navbar = () => {
                         setShowCart(true);
                       }}
                     >
-                      <div className="minicart-count_area">
-                        <span className="item-count">3</span>
-                        <i className="ion-bag"></i>
-                      </div>
-                      <div className="minicart-front_text">
-                        <span>Cart:</span>
-                        <span className="total-price">462.4</span>
-                      </div>
+<div className="minicart-count_area">
+  <span className="item-count">{cartCount}</span>
+  <i className="ion-bag"></i>
+</div>
+<div className="minicart-front_text">
+  <span>Cart:</span>
+  <span className="total-price">{cartTotal.toFixed(2)}</span>
+</div>
+
                     </a>
                   </li>
                   <li className="contact-us_wrap">
