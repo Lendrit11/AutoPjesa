@@ -37,13 +37,11 @@ const Arrivals = () => {
   }, []);
 
   const handleAddToFavorites = async (productId) => {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      toast.info('Kyçu për të shtuar në favorites');
-      return;
-    }
+
     try {
-      await axios.post('http://localhost:5298/api/user/home/favorites', { partId: productId, userId });
+      await axios.post('http://localhost:5298/api/user/home/favorites', 
+        {favoriteId: productId},
+        {withCredentials:true});
       toast.success('Shtuar në favorites!');
     } catch (error) {
       toast.error('Gabim gjatë shtimit; ndoshta e ke shtuar tashmë.');
