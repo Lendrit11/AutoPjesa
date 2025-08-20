@@ -51,6 +51,28 @@ namespace AutoPjesaa.Controllers.User.Blog
         }
 
 
+        [HttpGet("search")]
 
+        public async Task<IActionResult> SearchParts([FromQuery] string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                return BadRequest("Termi i kërkimit nuk mund të jetë bosh.");
+            }
+
+            var parts = await _context.Parts
+                .Where(p => p.Name.Contains(term) || p.Description.Contains(term))
+                .Select(p => new
+                {
+                    p.PartId,
+                    p.Name,
+                    // Merrim foton kryesore (IsPrimary = true)
+                    ImageUrl = p.PartImages.FirstOrDefault(img => img.IsPrimary).ImgUrl,
+                    // Merrim çmimin më të fundit nga Stock (mund të zgjidhësh logjikën)
+                    Price = p.Stocks.OrderByDescending(s => s.LastUpdated).FirstOrDefault().Price
+                })
+                .ToListAsync();
+            return Ok(parts);
+        }
     }
 }
