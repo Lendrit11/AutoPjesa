@@ -16,6 +16,8 @@ import Price_del from './Price';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import Footer  from "../footer/index";
+
 
 const Shop = () => {
   const navigate = useNavigate();
@@ -340,6 +342,7 @@ const Shop = () => {
       </div>
 
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <Footer/>
     </div>
   );
 };

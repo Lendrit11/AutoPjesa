@@ -9,6 +9,8 @@ import '../../../assets/css/plugins/jquery-ui.min.css';
 import '../../../assets/css/plugins/lightgallery.min.css';
 import '../../../assets/css/plugins/nice-select.css';
 import '../../../assets/css/style.css';
+import Footer  from "../footer/index";
+
 const Contact = () => {
   useEffect(() => {
     // Kontrollo nëse scripti ekziston tashmë për të mos ngarkuar dy herë
@@ -148,9 +150,7 @@ const Contact = () => {
         </div>
       </div>
 
-      <div className="uren-footer_area">
-        {/* Footer i plotë mund ta vendosësh këtu. Mos harro className */}
-      </div>
+        <Footer/>
     </div>
   );
 };

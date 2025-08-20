@@ -17,6 +17,8 @@ import Brand from './brand/index';
 import axios from "axios";
 import Loader from "../../../components/Loader/Loader";
 import Related from './product-related/index';
+import Footer  from "../footer/index";
+
 const Product =()=>{
      const { id } = useParams();
      const [part,setPart]= useState(null);
@@ -62,7 +64,7 @@ const descriptionArray = [
  
 
  <Related/>
-
+<Footer/>
 </div>
 
     );

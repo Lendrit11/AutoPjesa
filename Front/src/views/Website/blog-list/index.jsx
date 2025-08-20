@@ -10,6 +10,7 @@ import '../../../assets/css/plugins/lightgallery.min.css';
 import '../../../assets/css/plugins/nice-select.css';
 import '../../../assets/css/style.css';
 import axios from "axios";
+import Footer  from "../footer/index";
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
@@ -232,6 +233,7 @@ const Blog = () => {
           </div>
         </div>
       )}
+      <Footer/>
     </div>
   );
 };
