@@ -47,7 +47,6 @@ useEffect(() => {
                   <ul>
                     <li><Link to="/Home">Home</Link></li>
                     <li className="megamenu-holder"><Link to="/Shop">Shop</Link></li>
-                    <li><Link to="/Shop" >Specials</Link></li>
                     <li><Link to="/About">About Us</Link></li>
                     <li><Link to="/Contact">Contact</Link></li>
                     <li><Link to="/Blog">Blog</Link></li>
@@ -60,36 +59,12 @@ useEffect(() => {
                 <div className="ht-menu">
                   <ul>
                     <li>
-                      <a href="#currency" onClick={e => e.preventDefault()}>
-                        Currency <i className="fa fa-chevron-down"></i>
-                      </a>
-                      <ul className="ht-dropdown ht-currency">
-                        <li><a href="#eur" onClick={e => e.preventDefault()}>€ EUR</a></li>
-                        <li className="active"><a href="#pound" onClick={e => e.preventDefault()}>£ Pound Sterling</a></li>
-                        <li><a href="#usd" onClick={e => e.preventDefault()}>$ Us Dollar</a></li>
-                      </ul>
-                    </li>
-                    <li>
-                      <a href="#language" onClick={e => e.preventDefault()}>
-                        Language <i className="fa fa-chevron-down"></i>
-                      </a>
-                      <ul className="ht-dropdown">
-                        <li className="active">
-                          <a href="#english" onClick={e => e.preventDefault()}>
-                            <img src="assets/images/menu/icon/1.jpg" alt="Language Icon" /> English
-                          </a>
-                        </li>
-                        <li>
-                          <a href="#francais" onClick={e => e.preventDefault()}>
-                            <img src="assets/images/menu/icon/2.jpg" alt="Language Icon" /> Français
-                          </a>
-                        </li>
-                      </ul>
-                    </li>
-                    <li>
-                      <Link to="/Profile">My Account <i className="fa fa-chevron-down"></i></Link>
+                      <Link >Settings <i className="fa fa-chevron-down"></i></Link>
                       <ul className="ht-dropdown ht-my_account">
-                        <li className="active"><Link to="/login">Login</Link></li>
+                        <li className="unactive"><Link to="/login">Login</Link></li>
+                        <li className="unactive"><Link to="/Profile">Account</Link></li>
+                        <li className="unactive"><Link to="/Wishlist">Wishlist</Link></li>
+                        <li className="unactive"><Link >Log out</Link></li>
                       </ul>
                     </li>
                   </ul>
@@ -159,7 +134,7 @@ useEffect(() => {
                     </a>
                   </li>
                   <li className="contact-us_wrap">
-                    <a href="tel:+123321345">
+                    <a href="">
                       <i className="ion-android-call"></i>+123 321 345
                     </a>
                   </li>
