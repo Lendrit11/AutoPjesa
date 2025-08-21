@@ -4,6 +4,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginRegisterPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,6 +27,7 @@ const LoginRegisterPage = () => {
     confirmPassword: "",
     phoneNumber: ""
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -38,6 +40,7 @@ const LoginRegisterPage = () => {
     e.preventDefault();
     try {
       if (isLogin) {
+
         const res = await axios.post("http://localhost:5298/api/center/login", {
           email: formData.email,
           password: formData.password
@@ -45,9 +48,10 @@ const LoginRegisterPage = () => {
 
         const { token, user } = res.data;
         document.cookie = `token=${token}; path=/;`;
-
+          
         toast.success("✅ Login successful!");
-        console.log("User:", user);
+        navigate("/Home");
+        window.location.reload();
       } else {
         const res = await axios.post("http://localhost:5298/api/center/register", {
           firstName: formData.firstName,
