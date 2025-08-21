@@ -1,0 +1,83 @@
+.modal-background {
+  position: fixed; 
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex; 
+  justify-content: center; 
+  align-items: center;
+  z-index: 1050;
+  padding: 10px; /* për spacing në ekran të vogël */
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Buton danger */
+.uren-btn_danger {
+  background-color: #eb9f1b;
+  color: white;
+  margin-left: 10px;
+}
+
+.uren-btn_danger:hover {
+  background-color: #c82333;
+}
+
+/* Grupi i butonave */
+.button-group {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap; /* mos lejo të dalin jashtë */
+}
+
+/* 🟠 TABLET (≤ 768px) */
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 90%;
+    padding: 15px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .button-group .uren-btn {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+}
+
+/* 🔴 MOBILE (≤ 480px) */
+@media (max-width: 480px) {
+  .modal-content {
+    max-width: 100%;
+    max-height: 90vh;
+    padding: 15px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .button-group .uren-btn {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .modal-content table {
+    font-size: 14px; /* më e lexueshme në telefon */
+  }
+}
