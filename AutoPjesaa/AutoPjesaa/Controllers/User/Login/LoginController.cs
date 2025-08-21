@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Mail;
+using System.Security.Claims;
 
 namespace AutoPjesaa.Controllers.User.Login
 {
@@ -21,6 +22,7 @@ namespace AutoPjesaa.Controllers.User.Login
             _tokenService = tokenService;
             _context = context;
         }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -74,13 +76,15 @@ namespace AutoPjesaa.Controllers.User.Login
                 .FirstOrDefault(u => u.email == dto.Email);
 
             if (user == null)
-                return Unauthorized("Invalid email or password");
+                return Unauthorized("Invalid email");
 
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.password);
             if (!isPasswordValid)
                 return Unauthorized("Invalid email or password");
 
             var authResponse = _tokenService.GenerateToken(user);
+
+
 
             return Ok(new
             {
@@ -98,6 +102,7 @@ namespace AutoPjesaa.Controllers.User.Login
                 refreshToken = authResponse.RefreshToken
             });
         }
+
 
         [HttpPost("request-password-reset")]
         public async Task<IActionResult> RequestPasswordReset([FromBody] EmailDto dto)
