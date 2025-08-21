@@ -1,4 +1,4 @@
-using AutoPjesaa.Infrastructure.authentication;
+ï»¿using AutoPjesaa.Infrastructure.authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,10 +7,10 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-// Lexo çelësin sekret nga konfigurimi
+// Lexo Ã§elÃ«sin sekret nga konfigurimi
 var secretKey = configuration["JwtSettings:SecretKey"];
 if (string.IsNullOrEmpty(secretKey))
-    throw new Exception("JWT SecretKey nuk është caktuar në konfigurim.");
+    throw new Exception("JWT SecretKey nuk Ã«shtÃ« caktuar nÃ« konfigurim.");
 
 var key = Encoding.UTF8.GetBytes(secretKey);
 var symmetricKey = new SymmetricSecurityKey(key);
@@ -52,7 +52,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
-            var token = context.Request.Cookies["token"];
+            var token = context.Request.Cookies["token"]; // âœ… Drejt!
             if (!string.IsNullOrEmpty(token))
             {
                 context.Token = token;
@@ -60,6 +60,7 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+
 });
 
 // DbContext
@@ -67,7 +68,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AutoPjesa.Infrastructure.Persistence.AutoPjesaDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Shërbimet
+// ShÃ«rbimet
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -78,7 +79,7 @@ var app = builder.Build();
 // Middleware dhe konfigurime
 app.UseStaticFiles();
 
-// Endpoint për upload file
+// Endpoint pÃ«r upload file
 app.MapPost("/api", async (HttpRequest request, IWebHostEnvironment env) =>
 {
     if (!request.HasFormContentType)
@@ -105,7 +106,7 @@ app.MapPost("/api", async (HttpRequest request, IWebHostEnvironment env) =>
     return Results.Ok(new { url });
 });
 
-// Swagger vetëm në zhvillim
+// Swagger vetÃ«m nÃ« zhvillim
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

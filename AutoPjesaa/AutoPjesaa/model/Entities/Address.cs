@@ -1,6 +1,7 @@
 ﻿using AutoPjesa.Domain.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace AutoPjesa.Domain.Entities
 {
@@ -16,6 +17,7 @@ namespace AutoPjesa.Domain.Entities
         [Required]
         public string Country { get; set; }
 
-          public AppUser User { get; set; } = null!;
+        [JsonIgnore]
+        public AppUser User { get; set; } = null!;
     }
 }
