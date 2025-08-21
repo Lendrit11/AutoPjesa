@@ -22,6 +22,27 @@ const Navbar = () => {
   const [showMenu, setShowMenu] = useState(false);
 const [cartTotal, setCartTotal] = useState(0);
 const [cartCount, setCartCount] = useState(0);
+const handleLogout = async () => {
+  try {
+    const response = await fetch('http://localhost:5298/api/user/login/logout', {
+      method: 'POST',
+      credentials: 'include', // Kjo është shumë e rëndësishme që të dërgohet cookie `jwt`
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      // Nëse logout është i suksesshëm
+      // Mund të redirektohesh ose të rifreskosh faqen
+      window.location.href = "/login"; // ose përdor navigate nëse përdor react-router v6
+    } else {
+      console.error("Logout failed");
+    }
+  } catch (error) {
+    console.error("Error logging out:", error);
+  }
+};
 
 useEffect(() => {
   const handleCartUpdate = (e) => {
@@ -64,7 +85,10 @@ useEffect(() => {
                         <li className="unactive"><Link to="/login">Login</Link></li>
                         <li className="unactive"><Link to="/Profile">Account</Link></li>
                         <li className="unactive"><Link to="/Wishlist">Wishlist</Link></li>
-                        <li className="unactive"><Link >Log out</Link></li>
+                   <li className="unactive">
+  <Link to="#" onClick={handleLogout}>Log out</Link>
+</li>
+
                       </ul>
                     </li>
                   </ul>

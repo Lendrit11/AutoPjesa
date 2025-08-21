@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../../../../assets/css/mobile.css";
-
+import { toast } from "react-toastify";
+import axios from "axios";
 const Mobile = ({ onClose, className }) => {
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -9,6 +10,29 @@ const Mobile = ({ onClose, className }) => {
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef(null);
   const navigate = useNavigate();
+
+
+
+const handleLogout = async () => {
+  try {
+    // Nëse do lexosh token nga localStorage, p.sh:
+    // const token = localStorage.getItem("token");
+
+    // Nëse nuk e ke nevojë token për logout (sepse serveri lexon cookie)
+    // atëherë hiqe referencën token nga ky funksion!
+
+    const response = await axios.post(
+      "http://localhost:5298/api/user/login/logout",
+      {},
+      { withCredentials: true }
+    );
+      toast.success("Logout i suksesshëm!");
+      navigate("/login");
+    // bëj redirect, pastro localStorage, state, etj.
+  } catch (error) {
+    console.error("Gabim gjatë logout:", error);
+  }
+};
 
   const toggleSubmenu = (id) => {
     setOpenSubmenu(openSubmenu === id ? null : id);
@@ -131,12 +155,15 @@ const Mobile = ({ onClose, className }) => {
                 <li className="unactive"><Link to="/login">Login</Link></li>
                 <li className="unactive"><Link to="/Profile">Account</Link></li>
                 <li className="unactive"><Link to="/Wishlist">Wishlist</Link></li>
-                <li className="unactive"><Link >Log out</Link></li>
+                                <li className="unactive">
+               <Link to="#" onClick={handleLogout}>Log out</Link>
+             </li>
               </ul>
             </li>
           </ul>
         </nav>
       </div>
+      
     </div>
   );
 };
