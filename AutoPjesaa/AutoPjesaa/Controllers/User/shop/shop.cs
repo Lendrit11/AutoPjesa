@@ -90,7 +90,7 @@ namespace AutoPjesaa.Controllers.User.shop
                     PrimaryImages = p.PartImages
                          .Where(pi => pi.IsPrimary)
                          .Select(pi => pi.ImgUrl)
-                         .FirstOrDefault(),
+                         .FirstOrDefault()?? "http://localhost:5298/uploads/product/5-1.jpg",
                     Images = p.PartImages.Select(pi => pi.ImgUrl).ToList(),
                     Discount = p.Stocks
                         .OrderByDescending(s => s.LastUpdated)

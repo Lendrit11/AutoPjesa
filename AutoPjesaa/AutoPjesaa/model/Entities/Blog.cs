@@ -6,9 +6,10 @@ namespace AutoPjesaa.model.Entities
     {
         public int blogId { get; set; }
         public string Title { get; set; } = null!;
-        public string Content { get; set; } = null!;
+        public string? photoUrl { get; set; } = null!;
+        public string description { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public int UserId { get; set; }
-        public AppUser User { get; set; } = null!; // Navigation property to AppUser
+        public AppUser User { get; set; } = null!; 
     }
 }

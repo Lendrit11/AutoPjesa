@@ -1,0 +1,16 @@
+wwwroot\uploads\blog\foto.jpg
+wwwroot\uploads\product\1-1.jpg
+wwwroot\uploads\product\1-2.jpg
+wwwroot\uploads\product\2-1.jpg
+wwwroot\uploads\product\2-2.jpg
+wwwroot\uploads\product\3-1.jpg
+wwwroot\uploads\product\3-2.jpg
+wwwroot\uploads\product\4-1.jpg
+wwwroot\uploads\product\4-2.jpg
+wwwroot\uploads\product\5-1.jpg
+wwwroot\uploads\product\5-2.jpg
+wwwroot\uploads\product\6-1.jpg
+wwwroot\uploads\product\6-2.jpg
+wwwroot\uploads\product\7-1.jpg
+wwwroot\uploads\product\7-2.jpg
+wwwroot\uploads\product\8-1.jpg

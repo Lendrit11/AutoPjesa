@@ -24,6 +24,11 @@ namespace AutoPjesaa.Controllers.User.Home
         {
             _context = context;
         }
+
+
+
+
+
         [HttpGet("latest")]
         public async Task<IActionResult> GetLatest(int count = 10)
         {

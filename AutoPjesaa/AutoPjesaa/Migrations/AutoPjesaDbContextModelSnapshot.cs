@@ -79,6 +79,10 @@ namespace AutoPjesaa.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("UserId");
 
                     b.ToTable("AppUsers");
@@ -178,7 +182,7 @@ namespace AutoPjesaa.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Category");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("AutoPjesa.Domain.Entities.Manufacturer", b =>
@@ -410,6 +414,9 @@ namespace AutoPjesaa.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("expireddiscount")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("StockId");
 
                     b.HasIndex("PartId");
@@ -430,6 +437,158 @@ namespace AutoPjesaa.Migrations
                     b.HasIndex("roleId");
 
                     b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("AutoPjesaa.model.Entities.Blog", b =>
+                {
+                    b.Property<int>("blogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("blogId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("photoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("blogId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Blogs");
+                });
+
+            modelBuilder.Entity("AutoPjesaa.model.Entities.FavoritePart", b =>
+                {
+                    b.Property<int>("favoriteid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("favoriteid"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("partid")
+                        .HasColumnType("int");
+
+                    b.Property<int>("userid")
+                        .HasColumnType("int");
+
+                    b.HasKey("favoriteid");
+
+                    b.HasIndex("partid");
+
+                    b.HasIndex("userid", "partid")
+                        .IsUnique();
+
+                    b.ToTable("FavoriteParts");
+                });
+
+            modelBuilder.Entity("AutoPjesaa.model.Entities.PartReview", b =>
+                {
+                    b.Property<int>("ReviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReviewId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PartId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReviewText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReviewId");
+
+                    b.HasIndex("PartId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PartReviews");
+                });
+
+            modelBuilder.Entity("AutoPjesaa.model.Entities.PasswordResetCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExpirationTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PasswordResetCodes");
+                });
+
+            modelBuilder.Entity("AutoPjesaa.model.Token.Token", b =>
+                {
+                    b.Property<int>("TokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TokenId"));
+
+                    b.Property<string>("AccessToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Expiration")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RefreshTokenExpiration")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TokenId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Tokens");
                 });
 
             modelBuilder.Entity("AutoPjesa.Domain.Entities.Address", b =>
@@ -569,7 +728,7 @@ namespace AutoPjesaa.Migrations
             modelBuilder.Entity("AutoPjesa.Domain.Entities.Stock", b =>
                 {
                     b.HasOne("AutoPjesa.Domain.Entities.Part", "Part")
-                        .WithMany()
+                        .WithMany("Stocks")
                         .HasForeignKey("PartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -587,7 +746,7 @@ namespace AutoPjesaa.Migrations
 
                     b.HasOne("AutoPjesa.Domain.Entities.AppUser", "User")
                         .WithMany("UserRoles")
-                        .HasForeignKey("roleId")
+                        .HasForeignKey("userId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -596,13 +755,79 @@ namespace AutoPjesaa.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("AutoPjesaa.model.Entities.Blog", b =>
+                {
+                    b.HasOne("AutoPjesa.Domain.Entities.AppUser", "User")
+                        .WithMany("Blogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AutoPjesaa.model.Entities.FavoritePart", b =>
+                {
+                    b.HasOne("AutoPjesa.Domain.Entities.Part", "Part")
+                        .WithMany("FavoritedByUsers")
+                        .HasForeignKey("partid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AutoPjesa.Domain.Entities.AppUser", "User")
+                        .WithMany("FavoriteParts")
+                        .HasForeignKey("userid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AutoPjesaa.model.Entities.PartReview", b =>
+                {
+                    b.HasOne("AutoPjesa.Domain.Entities.Part", "Part")
+                        .WithMany("Reviews")
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AutoPjesa.Domain.Entities.AppUser", "User")
+                        .WithMany("Reviews")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Part");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AutoPjesaa.model.Token.Token", b =>
+                {
+                    b.HasOne("AutoPjesa.Domain.Entities.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("AutoPjesa.Domain.Entities.AppUser", b =>
                 {
                     b.Navigation("Addresses");
 
+                    b.Navigation("Blogs");
+
                     b.Navigation("Carts");
 
+                    b.Navigation("FavoriteParts");
+
                     b.Navigation("Orders");
+
+                    b.Navigation("Reviews");
 
                     b.Navigation("UserRoles");
                 });
@@ -638,11 +863,17 @@ namespace AutoPjesaa.Migrations
                 {
                     b.Navigation("CartItems");
 
+                    b.Navigation("FavoritedByUsers");
+
                     b.Navigation("OrderDetails");
 
                     b.Navigation("PartCarModels");
 
                     b.Navigation("PartImages");
+
+                    b.Navigation("Reviews");
+
+                    b.Navigation("Stocks");
                 });
 
             modelBuilder.Entity("AutoPjesa.Domain.Entities.Role", b =>

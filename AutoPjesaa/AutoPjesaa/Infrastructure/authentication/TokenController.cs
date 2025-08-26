@@ -1,5 +1,4 @@
 ﻿using AutoPjesa.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,29 +16,38 @@ namespace AutoPjesaa.Infrastructure.authentication
             _tokenService = tokenService;
         }
         [HttpPost("refresh")]
-        public IActionResult Refresh([FromBody] RefreshRequest request)
+        public IActionResult Refresh()
         {
-            var token = _context.Tokens.FirstOrDefault(t =>
-                t.RefreshToken == request.RefreshToken &&
-                t.RefreshTokenExpiration > DateTime.UtcNow);
+            if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            {
+                return Unauthorized("Refresh token is missing.");
+            }
 
-            if (token == null)
-                return Unauthorized("Invalid or expired refresh token");
+            var newTokens = _tokenService.RefreshAccessToken(refreshToken);
 
-            var user = _context.AppUsers
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-                .FirstOrDefault(u => u.UserId == token.UserId);
+            if (newTokens == null)
+            {
+                return Unauthorized("Refresh token is invalid or expired.");
+            }
 
-            if (user == null)
-                return Unauthorized("User not found");
+            // Përditëso cookie me refresh token të ri (opsionale)
+            Response.Cookies.Append("refreshToken", newTokens.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = newTokens.RefreshTokenExpiration
+            });
 
-            _context.Tokens.Remove(token);
-            _context.SaveChanges();
-
-            var response = _tokenService.GenerateToken(user);
-            return Ok(response);
+            return Ok(new
+            {
+                token = newTokens.Token,
+                expiration = newTokens.Expiration
+            });
         }
+
+
+
 
     }
 }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Jahir\\OneDrive\\Desktop\\AutoPjesa_Backend\\AutoPjesaa\\AutoPjesaa\\AutoPjesaa.csproj": {}
+    "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\AutoPjesaa.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Jahir\\OneDrive\\Desktop\\AutoPjesa_Backend\\AutoPjesaa\\AutoPjesaa\\AutoPjesaa.csproj": {
+    "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\AutoPjesaa.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Jahir\\OneDrive\\Desktop\\AutoPjesa_Backend\\AutoPjesaa\\AutoPjesaa\\AutoPjesaa.csproj",
+        "projectUniqueName": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\AutoPjesaa.csproj",
         "projectName": "AutoPjesaa",
-        "projectPath": "C:\\Users\\Jahir\\OneDrive\\Desktop\\AutoPjesa_Backend\\AutoPjesaa\\AutoPjesaa\\AutoPjesaa.csproj",
+        "projectPath": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\AutoPjesaa.csproj",
         "packagesPath": "C:\\Users\\Jahir\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Jahir\\OneDrive\\Desktop\\AutoPjesa_Backend\\AutoPjesaa\\AutoPjesaa\\obj\\",
+        "outputPath": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -44,12 +44,20 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[8.0.5, )"
+            },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[9.0.7, )"
@@ -63,6 +71,10 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.6.2, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.13.1, )"
             }
           },
           "imports": [
@@ -84,7 +96,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

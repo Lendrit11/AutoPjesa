@@ -72,6 +72,7 @@ namespace AutoPjesaa.Controllers.User.CartCon
             return Ok(result);
         }
         [HttpPost("add-cart")]
+        [Authorize]
         public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
         {
             try

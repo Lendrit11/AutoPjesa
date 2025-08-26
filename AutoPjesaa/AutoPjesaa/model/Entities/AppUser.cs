@@ -15,6 +15,7 @@ namespace AutoPjesa.Domain.Entities
         public string email { get; set; }
         [Required]
         public string PhoneNumber { get; set; }
+        public string password { get; set; } = null!;
         [Required]
         public DateOnly CreatedAt { get; set; }
 

@@ -83,7 +83,13 @@ namespace AutoPjesaa.Controllers.User.Login
                 return Unauthorized("Invalid email or password");
 
             var authResponse = _tokenService.GenerateToken(user);
-
+            Response.Cookies.Append("refreshToken", authResponse.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite=SameSiteMode.Strict,
+                Expires = authResponse.RefreshTokenExpiration
+            });
 
 
             return Ok(new
@@ -98,8 +104,7 @@ namespace AutoPjesaa.Controllers.User.Login
                     Roles = user.UserRoles.Select(ur => ur.Role.Name).ToList()
                 },
                 token = authResponse.Token,
-                tokenExpiration = authResponse.Expiration,
-                refreshToken = authResponse.RefreshToken
+                tokenexpiration = authResponse.Expiration
             });
         }
 

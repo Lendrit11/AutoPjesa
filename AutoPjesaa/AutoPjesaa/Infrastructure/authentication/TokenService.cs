@@ -27,8 +27,9 @@ namespace AutoPjesaa.Infrastructure.authentication
             var signingCredentials = new SigningCredentials(symetricKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim> {
-        new Claim("UserId", user.UserId.ToString())
-    };
+    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()) // ✅ kjo është standarde
+};
+
 
             foreach (var role in user.UserRoles)
             {
@@ -68,7 +69,8 @@ namespace AutoPjesaa.Infrastructure.authentication
             {
                 Token = accessTokenString,
                 Expiration = accessToken.ValidTo,
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken,
+                RefreshTokenExpiration = refreshExpiration
             };
         }
 
@@ -87,6 +89,31 @@ namespace AutoPjesaa.Infrastructure.authentication
                 _context.SaveChanges();
             }
         }
+
+        public AuthResponse? RefreshAccessToken(string refreshToken)
+        {
+            var existingToken = _context.Tokens.FirstOrDefault(t => t.RefreshToken == refreshToken);
+
+            if (existingToken == null || existingToken.RefreshTokenExpiration < DateTime.UtcNow)
+            {
+                return null; // Invalid or expired refresh token
+            }
+
+            var user = _context.AppUsers.FirstOrDefault(u => u.UserId == existingToken.UserId);
+
+            if (user == null)
+            {
+                return null; 
+            }
+
+            
+            _context.Tokens.Remove(existingToken);
+
+            var newAuth = GenerateToken(user);
+
+            return newAuth;
+        }
+
 
     }
 }
