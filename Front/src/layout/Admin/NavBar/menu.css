@@ -1,0 +1,36 @@
+/* Hamburger (left) */
+.mobile-menu {
+  display: none;
+  cursor: pointer;
+  padding: 10px;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu {
+    display: inline-block;
+  }
+}
+
+/* Hamburger icon (right) */
+.mob-toggler {
+  display: inline-block;
+  padding: 8px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000;
+}
+
+/* M-header */
+.m-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+}
+
+/* Optional: Brand styling */
+.b-brand .b-title {
+  font-weight: bold;
+  font-size: 18px;
+  color: #000;
+}

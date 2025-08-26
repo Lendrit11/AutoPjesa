@@ -46,7 +46,7 @@ const Search = () => {
     };
 
     return (
-        <div className="search-wrapper" ref={searchRef}>
+        <div className="search-wrapper custom-search_col col-12" ref={searchRef}>
             <form className="hm-searchbox" onSubmit={handleSubmit}>
                 <input 
                     type="text" 

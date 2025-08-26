@@ -120,8 +120,9 @@ useEffect(() => {
 </div>
 
             </div>
-            <Category/>
             <Search />
+            <Category/>
+          
             <div className="custom-cart_col col-12">
               <div className="header-right_area">
                 <ul>

@@ -3,7 +3,6 @@ import $ from 'jquery';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import 'slick-carousel';
-import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -19,57 +18,47 @@ import '../../../../assets/css/plugins/lightgallery.min.css';
 import '../../../../assets/css/plugins/nice-select.css';
 import '../../../../assets/css/style.css';
 
+import { axiosWithCredentials } from '../../../../server/axiosin';
+
 const Single_Product_area = ({ product }) => {
   const sliderMainRef = useRef(null);
   const sliderNavRef = useRef(null);
-const handleAddToCart = async () => {
-  try {
-    const quantity = parseInt(document.querySelector('.cart-plus-minus-box').value) || 1;
 
-    await axios.post(
-      'http://localhost:5298/api/user/cart/add-cart',
-      {
+  const handleAddToCart = async () => {
+    try {
+      const quantity = parseInt(document.querySelector('.cart-plus-minus-box').value) || 1;
+
+      await axiosWithCredentials.post('/api/user/cart/add-cart', {
         partId: product.id,
-        quantity: quantity
-      },
-      {
-        withCredentials: true
-      }
-    );
-
-    toast.success("Produkti u shtua në cart!");
-    window.dispatchEvent(new Event("refresh-cart"));
-  } catch (err) {
-    if (err.response?.status === 401) {
-      toast.warn("Ju lutemi kyçuni për të shtuar në cart.");
-    } else {
-      toast.error("Gabim gjatë shtimit në cart.");
-    }
-  }
-};
-
-  // 🧡 Shto në Favorites
-  const handleAddToFavorites = () => {
-    axios.post(
-      'http://localhost:5298/api/user/product/favorites/add',
-      { partId: product.id },
-      { withCredentials: true }
-    )
-      .then(() => {
-        toast.success("Produkti u shtua në favorite!");
-      })
-      .catch(err => {
-        if (err.response?.status === 401) {
-          toast.warn("Ju lutemi kyçuni për të shtuar në favorite.");
-        } else if (err.response?.status === 400) {
-          toast.info("Ky produkt është tashmë në favorite.");
-        } else {
-          toast.error("Ndodhi një gabim. Provoni përsëri.");
-        }
+        quantity: quantity,
       });
+
+      toast.success("Produkti u shtua në cart!");
+      window.dispatchEvent(new Event("refresh-cart"));
+    } catch (err) {
+      if (err.response?.status === 401) {
+        toast.warn("Ju lutemi kyçuni për të shtuar në cart.");
+      } else {
+        toast.error("Gabim gjatë shtimit në cart.");
+      }
+    }
   };
 
-  // ⚙️ Slick slider initialization
+  const handleAddToFavorites = async () => {
+    try {
+      await axiosWithCredentials.post('/api/user/product/favorites/add', { partId: product.id });
+      toast.success("Produkti u shtua në favorite!");
+    } catch (err) {
+      if (err.response?.status === 401) {
+        toast.warn("Ju lutemi kyçuni për të shtuar në favorite.");
+      } else if (err.response?.status === 400) {
+        toast.info("Ky produkt është tashmë në favorite.");
+      } else {
+        toast.error("Ndodhi një gabim. Provoni përsëri.");
+      }
+    }
+  };
+
   useEffect(() => {
     if (sliderMainRef.current && sliderNavRef.current) {
       try {
@@ -122,7 +111,6 @@ const handleAddToCart = async () => {
       <div className="container-fluid">
         <div className="sp-nav">
           <div className="row">
-
             {/* Imazhet */}
             <div className="col-lg-4">
               <div className="sp-img_area">
@@ -188,24 +176,37 @@ const handleAddToCart = async () => {
 
                 <div className="qty-btn_area">
                   <ul>
-                   <li>
-                     <a className="qty-cart_btn" href="#" onClick={(e) => { e.preventDefault(); handleAddToCart(); }}>
-                          Add To Cart
-                         </a>
-                      </li>
                     <li>
-                      <button className="qty-wishlist_btn" title="Add To Wishlist" onClick={handleAddToFavorites}>
+                      <a
+                        className="qty-cart_btn"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToCart();
+                        }}
+                      >
+                        Add To Cart
+                      </a>
+                    </li>
+                    <li>
+                      <button
+                        className="qty-wishlist_btn"
+                        title="Add To Wishlist"
+                        onClick={handleAddToFavorites}
+                      >
                         <i className="ion-android-favorite-outline"></i> Add to Favorites
                       </button>
                     </li>
                   </ul>
                 </div>
+
                 <div className="sp-price mt-3">
                   <h2 style={{ color: '#ff8800ff' }}>Price: €{product.price?.toFixed(2)}</h2>
                   {product.oldPrice && (
                     <h6 className="text-muted text-decoration-line-through">Old Price: €{product.oldPrice?.toFixed(2)}</h6>
                   )}
                 </div>
+
                 <div className="uren-tag-line">
                   <h6>Tags:</h6>
                   {product.tags?.length ? (
@@ -227,11 +228,8 @@ const handleAddToCart = async () => {
                     <li className="instagram"><a href="#"><i className="fab fa-instagram"></i></a></li>
                   </ul>
                 </div>
-
-
               </div>
             </div>
-
           </div>
         </div>
       </div>

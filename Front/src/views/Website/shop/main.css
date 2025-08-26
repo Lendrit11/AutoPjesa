@@ -1,0 +1,161 @@
+/* ==========================================
+   🔵 Desktop & General (default CSS)
+   ========================================== */
+
+.shop-content_wrapper .row {
+  display: flex;
+  flex-wrap: wrap;
+}
+.card .d-flex.justify-content-between {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* ==========================================
+   🔶 Medium Devices (Tablets / iPads - Portrait)
+   max-width: 1024px
+   ========================================== */
+@media (max-width: 1024px) {
+  .shop-content_wrapper .row {
+    flex-direction: column-reverse;
+  }
+
+  aside.col-lg-3,
+  section.col-lg-9 {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .card-body h6.card-title {
+    font-size: 1rem;
+  }
+
+  .card-body .card-text {
+    font-size: 0.9rem;
+  }
+
+  .card-body .btn {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  .breadcrumb-content ul {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+
+/* ==========================================
+   🟡 Small Devices (Tablets - iPad Mini etc.)
+   max-width: 768px
+   ========================================== */
+@media (max-width: 768px) {
+  .shop-content_wrapper .row {
+    flex-direction: column-reverse;
+  }
+
+  aside.col-lg-3,
+  section.col-lg-9 {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .card {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .card-body h6.card-title {
+    font-size: 0.95rem;
+  }
+
+  .card-body .card-text {
+    font-size: 0.85rem;
+  }
+
+  .card-body .btn {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+  }
+
+  .breadcrumb-content ul {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pagination .page-link {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+
+  .card .btn {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-top: 6px;
+  }
+
+  .card .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+}
+
+
+/* ==========================================
+   🔴 Extra Small Devices (Phones)
+   max-width: 576px
+   ========================================== */
+@media (max-width: 576px) {
+  .breadcrumb-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .pagination .page-link {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .card-body h6.card-title {
+    font-size: 0.9rem;
+  }
+
+  .card-body .card-text {
+    font-size: 0.8rem;
+  }
+
+  .card-body .btn {
+    width: 100%;
+    font-size: 0.75rem;
+  }
+
+  .card .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+}
+
+
+/* ==========================================
+   📐 Universal resets for responsiveness
+   ========================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+

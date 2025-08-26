@@ -1850,7 +1850,7 @@ button, .global-overlay, .quantity .cart-plus-minus > .qtybutton, .price-filter 
   right: -285px;
   width: 285px;
   height: 100%;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(247, 245, 243, 0.95);
   -webkit-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
           box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
   z-index: 9999;
@@ -2405,22 +2405,7 @@ button, .global-overlay, .quantity .cart-plus-minus > .qtybutton, .price-filter 
           justify-content: center;
 }
 
-.category-menu .category-heading > h2:before {
-  content: "\f394";
-  font-family: 'Ionicons';
-  position: absolute;
-  top: 0;
-  left: 20px;
-  font-size: 40px;
-}
 
-.category-menu .category-heading > h2:after {
-  content: "\f3d0";
-  font-family: 'Ionicons';
-  position: absolute;
-  right: 20px;
-  font-size: 25px;
-}
 
 .category-menu .category-heading > h2 > span {
   text-transform: uppercase;
@@ -5787,11 +5772,11 @@ button, .global-overlay, .quantity .cart-plus-minus > .qtybutton, .price-filter 
     -webkit-flex: 0 0 75%;
         -ms-flex: 0 0 75%;
             flex: 0 0 75%;
-    max-width: 75%;
+    max-width: 80%;
     -webkit-box-ordinal-group: 3;
     -webkit-order: 2;
         -ms-flex-order: 2;
-            order: 2;
+            order: 3;
   }
 }
 
@@ -8815,123 +8800,150 @@ button, .global-overlay, .quantity .cart-plus-minus > .qtybutton, .price-filter 
 /*  35 - Pages - Cart
 /*----------------------------------------*/
 .uren-cart-area {
-  padding: 80px 0;
+  padding: 100px 0; /* më shumë hapësirë lart-poshtë */
+  background-color: #121212;
 }
 
 .table-content table td.product-subtotal {
-  font-size: 16px;
+  font-size: 20px; /* font më i madh */
   font-weight: 700;
+  color: #d4af37;
+  padding: 20px 15px; /* më shumë hapësirë brenda qelizës */
 }
 
 .table-content table td.quantity .cart-plus-minus {
   margin: 0 auto;
+  font-size: 18px; /* madhësi më e madhe për inputat e sasisë */
 }
 
 @media (max-width: 767px) {
   .uren-cart-area .table-content table td:nth-child(3) {
-    padding: 45.1px 10px;
+    padding: 60px 15px; /* më shumë hapësirë në mobile */
   }
 }
 
 .coupon-all {
-  margin-top: 30px;
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
 }
 
 .coupon-all .coupon {
-  float: left;
+  float: none;
+  flex: 1;
 }
 
 .coupon-all .coupon input {
   background-color: transparent;
-  border: 1px solid #e5e5e5;
-  font-size: 13px;
-  border-radius: 0;
-  height: 42px;
-  width: 120px;
-  padding: 0 10px;
+  border: 2px solid #6b4e16;
+  font-size: 16px;
+  border-radius: 6px;
+  height: 50px;
+  width: 100%;
+  padding: 0 15px;
+  color: #d4af37;
+  transition: border-color 0.3s ease;
+}
+
+.coupon-all .coupon input:focus {
+  border-color: #b22222;
+  outline: none;
 }
 
 .coupon-all .coupon input.button,
 .coupon-all .coupon2 input.button {
-  background-color: #999999;
-  border: 0 none;
-  border-radius: 2px;
-  color: #ffffff;
-  display: inline-block;
-  font-size: 13px;
+  background-color: #6b4e16;
+  border: none;
+  border-radius: 6px;
+  color: #f5e1a4;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  height: 42px;
-  letter-spacing: 1px;
-  line-height: 42px;
-  padding: 0 25px;
+  height: 50px;
+  letter-spacing: 1.5px;
+  padding: 0 30px;
   text-transform: uppercase;
-  width: inherit;
+  width: 100%;
+  transition: background 0.3s ease;
 }
 
 .coupon-all .coupon input.button:hover,
 .coupon-all .coupon2 input.button:hover {
-  background: #ffc400;
-}
-
-.coupon-all .coupon.coupon2,
-.coupon-all .coupon2.coupon2 {
-  float: right;
-}
-
-@media (max-width: 479px) {
-  .coupon-all .coupon.coupon2,
-  .coupon-all .coupon2.coupon2 {
-    float: left;
-    padding-top: 30px;
-  }
+  background: #b22222;
+  color: #fff;
 }
 
 .cart-page-total {
-  padding-top: 30px;
+  padding-top: 40px;
 }
 
 .cart-page-total > h2 {
-  font-size: 25px;
+  font-size: 30px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   text-transform: capitalize;
+  color: #d4af37;
 }
 
 .cart-page-total > ul {
-  border: 1px solid #e5e5e5;
+  border: 2px solid #6b4e16;
+  background-color: #1e1e1e;
+  padding: 0;
+  margin: 0;
 }
 
 .cart-page-total > ul li {
   list-style: none;
-  font-size: 15px;
-  padding: 10px 30px;
-  border-bottom: 1px solid #e5e5e5;
+  font-size: 18px;
+  padding: 20px 40px;
+  border-bottom: 2px solid #6b4e16;
   font-weight: 700;
+  color: #f5e1a4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .cart-page-total > ul li:last-child {
   border-bottom: 0;
 }
 
-.cart-page-total > ul li span {
-  float: right;
-}
-
 .cart-page-total a {
-  background-color: #999999;
-  border: 1px solid #e5e5e5;
-  color: #ffffff;
+  background-color: #6b4e16;
+  border: 2px solid #6b4e16;
+  color: #f5e1a4;
   display: inline-block;
-  margin-top: 30px;
-  padding: 10px 20px;
+  margin-top: 40px;
+  padding: 15px 30px;
+  font-size: 18px;
   text-transform: capitalize;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .cart-page-total a:hover {
-  background: #ffc400;
-  border-color: #ffc400;
-  color: #ffffff !important;
+  background: #b22222;
+  border-color: #b22222;
+  color: #fff !important;
+}
+
+/* Për butonin e "shly" që të duket qartë, mund ta bësh më të madh dhe me ngjyrë të veçantë */
+.button-remove {
+  background-color: #b22222;
+  border: none;
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 100%;
+}
+
+.button-remove:hover {
+  background-color: #ff4c4c;
 }
 
 /*----------------------------------------*/

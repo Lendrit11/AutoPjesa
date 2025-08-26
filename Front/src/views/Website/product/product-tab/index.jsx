@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios'; // Import axios
+import { axiosWithCredentials } from '../../../../server/axiosin';  // import axios instance me interceptors
 
 // Import CSS
 import '../../../../assets/css/vendor/bootstrap.min.css';
@@ -22,37 +22,34 @@ const Product_tab = ({ description, reviews, partId }) => {
     rating: '5',
   });
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!formData.email || !formData.message || !formData.rating) {
-    alert('Ju lutem plotësoni të gjitha fushat.');
-    return;
-  }
+    if (!formData.email || !formData.message || !formData.rating) {
+      alert('Ju lutem plotësoni të gjitha fushat.');
+      return;
+    }
 
-  const payload = {
-    email: formData.email,
-    reviewText: formData.message,
-    rating: parseInt(formData.rating),
-    productId: Number(partId),
+    const payload = {
+      email: formData.email,
+      reviewText: formData.message,
+      rating: parseInt(formData.rating, 10),
+      productId: Number(partId),
+    };
+
+    console.log("Payload për dërgim:", payload);
+
+    try {
+      await axiosWithCredentials.post('/api/user/product/addreview', payload); // përdor path relativ
+
+      alert("Review u shtua me sukses!");
+      setFormData({ email: '', message: '', rating: '5' });
+      window.location.reload();
+    } catch (err) {
+      console.error("Gabim në review submit:", err);
+      alert("Dështoi dërgimi i review.");
+    }
   };
-
-  console.log("Payload për dërgim:", payload);
-
-  try {
-await axios.post('http://localhost:5298/api/user/product/addreview', payload, {
-  withCredentials: true
-});
-
-    alert("Review u shtua me sukses!");
-    setFormData({ email: '', message: '', rating: '5' });
-    window.location.reload();
-  } catch (err) {
-    console.error("Gabim në review submit:", err);
-    alert("Dështoi dërgimi i review.");
-  }
-};
-
 
   return (
     <div className="sp-product-tab_area">

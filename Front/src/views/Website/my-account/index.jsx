@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { axiosWithCredentials } from '../../../server/axiosin';  
 import { Tabs, Tab } from 'react-bootstrap';
 import '../../../assets/css/style.css';
 import './modal.css';
@@ -18,9 +18,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-// 🔁 Cakto globalisht që çdo axios të përdorë cookies
-axios.defaults.withCredentials = true;
 
 const Account = () => {
   const [key, setKey] = useState('dashboard');
@@ -46,7 +43,7 @@ const Account = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get('http://localhost:5298/api/account/get-order');
+      const res = await axiosWithCredentials.get('http://localhost:5298/api/account/get-order');
       setOrders(res.data);
     } catch (err) {
       console.error('Error loading orders:', err);
@@ -55,7 +52,7 @@ const Account = () => {
 
   const fetchStats = async (type) => {
     try {
-      const res = await axios.get(`http://localhost:5298/api/account/get-data/${type}`);
+      const res = await axiosWithCredentials.get(`http://localhost:5298/api/account/get-data/${type}`);
       const data = Array.isArray(res.data) ? res.data : [res.data];
       setOrderStats(data);
     } catch (err) {
@@ -65,10 +62,10 @@ const Account = () => {
 
   const handleDeleteOrder = async (orderId) => {
     if (!window.confirm("Are you sure you want to delete this order?")) {
-      return; // Nëse përdoruesi anulon
+      return;
     }
     try {
-      await axios.delete(`http://localhost:5298/api/account/delete/${orderId}`);
+      await axiosWithCredentials.delete(`http://localhost:5298/api/account/delete/${orderId}`);
       toast.success('Order deleted successfully.');
       setShowOrderDetails(false);
       setSelectedOrder(null);
@@ -81,7 +78,7 @@ const Account = () => {
 
   const fetchUser = async () => {
     try {
-      const res = await axios.get('http://localhost:5298/api/account/get-user');
+      const res = await axiosWithCredentials.get('http://localhost:5298/api/account/get-user');
       setUserData(prev => ({
         ...prev,
         ...res.data
@@ -91,24 +88,22 @@ const Account = () => {
     }
   };
 
-const handleUpdateUser = async (e) => {
-  e.preventDefault();
-  try {
-    const payload = { ...userData };
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = { ...userData };
 
-    // Nëse password është bosh, mos e dërgo fare
-    if (!payload.password || payload.password.trim() === "") {
-      delete payload.password;
+      if (!payload.password || payload.password.trim() === "") {
+        delete payload.password;
+      }
+
+      await axiosWithCredentials.put('http://localhost:5298/api/account/update-user', payload);
+      toast.success('User updated successfully.');
+    } catch (err) {
+      console.error('Error updating user:', err);
+      toast.error('Update failed.');
     }
-
-    await axios.put('http://localhost:5298/api/account/update-user', payload);
-    toast.success('User updated successfully.');
-  } catch (err) {
-    console.error('Error updating user:', err);
-    toast.error('Update failed.');
-  }
-};
-
+  };
 
   // Modal functions
   const handleViewDetails = (order) => {
@@ -121,18 +116,16 @@ const handleUpdateUser = async (e) => {
     setSelectedOrder(null);
   };
 
-  // Refresh stats kur ndryshon tipi i statistikës + çdo 30 sekonda
   useEffect(() => {
     fetchStats(selectedStatType);
 
     const interval = setInterval(() => {
       fetchStats(selectedStatType);
-    }, 30000); // çdo 30 sekonda
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [selectedStatType]);
 
-  // Merr porositë dhe të dhënat e përdoruesit në fillim
   useEffect(() => {
     fetchOrders();
     fetchUser();
@@ -352,7 +345,6 @@ const handleUpdateUser = async (e) => {
 
       <Footer />
 
-      {/* Modal për detajet e porosisë */}
       {showOrderDetails && selectedOrder && (
         <div className="modal-background" onClick={handleCloseModal} style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -374,38 +366,32 @@ const handleUpdateUser = async (e) => {
                   <th>Product</th>
                   <th>Qty</th>
                   <th>Price</th>
-                  <th>Current Price</th>
-                  <th>Image</th>
+                  <th>Subtotal</th>
                 </tr>
               </thead>
               <tbody>
-                {selectedOrder.orderDetails.map(detail => (
-                  <tr key={detail.orderDetailId}>
-                    <td>{detail.partName}</td>
-                    <td>{detail.quantity}</td>
-                    <td>€{detail.price.toFixed(2)}</td>
-                    <td>{detail.currentPrice?.toFixed(2) ?? '-'}</td>
-                    <td>
-                      {detail.primaryImageUrl ? (
-                        <img src={detail.primaryImageUrl} alt={detail.partName} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
-                      ) : '-'}
-                    </td>
+                {selectedOrder.orderDetails.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.productName}</td>
+                    <td>{item.quantity}</td>
+                    <td>€{item.price.toFixed(2)}</td>
+                    <td>€{(item.price * item.quantity).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            <div className="button-group">
-              <button className="uren-btn uren-btn_dark" onClick={handleCloseModal}>Close</button>
-              <button className="uren-btn uren-btn_danger" onClick={() => handleDeleteOrder(selectedOrder.orderId)}>Delete Order</button>
-            </div>
-
+            <button className="uren-btn uren-btn_dark" onClick={() => handleDeleteOrder(selectedOrder.orderId)}>
+              Delete Order
+            </button>
+            <button className="uren-btn uren-btn_light ms-2" onClick={handleCloseModal}>
+              Close
+            </button>
           </div>
         </div>
       )}
 
-      {/* Toast container për mesazhet */}
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
   );
 };

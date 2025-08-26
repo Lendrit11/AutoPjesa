@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";  // Import Link për navigim
+import { Link } from "react-router-dom";
 import '../../../assets/css/vendor/bootstrap.min.css';
 import '../../../assets/css/vendor/font-awesome.css';
 import '../../../assets/css/vendor/fontawesome-stars.css';
@@ -14,18 +14,17 @@ import '../../../assets/css/style.css';
 import Footer from "../footer/index";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios from "axios";
+import { axiosWithCredentials } from '../../../server/axiosin';
 
 const Wishlist = () => {
   const [wishlist, setWishlist] = useState([]);
 
   const addToCart = async (partId) => {
     try {
-      await axios.post(
-        "http://localhost:5298/api/Wishlist/add-cart",
-        { partId: partId, quantity: 1 },
-        { withCredentials: true }
-      );
+      await axiosWithCredentials.post('/api/Wishlist/add-cart', {
+        partId: partId,
+        quantity: 1,
+      });
       toast.success("Added to cart!");
       window.dispatchEvent(new Event("refresh-cart"));
     } catch (error) {
@@ -36,10 +35,7 @@ const Wishlist = () => {
 
   const removeFromWishlist = async (partId) => {
     try {
-      await axios.delete(
-        `http://localhost:5298/api/Wishlist/remove-from-wishlist/${partId}`,
-        { withCredentials: true }
-      );
+      await axiosWithCredentials.delete(`/api/Wishlist/remove-from-wishlist/${partId}`);
       toast.success("Deleted with success");
       setWishlist((prev) => prev.filter((item) => item.partId !== partId));
     } catch (error) {
@@ -51,10 +47,7 @@ const Wishlist = () => {
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5298/api/Wishlist/get-wishlist",
-          { withCredentials: true }
-        );
+        const response = await axiosWithCredentials.get('/api/Wishlist/get-wishlist');
         setWishlist(response.data);
       } catch (error) {
         console.error("Gabim gjatë marrjes së wishlist", error);
@@ -66,9 +59,7 @@ const Wishlist = () => {
 
   return (
     <div className="main-wrapper">
-
       <ToastContainer />
-
       <div className="breadcrumb-area">
         <div className="container">
           <div className="breadcrumb-content">
@@ -85,7 +76,6 @@ const Wishlist = () => {
         <div className="container-fluid">
           <div className="row">
             <div className="col-lg-12">
-              {/* Në vend të form me action="javascript:void(0)", e hoqa form dhe përdorëm div sepse nuk ka submit*/}
               <div>
                 <div className="table-content table-responsive">
                   <table className="table">
@@ -147,7 +137,6 @@ const Wishlist = () => {
       </div>
 
       <Footer />
-
     </div>
   );
 };

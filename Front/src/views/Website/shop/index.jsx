@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Select from 'react-select';
-import axios from 'axios';
+import { axiosWithCredentials } from '../../../server/axiosin';  // import axiosWithCredentials saktë
 import '../../../assets/css/vendor/bootstrap.min.css';
 import '../../../assets/css/vendor/font-awesome.css';
 import '../../../assets/css/vendor/fontawesome-stars.css';
@@ -10,14 +10,12 @@ import '../../../assets/css/plugins/animate.css';
 import '../../../assets/css/plugins/jquery-ui.min.css';
 import '../../../assets/css/plugins/lightgallery.min.css';
 import '../../../assets/css/plugins/nice-select.css';
-import '../../../assets/css/style.css';
-import Loading from '../../../components/bread/loading';
 import Price_del from './Price';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import Footer  from "../footer/index";
-
+import Footer from "../footer/index";
+import './main.css';
 
 const Shop = () => {
   const navigate = useNavigate();
@@ -42,8 +40,8 @@ const Shop = () => {
     const fetchFilters = async () => {
       try {
         const [catRes, manuRes] = await Promise.all([
-          axios.get('http://localhost:5298/api/user/shop/categories'),
-          axios.get('http://localhost:5298/api/user/shop/manufacturers'),
+          axiosWithCredentials.get('/api/user/shop/categories'),
+          axiosWithCredentials.get('/api/user/shop/manufacturers'),
         ]);
         setCategories(catRes.data);
         setManufacturers([...new Set(manuRes.data)]);
@@ -56,14 +54,13 @@ const Shop = () => {
 
   // Fetch parts whenever filters or page change
   useEffect(() => {
+    setShowLoading(true);
     const timer = setTimeout(() => setShowLoading(false), 1000);
     fetchFilteredParts();
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, priceRange, selectedManufacturer, selectedCategory]);
 
   const fetchFilteredParts = async () => {
-    setShowLoading(true);
     try {
       const params = new URLSearchParams();
       params.append('minPrice', priceRange[0]);
@@ -74,7 +71,7 @@ const Shop = () => {
       if (selectedManufacturer) params.append('manufacturer', selectedManufacturer);
       if (selectedCategory) params.append('categoryId', selectedCategory);
 
-      const response = await axios.get(`http://localhost:5298/api/user/shop/parts?${params.toString()}`);
+      const response = await axiosWithCredentials.get(`/api/user/shop/parts?${params.toString()}`);
 
       setParts(response.data.parts);
       const totalItems = response.data.totalItems;
@@ -83,24 +80,21 @@ const Shop = () => {
       console.error('Gabim gjatë marrjes së pjesëve:', error);
       setParts([]);
       setTotalPages(1);
-    } finally {
-      setShowLoading(false);
     }
   };
 
   const handleAddToFavorites = async (partId) => {
     try {
-      const response = await axios.post(
-        'http://localhost:5298/api/user/shop/add-favorites',
-        { partid: partId },
-        { withCredentials: true }
+      const response = await axiosWithCredentials.post(
+        '/api/user/shop/add-favorites',
+        { partid: partId }
       );
 
       if (response.status === 200 || response.status === 201) {
         toast.success('Produkti u shtua në favorites!');
       }
     } catch (error) {
-      toast.error('ky produkt eshte shtuar ne favorites!');
+      toast.error('Ky produkt është tashmë në favorites!');
     }
   };
 
@@ -114,8 +108,6 @@ const Shop = () => {
 
   return (
     <div className="main-wrapper py-4" style={{ backgroundColor: '#f9f9f9', minHeight: '100vh' }}>
-      {showLoading && <Loading />}
-
       <div className="breadcrumb-area bg-white py-3 shadow-sm mb-4">
         <div className="container">
           <div className="breadcrumb-content d-flex align-items-center justify-content-between">
@@ -223,6 +215,9 @@ const Shop = () => {
                           src={part.primaryImages}
                           alt={part.name}
                           className="card-img-top object-fit-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = 'http://localhost:5298/uploads/product/3-1.jpg';
+                          }}
                           style={{ transition: 'transform 0.3s ease' }}
                           onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
                           onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
@@ -233,7 +228,7 @@ const Shop = () => {
                         <p className="card-text text-muted flex-grow-1" style={{ fontSize: '0.9rem' }}>
                           {part.description.length > 60 ? part.description.slice(0, 60) + '...' : part.description}
                         </p>
-                        <div className="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                        <div className="d-flex justify-content-between align-items-center mt-auto pt-2 border-top gap-2 flex-wrap">
                           <span className="fw-bold fs-5" style={{ color: '#ff8800ff' }}>
                             €{part.price ?? 'N/A'}
                           </span>
@@ -245,11 +240,10 @@ const Shop = () => {
                               borderColor: '#ff8800ff',
                               color: 'white',
                               fontWeight: '600',
-                              padding: '5px 5px',
+                              padding: '10px 55px',
                               borderRadius: '4px',
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
-                              marginLeft: '35px',
                               fontSize: '14px',
                             }}
                             onClick={() => handleAddToFavorites(part.partId)}
@@ -263,7 +257,7 @@ const Shop = () => {
                               borderColor: '#ff8800ff',
                               color: '#ff8800ff',
                               fontWeight: '600',
-                              padding: '5px 12px',
+                              padding: '10px 65px',
                               borderRadius: '4px',
                               transition: 'all 0.3s ease',
                               cursor: 'pointer',
@@ -337,12 +331,13 @@ const Shop = () => {
                 </li>
               </ul>
             </nav>
+            <br />
           </section>
         </div>
       </div>
 
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
-      <Footer/>
+      <Footer />
     </div>
   );
 };

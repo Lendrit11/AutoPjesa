@@ -30,11 +30,6 @@ export const RenderRoutes = (routes = []) => (
 );
 
 const routes = [
-  {
-    path: '/404',
-    layout: Website,
-    element: lazy(() => import('./views/Website/404')),
-  },
     {
     path: '/login',
     layout: Website,
@@ -51,29 +46,14 @@ const routes = [
     element: lazy(() => import('./views/Website/my-account')),
   },
   {
-    path: '/Faq',
-    layout: Website,
-    element: lazy(() => import('./views/Website/faq')),
-  },
-  {
     path: '/Contact',
     layout: Website,
     element: lazy(() => import('./views/Website/contact')),
   },
   {
-    path: '/Compare',
-    layout: Website,
-    element: lazy(() => import('./views/Website/compare')),
-  },
-  {
     path: '/Checkout',
     layout: Website,
     element: lazy(() => import('./views/Website/checkout')),
-  },
-  {
-    path: '/Cart',
-    layout: Website,
-    element: lazy(() => import('./views/Website/cart')),
   },
   {
     path: '/Blog',

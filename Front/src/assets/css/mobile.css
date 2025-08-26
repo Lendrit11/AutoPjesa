@@ -16,16 +16,7 @@
   width: 280px;
 }
 
-.offcanvas-menu-inner {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;   /* vertikalisht në qendër */
-  align-items: center;       /* horizontalisht në qendër */
-  width: 100%;
-  height: 100%;
-  padding: 100px 20px 20px; /* më shumë hapësirë nga lart për ta ulur */
-  box-sizing: border-box;
-}
+
 /* Sigurohu që menuja të mbushet në gjerësi të plotë */
 .offcanvas-navigation {
   width: 100%;
