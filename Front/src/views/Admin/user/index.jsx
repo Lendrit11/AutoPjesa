@@ -16,27 +16,9 @@ const { Option } = Select;
 const { Title, Text } = Typography;
 
 const dummyUsers = [
-  {
-    id: 1,
-    name: "Ardit Gashi",
-    email: "ardit@example.com",
-    role: "admin",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Blerta Morina",
-    email: "blerta@example.com",
-    role: "staff",
-    status: "blocked",
-  },
-  {
-    id: 3,
-    name: "Lirim Zeka",
-    email: "lirim@example.com",
-    role: "staff",
-    status: "active",
-  },
+  { id: 1, name: "Ardit Gashi", email: "ardit@example.com", role: "admin", status: "active" },
+  { id: 2, name: "Blerta Morina", email: "blerta@example.com", role: "staff", status: "blocked" },
+  { id: 3, name: "Lirim Zeka", email: "lirim@example.com", role: "staff", status: "active" },
 ];
 
 const AccountUserControl = () => {
@@ -45,9 +27,7 @@ const AccountUserControl = () => {
   const [loading, setLoading] = useState(false);
 
   const changeRole = (id, role) => {
-    setUsers((prev) =>
-      prev.map((user) => (user.id === id ? { ...user, role } : user))
-    );
+    setUsers((prev) => prev.map((user) => (user.id === id ? { ...user, role } : user)));
   };
 
   const toggleStatus = (id) => {
@@ -77,7 +57,7 @@ const AccountUserControl = () => {
     setTimeout(() => {
       setLoading(false);
       Modal.success({ content: "Profili u përditësua me sukses!" });
-    }, 2000); // simulo kohë ngarkimi 2 sek
+    }, 2000);
   };
 
   const columns = [
@@ -92,7 +72,7 @@ const AccountUserControl = () => {
       title: "Email",
       dataIndex: "email",
       key: "email",
-      responsive: ["sm"],
+      responsive: ["md"],
       render: (text) => <Text type="secondary">{text}</Text>,
     },
     {
@@ -113,8 +93,7 @@ const AccountUserControl = () => {
           popupMatchSelectWidth={false}
           dropdownStyle={{
             borderRadius: 12,
-            boxShadow:
-              "0 8px 16px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06)",
+            boxShadow: "0 8px 16px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06)",
           }}
         >
           <Option value="admin">Admin</Option>
@@ -140,10 +119,7 @@ const AccountUserControl = () => {
             padding: "0 14px",
             fontSize: 13,
             textTransform: "uppercase",
-            boxShadow:
-              record.status === "active"
-                ? "0 0 8px #b7eb8f"
-                : "0 0 8px #ffa39e",
+            boxShadow: record.status === "active" ? "0 0 8px #b7eb8f" : "0 0 8px #ffa39e",
           }}
         >
           {record.status === "active" ? "Aktiv" : "Bllokuar"}
@@ -154,7 +130,7 @@ const AccountUserControl = () => {
       title: "Veprime",
       key: "actions",
       render: (_, record) => (
-        <Space>
+        <Space wrap>
           <Button
             type={record.status === "active" ? "default" : "primary"}
             danger={record.status === "active"}
@@ -179,26 +155,25 @@ const AccountUserControl = () => {
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
-        padding: 48,
-        fontFamily:
-          "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+        padding: "24px",
+        fontFamily: "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
     >
+      {/* Profili */}
       <Card
         style={{
           maxWidth: 920,
-          margin: "0 auto 48px",
+          margin: "0 auto 24px",
           borderRadius: 24,
           boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
           backgroundColor: "#fff",
-          padding: 32,
+          padding: "16px",
         }}
         bodyStyle={{ padding: 0 }}
       >
-        <div style={{ padding: "0 32px 32px" }}>
-          <Title level={2} style={{ color: "#111", marginBottom: 12 }}>
+        <div style={{ padding: "0 16px 24px" }}>
+          <Title level={2} style={{ color: "#111", marginBottom: 12, fontSize: "clamp(20px, 4vw, 28px)" }}>
             Profili i Administratorit
           </Title>
           <Form
@@ -214,14 +189,7 @@ const AccountUserControl = () => {
               rules={[{ required: true, message: "Ju lutem shkruani emrin!" }]}
               style={{ marginBottom: 24 }}
             >
-              <Input
-                placeholder="Shkruani emrin"
-                style={{
-                  borderRadius: 12,
-                  boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-                  border: "none",
-                }}
-              />
+              <Input placeholder="Shkruani emrin" style={{ borderRadius: 12, border: "none" }} />
             </Form.Item>
             <Form.Item
               label="Email"
@@ -232,37 +200,13 @@ const AccountUserControl = () => {
               ]}
               style={{ marginBottom: 24 }}
             >
-              <Input
-                placeholder="shembull@example.com"
-                style={{
-                  borderRadius: 12,
-                  boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-                  border: "none",
-                }}
-              />
+              <Input placeholder="shembull@example.com" style={{ borderRadius: 12, border: "none" }} />
             </Form.Item>
-            <Form.Item
-              label="Fjalëkalimi i Ri"
-              name="password"
-              style={{ marginBottom: 32 }}
-            >
-              <Input.Password
-                placeholder="(Opsionale)"
-                style={{
-                  borderRadius: 12,
-                  boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
-                  border: "none",
-                }}
-              />
+            <Form.Item label="Fjalëkalimi i Ri" name="password" style={{ marginBottom: 32 }}>
+              <Input.Password placeholder="(Opsionale)" style={{ borderRadius: 12, border: "none" }} />
             </Form.Item>
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                block
-                loading={loading}
-                className="submit-button"
-              >
+              <Button type="primary" htmlType="submit" block loading={loading} className="submit-button">
                 Përditëso Profilin
               </Button>
             </Form.Item>
@@ -270,6 +214,7 @@ const AccountUserControl = () => {
         </div>
       </Card>
 
+      {/* Menaxhimi i përdoruesve */}
       <Card
         style={{
           maxWidth: 920,
@@ -277,11 +222,11 @@ const AccountUserControl = () => {
           borderRadius: 24,
           boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
           backgroundColor: "#fff",
-          padding: 24,
+          padding: "16px",
         }}
         bodyStyle={{ padding: 0 }}
         title={
-          <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
+          <Title level={3} style={{ margin: 0, fontWeight: 700, fontSize: "clamp(18px, 3vw, 24px)" }}>
             Menaxhimi i Përdoruesve
           </Title>
         }
@@ -292,7 +237,8 @@ const AccountUserControl = () => {
           rowKey="id"
           pagination={{ pageSize: 5 }}
           rowClassName="animated-row"
-          style={{ padding: "0 24px 24px" }}
+          style={{ padding: "0 12px 12px" }}
+          scroll={{ x: "max-content" }} // për telefon / tableta
         />
       </Card>
 
@@ -319,15 +265,14 @@ const AccountUserControl = () => {
           box-shadow: 0 8px 20px rgba(24,144,255,0.2);
           border-radius: 12px;
         }
-        .submit-button .ant-btn-loading-icon {
-          animation: shine 1.5s linear infinite;
-        }
-        @keyframes shine {
-          0% {
-            background-position: -100px;
+        @media (max-width: 768px) {
+          .ant-card {
+            margin: 12px;
           }
-          100% {
-            background-position: 200px;
+          .ant-space {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px !important;
           }
         }
       `}</style>
