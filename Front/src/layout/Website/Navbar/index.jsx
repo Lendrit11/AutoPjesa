@@ -14,8 +14,7 @@ import logo from '../../../assets/images/car.png';
 import Category from'./category-menu/index';
 import Search from './search/index';
 import Cart from './minicart/index';
-import Mobile from "./mobile-nav";
-
+import MobileMenu from "./mobile-nav";
 const Navbar = () => {
   const [showCart, setShowCart] = useState(false);
   const [showMobile, setShowMobile] = useState(false);
@@ -171,7 +170,7 @@ useEffect(() => {
       </div>
 
       <Cart className={showCart ? 'show-cart' : ''} onClose={() => setShowCart(false)} />
-<Mobile className={showMobile ? 'open' : ''} onClose={() => setShowMobile(false)} />
+<MobileMenu className={showMobile ? "open" : ""} onClose={() => setShowMobile(false)} />
     </header>
   );
 };
