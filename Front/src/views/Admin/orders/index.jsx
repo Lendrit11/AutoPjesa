@@ -64,6 +64,21 @@ const OrdersPage = () => {
     fetchOrders();
   }, []);
 
+  // 📌 Përditësimi i statusit (PUT)
+  const updateOrderStatus = async (orderId, newStatus) => {
+    setLoading(true);
+    try {
+      await axios.put(`/api/admin/orders/${orderId}/status`, { status: newStatus });
+      message.success(`Statusi u përditësua në ${newStatus}`);
+      await fetchOrders();
+    } catch (err) {
+      console.error(err);
+      message.error('Gabim gjatë përditësimit të statusit');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderNumber.includes(searchText) ||
       order.customer?.toLowerCase().includes(searchText.toLowerCase());
@@ -86,17 +101,6 @@ const OrdersPage = () => {
 
   const editOrder = (order) => {
     message.info(`Editimi i porosisë ${order.orderNumber}`);
-  };
-
-  const updateOrderStatus = (orderId, newStatus) => {
-    setLoading(true);
-    setTimeout(() => {
-      setOrders(orders.map(order =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      ));
-      message.success(`Statusi i porosisë u përditësua në ${newStatus}`);
-      setLoading(false);
-    }, 500);
   };
 
   const handleExport = () => {
