@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react'; 
 import {
   Card,
   Table,
@@ -28,8 +29,8 @@ import {
   FileExcelOutlined,
   PlusOutlined
 } from '@ant-design/icons';
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import moment from 'moment';
 
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -46,11 +47,22 @@ const OrdersPage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // 📌 Marrja e të dhënave (GET)
+  const userId = localStorage.getItem('userId');
+
+  const statusColors = {
+    'Pending': 'orange',
+    'Processing': 'blue',
+    'Shipped': 'purple',
+    'Completed': 'green',
+    'Cancelled': 'red'
+  };
+
+  // Fetch orders
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const res = await axios.get('/api/admin/orders');
+      // Sigurohu që orders është gjithmonë array
       setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -64,7 +76,23 @@ const OrdersPage = () => {
     fetchOrders();
   }, []);
 
-  // 📌 Përditësimi i statusit (PUT)
+  // Filter
+  const filteredOrders = Array.isArray(orders)
+    ? orders.filter(order => {
+        const matchesSearch =
+          order.orderNumber?.includes(searchText) ||
+          order.customer?.toLowerCase().includes(searchText.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      })
+    : [];
+
+  // Modals
+  const viewOrderDetails = (order) => {
+    setSelectedOrder(order);
+    setIsModalOpen(true);
+  };
+
   const updateOrderStatus = async (orderId, newStatus) => {
     setLoading(true);
     try {
@@ -79,7 +107,6 @@ const OrdersPage = () => {
     }
   };
 
-  // 📌 Fshirja e një porosie (DELETE)
   const deleteOrder = async (orderId) => {
     setLoading(true);
     try {
@@ -94,59 +121,15 @@ const OrdersPage = () => {
     }
   };
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderNumber.includes(searchText) ||
-      order.customer?.toLowerCase().includes(searchText.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const statusColors = {
-    'Pending': 'orange',
-    'Processing': 'blue',
-    'Shipped': 'purple',
-    'Completed': 'green',
-    'Cancelled': 'red'
-  };
-
-  const viewOrderDetails = (order) => {
-    setSelectedOrder(order);
-    setIsModalOpen(true);
-  };
-
-  const editOrder = (order) => {
-    message.info(`Editimi i porosisë ${order.orderNumber}`);
-  };
-
   const handleExport = () => {
     message.info('Funksionaliteti i eksportit do të implementohet këtu');
   };
 
   const columns = [
-    {
-      title: 'Data',
-      dataIndex: 'orderDate',
-      key: 'orderDate',
-      responsive: ['md']
-    },
-    {
-      title: 'Nr. Porosisë',
-      dataIndex: 'orderNumber',
-      key: 'orderNumber',
-      responsive: ['sm']
-    },
-    {
-      title: 'Klienti',
-      dataIndex: 'customer',
-      key: 'customer',
-      ellipsis: true
-    },
-    {
-      title: 'Telefon',
-      dataIndex: 'customerPhone',
-      key: 'customerPhone',
-      responsive: ['lg']
-    },
+    { title: 'Data', dataIndex: 'orderDate', key: 'orderDate', responsive: ['md'] },
+    { title: 'Nr. Porosisë', dataIndex: 'orderNumber', key: 'orderNumber', responsive: ['sm'] },
+    { title: 'Klienti', dataIndex: 'customer', key: 'customer', ellipsis: true },
+    { title: 'Telefon', dataIndex: 'customerPhone', key: 'customerPhone', responsive: ['lg'] },
     {
       title: 'Pjesët',
       key: 'parts',
@@ -163,14 +146,14 @@ const OrdersPage = () => {
       title: 'Totali',
       dataIndex: 'total',
       key: 'total',
-      render: (total) => `$${total.toFixed(2)}`,
+      render: total => `$${total?.toFixed(2)}`,
       responsive: ['sm']
     },
     {
       title: 'Statusi',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => <Tag color={statusColors[status]}>{status}</Tag>
+      render: status => <Tag color={statusColors[status]}>{status}</Tag>
     },
     {
       title: 'Veprime',
@@ -180,8 +163,6 @@ const OrdersPage = () => {
           menu={{
             items: [
               { key: 'view', label: 'Shiko', icon: <SearchOutlined />, onClick: () => viewOrderDetails(record) },
-              { key: 'edit', label: 'Edito', onClick: () => editOrder(record) },
-              { type: 'divider' },
               { key: 'process', label: 'Shëno si Proces', onClick: () => updateOrderStatus(record.id, 'Processing') },
               { key: 'ship', label: 'Shëno si Dërguar', onClick: () => updateOrderStatus(record.id, 'Shipped') },
               { key: 'complete', label: 'Shëno si Përfunduar', onClick: () => updateOrderStatus(record.id, 'Completed') },
@@ -194,16 +175,16 @@ const OrdersPage = () => {
         >
           <Button icon={<MoreOutlined />} />
         </Dropdown>
-      ),
-    },
+      )
+    }
   ];
 
-  const stats = [
+  const stats = Array.isArray(orders) ? [
     { title: 'Porosi Totale', value: orders.length, icon: <ShoppingCartOutlined /> },
     { title: 'Në Pritje', value: orders.filter(o => o.status === 'Pending').length, icon: <ClockCircleOutlined /> },
     { title: 'Në Proces', value: orders.filter(o => o.status === 'Processing').length, icon: <SyncOutlined spin /> },
     { title: 'Përfunduar', value: orders.filter(o => o.status === 'Completed').length, icon: <CheckCircleOutlined /> }
-  ];
+  ] : [];
 
   return (
     <div style={{ padding: isMobile ? 8 : 24 }}>
@@ -211,7 +192,13 @@ const OrdersPage = () => {
         title="Menaxhimi i Porosive"
         extra={
           <Space wrap>
-            <Input.Search placeholder="Kërko..." onSearch={setSearchText} allowClear style={{ width: isMobile ? 150 : 200 }} size={isMobile ? 'small' : 'middle'} />
+            <Input.Search
+              placeholder="Kërko..."
+              onSearch={value => setSearchText(value)}
+              allowClear
+              style={{ width: isMobile ? 150 : 200 }}
+              size={isMobile ? 'small' : 'middle'}
+            />
             <Select
               defaultValue="all"
               onChange={setStatusFilter}
@@ -240,67 +227,99 @@ const OrdersPage = () => {
             </Col>
           ))}
         </Row>
-        <Table columns={columns} dataSource={filteredOrders} rowKey="id" loading={loading} pagination={{ pageSize: isMobile ? 5 : 10 }} scroll={{ x: 'max-content' }} />
+        <Table
+          columns={columns}
+          dataSource={filteredOrders}
+          rowKey="id"
+          loading={loading}
+          pagination={{ pageSize: isMobile ? 5 : 10 }}
+          scroll={{ x: 'max-content' }}
+        />
       </Card>
 
-      {/* Modal detaje porosie */}
-      <Modal title={`Detajet e Porosisë ${selectedOrder ? selectedOrder.orderNumber : ''}`} open={isModalOpen} footer={null} onCancel={() => setIsModalOpen(false)} width={isMobile ? '90%' : 700}>
+      {/* Modal për detajet */}
+      <Modal
+        title={`Detajet e Porosisë ${selectedOrder ? selectedOrder.orderNumber : ''}`}
+        open={isModalOpen}
+        footer={null}
+        onCancel={() => setIsModalOpen(false)}
+        width={isMobile ? '90%' : 700}
+      >
         {selectedOrder && (
           <Descriptions bordered column={isMobile ? 1 : 2} size="small" layout={isMobile ? 'vertical' : 'horizontal'}>
             <Descriptions.Item label="Nr. Porosisë">{selectedOrder.orderNumber}</Descriptions.Item>
-            <Descriptions.Item label="Data">{selectedOrder.orderDate}</Descriptions.Item>
+            <Descriptions.Item label="Data">{moment(selectedOrder.orderDate).format('YYYY-MM-DD')}</Descriptions.Item>
             <Descriptions.Item label="Klienti">{selectedOrder.customer}</Descriptions.Item>
             <Descriptions.Item label="Telefon">{selectedOrder.customerPhone}</Descriptions.Item>
             <Descriptions.Item label="Adresa për Dërgesë" span={2}>{selectedOrder.shippingAddress}</Descriptions.Item>
             <Descriptions.Item label="Pjesët" span={2}>
               <ul style={{ paddingLeft: 20, margin: 0 }}>
-                {selectedOrder.parts.map(part => (
-                  <li key={part.partId}>{part.name} - Sasi: {part.quantity} - Çmim: ${part.price.toFixed(2)}</li>
+                {selectedOrder.parts?.map(part => (
+                  <li key={part.partId}>{part.name} - Sasi: {part.quantity} - Çmim: ${part.price?.toFixed(2)}</li>
                 ))}
               </ul>
             </Descriptions.Item>
-            <Descriptions.Item label="Totali" span={2}><Text strong>${selectedOrder.total.toFixed(2)}</Text></Descriptions.Item>
+            <Descriptions.Item label="Totali" span={2}><Text strong>${selectedOrder.total?.toFixed(2)}</Text></Descriptions.Item>
             <Descriptions.Item label="Statusi" span={2}><Tag color={statusColors[selectedOrder.status]}>{selectedOrder.status}</Tag></Descriptions.Item>
           </Descriptions>
         )}
       </Modal>
 
-      {/* Modal krijo porosi */}
-      <Modal title="Krijo Porosi të Re" open={isCreateModalOpen} onCancel={() => setIsCreateModalOpen(false)} footer={null} width={isMobile ? '90%' : 600}>
-        <Form layout="vertical" onFinish={(values) => {
-          const newOrder = {
-            id: orders.length + 1,
-            orderNumber: `ORD-${(orders.length + 1).toString().padStart(3, '0')}`,
-            customer: values.customer,
-            customerPhone: values.customerPhone,
-            orderDate: values.orderDate.format('YYYY-MM-DD'),
-            parts: values.parts,
-            total: values.parts.reduce((sum, p) => sum + p.quantity * p.price, 0),
-            status: 'Pending',
-            shippingAddress: values.shippingAddress
-          };
-          setOrders([...orders, newOrder]);
-          message.success('Porosia u krijua me sukses!');
-          setIsCreateModalOpen(false);
-        }} initialValues={{ parts: [{ partId: '', name: '', quantity: 1, price: 0 }] }}>
+      {/* Modal për krijimin e porosisë së re */}
+      <Modal
+        title="Krijo Porosi të Re"
+        open={isCreateModalOpen}
+        onCancel={() => setIsCreateModalOpen(false)}
+        footer={null}
+        width={isMobile ? '90%' : 600}
+      >
+        <Form
+          layout="vertical"
+          onFinish={async (values) => {
+            try {
+              const payload = {
+                userId,
+                customer: values.customer,
+                customerPhone: values.customerPhone,
+                orderDate: values.orderDate.format('YYYY-MM-DD'),
+                shippingAddress: values.shippingAddress,
+                parts: values.parts.map(p => ({ partId: p.partId, quantity: p.quantity, price: p.price }))
+              };
+              await axios.post('/api/admin/orders', payload);
+              message.success('Porosia u krijua me sukses!');
+              setIsCreateModalOpen(false);
+              await fetchOrders();
+            } catch (err) {
+              console.error(err);
+              message.error('Gabim gjatë krijimit të porosisë');
+            }
+          }}
+          initialValues={{ parts: [{ partId: '', name: '', quantity: 1, price: 0 }] }}
+        >
           <Form.Item label="Klienti" name="customer" rules={[{ required: true, message: 'Ju lutem shkruani emrin e klientit' }]}><Input /></Form.Item>
           <Form.Item label="Telefon" name="customerPhone" rules={[{ required: true, message: 'Ju lutem shkruani numrin e telefonit' }]}><Input /></Form.Item>
           <Form.Item label="Data e Porosisë" name="orderDate" rules={[{ required: true, message: 'Ju lutem zgjidhni datën e porosisë' }]}><DatePicker style={{ width: '100%' }} /></Form.Item>
-          <Form.List name="parts">{(fields, { add, remove }) => (
-            <>
-              <Text strong>Pjesët</Text>
-              {fields.map(({ key, name, ...restField }) => (
-                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-                  <Form.Item {...restField} name={[name, 'partId']} rules={[{ required: true, message: 'Shkruani ID-në e pjesës' }]}><Input placeholder="ID Pjese" /></Form.Item>
-                  <Form.Item {...restField} name={[name, 'name']} rules={[{ required: true, message: 'Shkruani emrin e pjesës' }]}><Input placeholder="Emri i pjesës" /></Form.Item>
-                  <Form.Item {...restField} name={[name, 'quantity']} rules={[{ required: true, message: 'Sasia duhet të jetë > 0' }]} initialValue={1}><InputNumber min={1} placeholder="Sasia" /></Form.Item>
-                  <Form.Item {...restField} name={[name, 'price']} rules={[{ required: true, message: 'Shkruani çmimin' }]} initialValue={0}><InputNumber min={0} step={0.01} placeholder="Çmimi" formatter={value => `$ ${value}`} parser={value => value.replace(/\$\s?|(,*)/g, '')} /></Form.Item>
-                  {fields.length > 1 && (<Button danger onClick={() => remove(name)}>Hiq</Button>)}
-                </Space>
-              ))}
-              <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>Shto pjesë të re</Button>
-            </>
-          )}</Form.List>
+
+          <Form.List name="parts">
+            {(fields, { add, remove }) => (
+              <>
+                <Text strong>Pjesët</Text>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                    <Form.Item {...restField} name={[name, 'partId']} rules={[{ required: true, message: 'Shkruani ID-në e pjesës' }]}><Input placeholder="ID Pjese" /></Form.Item>
+                    <Form.Item {...restField} name={[name, 'name']} rules={[{ required: true, message: 'Shkruani emrin e pjesës' }]}><Input placeholder="Emri i pjesës" /></Form.Item>
+                    <Form.Item {...restField} name={[name, 'quantity']} rules={[{ required: true, message: 'Sasia duhet të jetë > 0' }]} initialValue={1}><InputNumber min={1} placeholder="Sasia" /></Form.Item>
+                    <Form.Item {...restField} name={[name, 'price']} rules={[{ required: true, message: 'Shkruani çmimin' }]} initialValue={0}>
+                      <InputNumber min={0} step={0.01} placeholder="Çmimi" formatter={value => `$ ${value}`} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
+                    </Form.Item>
+                    {fields.length > 1 && <Button danger onClick={() => remove(name)}>Hiq</Button>}
+                  </Space>
+                ))}
+                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>Shto pjesë të re</Button>
+              </>
+            )}
+          </Form.List>
+
           <Form.Item label="Adresa për Dërgesë" name="shippingAddress" rules={[{ required: true, message: 'Ju lutem shkruani adresën' }]}><Input.TextArea rows={2} /></Form.Item>
           <Form.Item><Button type="primary" htmlType="submit" block>Krijo Porosi</Button></Form.Item>
         </Form>
