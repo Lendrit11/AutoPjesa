@@ -79,6 +79,21 @@ const OrdersPage = () => {
     }
   };
 
+  // 📌 Fshirja e një porosie (DELETE)
+  const deleteOrder = async (orderId) => {
+    setLoading(true);
+    try {
+      await axios.delete(`/api/admin/orders/${orderId}`);
+      message.success('Porosia u fshi me sukses');
+      setOrders(prev => Array.isArray(prev) ? prev.filter(o => o.id !== orderId) : []);
+    } catch (err) {
+      console.error(err);
+      message.error('Gabim gjatë fshirjes së porosisë');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderNumber.includes(searchText) ||
       order.customer?.toLowerCase().includes(searchText.toLowerCase());
@@ -138,13 +153,9 @@ const OrdersPage = () => {
       render: (_, record) => (
         <ul style={{ margin: 0, paddingLeft: 20 }}>
           {record.parts?.slice(0, isMobile ? 1 : undefined).map(part => (
-            <li key={part.partId}>
-              {part.name} (x{part.quantity})
-            </li>
+            <li key={part.partId}>{part.name} (x{part.quantity})</li>
           ))}
-          {isMobile && record.parts?.length > 1 && (
-            <li>+{record.parts.length - 1} më shumë</li>
-          )}
+          {isMobile && record.parts?.length > 1 && <li>+{record.parts.length - 1} më shumë</li>}
         </ul>
       )
     },
@@ -159,9 +170,7 @@ const OrdersPage = () => {
       title: 'Statusi',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag color={statusColors[status]}>{status}</Tag>
-      )
+      render: (status) => <Tag color={statusColors[status]}>{status}</Tag>
     },
     {
       title: 'Veprime',
@@ -176,7 +185,9 @@ const OrdersPage = () => {
               { key: 'process', label: 'Shëno si Proces', onClick: () => updateOrderStatus(record.id, 'Processing') },
               { key: 'ship', label: 'Shëno si Dërguar', onClick: () => updateOrderStatus(record.id, 'Shipped') },
               { key: 'complete', label: 'Shëno si Përfunduar', onClick: () => updateOrderStatus(record.id, 'Completed') },
-              { key: 'cancel', label: 'Anulo Porosinë', danger: true, onClick: () => updateOrderStatus(record.id, 'Cancelled') }
+              { key: 'cancel', label: 'Anulo Porosinë', danger: true, onClick: () => updateOrderStatus(record.id, 'Cancelled') },
+              { type: 'divider' },
+              { key: 'delete', label: 'Fshi Porosinë', danger: true, onClick: () => deleteOrder(record.id) }
             ]
           }}
           trigger={['click']}
