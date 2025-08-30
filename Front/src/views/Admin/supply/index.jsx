@@ -20,12 +20,23 @@ import {
   Divider,
   Upload,
   Alert,
-  Grid
+  Grid,
+  Image,
+  List
 } from 'antd';
 import {
   PlusOutlined,
   SearchOutlined,
-  UploadOutlined
+  UploadOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  GlobalOutlined,
+  BuildOutlined,
+  AppstoreOutlined,
+  ShopOutlined
 } from '@ant-design/icons';
 
 const { useBreakpoint } = Grid;
@@ -35,22 +46,29 @@ const { Title, Text } = Typography;
 
 const SupplyInventoryDashboard = () => {
   const screens = useBreakpoint();
+  const [form] = Form.useForm();
 
   // MOCK DATA
   const [categories, setCategories] = useState([
     { id: 1, name: 'Sistem Frenimi' },
     { id: 2, name: 'Motor' },
-    { id: 3, name: 'Transmisioni' }
+    { id: 3, name: 'Transmisioni' },
+    { id: 4, name: 'Sistem Elektrik' },
+    { id: 5, name: 'Sistem Shasing' }
   ]);
 
   const [manufacturers, setManufacturers] = useState([
     { id: 1, name: 'Bosch', country: 'Gjermani', yearFounded: 1886 },
-    { id: 2, name: 'Valeo', country: 'Francë', yearFounded: 1923 }
+    { id: 2, name: 'Valeo', country: 'Francë', yearFounded: 1923 },
+    { id: 3, name: 'Delphi', country: 'SHBA', yearFounded: 1994 },
+    { id: 4, name: 'Denso', country: 'Japoni', yearFounded: 1949 }
   ]);
 
   const [carModels, setCarModels] = useState([
     { id: 1, name: 'Golf VII', manufacturerId: 1, productionYear: 2012 },
-    { id: 2, name: 'Passat B8', manufacturerId: 1, productionYear: 2014 }
+    { id: 2, name: 'Passat B8', manufacturerId: 1, productionYear: 2014 },
+    { id: 3, name: 'Civic X', manufacturerId: 2, productionYear: 2015 },
+    { id: 4, name: 'Corolla XII', manufacturerId: 2, productionYear: 2018 }
   ]);
 
   const [parts, setParts] = useState([
@@ -60,10 +78,34 @@ const SupplyInventoryDashboard = () => {
       name: 'Frena Disk',
       categoryId: 1,
       price: 45.99,
-      stock: 25,
+      stock: 5,
       reorderLevel: 10,
       location: 'A1-12',
       compatibleModelIds: [1, 2],
+      imageUrls: []
+    },
+    {
+      id: 2,
+      partNumber: 'EN-2005',
+      name: 'Filter Ajri',
+      categoryId: 2,
+      price: 12.50,
+      stock: 35,
+      reorderLevel: 5,
+      location: 'B2-07',
+      compatibleModelIds: [1, 3, 4],
+      imageUrls: []
+    },
+    {
+      id: 3,
+      partNumber: 'TR-3002',
+      name: 'Diferencial',
+      categoryId: 3,
+      price: 245.75,
+      stock: 3,
+      reorderLevel: 2,
+      location: 'C3-15',
+      compatibleModelIds: [2, 4],
       imageUrls: []
     }
   ]);
@@ -75,8 +117,19 @@ const SupplyInventoryDashboard = () => {
       contactPerson: 'Filan Fisteku',
       phone: '+38344123456',
       email: 'info@autoparts.com',
+      address: 'Rr. Lidhja e Prizrenit, Prishtinë',
       status: 'Aktiv',
-      manufacturerIds: [1]
+      manufacturerIds: [1, 2]
+    },
+    {
+      id: 2,
+      name: 'EuroCar Parts',
+      contactPerson: 'Agim Berisha',
+      phone: '+38349567890',
+      email: 'agim@eurocarparts.com',
+      address: 'Rr. Deshmoret e Kombit, Prishtinë',
+      status: 'Aktiv',
+      manufacturerIds: [1, 3, 4]
     }
   ]);
 
@@ -88,10 +141,10 @@ const SupplyInventoryDashboard = () => {
   const [isManufacturerModalVisible, setIsManufacturerModalVisible] = useState(false);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
   const [editingPart, setEditingPart] = useState(null);
+  const [editingSupplier, setEditingSupplier] = useState(null);
   const [editingManufacturer, setEditingManufacturer] = useState(null);
   const [activeTab, setActiveTab] = useState('inventory');
-  const [activeSupplierTab, setActiveSupplierTab] = useState('1');
-  const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState('');
 
   // PART FUNCTIONS
   const handleAddPart = (values) => {
@@ -102,17 +155,43 @@ const SupplyInventoryDashboard = () => {
     setParts([...parts, newPart]);
     message.success('Pjesa u shtua me sukses!');
     setIsPartModalVisible(false);
+    form.resetFields();
   };
 
   const handleEditPart = (values) => {
-    setParts(parts.map(p => p.id === values.id ? values : p));
+    setParts(parts.map(p => p.id === editingPart.id ? { ...editingPart, ...values } : p));
     message.success('Pjesa u përditësua!');
     setIsPartModalVisible(false);
+    setEditingPart(null);
+    form.resetFields();
   };
 
   const handleDeletePart = (id) => {
     setParts(parts.filter(p => p.id !== id));
     message.success('Pjesa u fshi!');
+  };
+
+  // SUPPLIER FUNCTIONS
+  const handleAddSupplier = (values) => {
+    const newSupplier = {
+      ...values,
+      id: suppliers.length > 0 ? Math.max(...suppliers.map(s => s.id)) + 1 : 1,
+    };
+    setSuppliers([...suppliers, newSupplier]);
+    message.success('Furnitori u shtua me sukses!');
+    setIsSupplierModalVisible(false);
+  };
+
+  const handleEditSupplier = (values) => {
+    setSuppliers(suppliers.map(s => s.id === editingSupplier.id ? { ...editingSupplier, ...values } : s));
+    message.success('Furnitori u përditësua!');
+    setIsSupplierModalVisible(false);
+    setEditingSupplier(null);
+  };
+
+  const handleDeleteSupplier = (id) => {
+    setSuppliers(suppliers.filter(s => s.id !== id));
+    message.success('Furnitori u fshi!');
   };
 
   // MANUFACTURER FUNCTIONS
@@ -137,19 +216,27 @@ const SupplyInventoryDashboard = () => {
     setIsCategoryModalVisible(false);
   };
 
+  // FILTER PARTS BASED ON SEARCH
+  const filteredParts = parts.filter(part => 
+    part.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    part.partNumber.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   // TABLE COLUMNS
   const partColumns = [
     {
-      title: 'Numri',
+      title: 'Numri i Pjesës',
       dataIndex: 'partNumber',
       key: 'partNumber',
-      responsive: ['md']
+      responsive: ['md'],
+      sorter: (a, b) => a.partNumber.localeCompare(b.partNumber),
     },
     {
       title: 'Emri',
       dataIndex: 'name',
       key: 'name',
-      responsive: ['sm']
+      responsive: ['sm'],
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: 'Kategoria',
@@ -159,29 +246,37 @@ const SupplyInventoryDashboard = () => {
         text: category.name,
         value: category.id,
       })),
-      onFilter: (value, record) => {
-        const categoryId = typeof value === 'number' ? value : Number(value);
-        return record.categoryId === categoryId;
+      onFilter: (value, record) => record.categoryId === value,
+      render: (value) => {
+        const category = categories.find(c => c.id === value);
+        return <Tag color="blue">{category?.name}</Tag>;
       },
-      render: (value) => categories.find(c => c.id === value)?.name,
-      responsive: ['md']
+      responsive: ['md'],
     },
     {
       title: 'Çmimi (€)',
       dataIndex: 'price',
       key: 'price',
-      responsive: ['lg']
+      responsive: ['lg'],
+      sorter: (a, b) => a.price - b.price,
+      render: (price) => `€${price.toFixed(2)}`
     },
     {
       title: 'Stoku',
       dataIndex: 'stock',
       key: 'stock',
       render: (value, record) => (
-        <Text style={{ color: value <= record.reorderLevel ? 'red' : undefined }}>
-          {value}
-        </Text>
+        <div>
+          <Text style={{ color: value <= record.reorderLevel ? 'red' : 'green', fontWeight: 'bold' }}>
+            {value}
+          </Text>
+          {value <= record.reorderLevel && (
+            <div style={{ fontSize: '10px', color: 'red' }}>STOK I ULTË</div>
+          )}
+        </div>
       ),
-      responsive: ['sm']
+      responsive: ['sm'],
+      sorter: (a, b) => a.stock - b.stock,
     },
     {
       title: 'Veprime',
@@ -190,6 +285,7 @@ const SupplyInventoryDashboard = () => {
         <Space>
           <Button
             size={screens.xs ? 'small' : 'middle'}
+            icon={<EditOutlined />}
             onClick={() => {
               setEditingPart(record);
               form.setFieldsValue({
@@ -199,14 +295,16 @@ const SupplyInventoryDashboard = () => {
               setIsPartModalVisible(true);
             }}
           >
-            {screens.xs ? '✏️' : 'Edito'}
+            {!screens.xs && 'Edito'}
           </Button>
           <Popconfirm
-            title="Jeni i sigurt?"
+            title="Jeni i sigurt që dëshironi të fshini këtë pjesë?"
             onConfirm={() => handleDeletePart(record.id)}
+            okText="Po"
+            cancelText="Jo"
           >
-            <Button danger size={screens.xs ? 'small' : 'middle'}>
-              {screens.xs ? '🗑️' : 'Fshi'}
+            <Button danger size={screens.xs ? 'small' : 'middle'} icon={<DeleteOutlined />}>
+              {!screens.xs && 'Fshi'}
             </Button>
           </Popconfirm>
         </Space>
@@ -215,18 +313,25 @@ const SupplyInventoryDashboard = () => {
   ];
 
   const manufacturerColumns = [
-    { title: 'Emri', dataIndex: 'name', key: 'name' },
+    { 
+      title: 'Emri', 
+      dataIndex: 'name', 
+      key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
     {
       title: 'Shteti',
       dataIndex: 'country',
       key: 'country',
-      responsive: ['md']
+      responsive: ['md'],
+      sorter: (a, b) => a.country.localeCompare(b.country),
     },
     {
-      title: 'Viti',
+      title: 'Viti i Themelimit',
       dataIndex: 'yearFounded',
       key: 'year',
-      responsive: ['lg']
+      responsive: ['lg'],
+      sorter: (a, b) => a.yearFounded - b.yearFounded,
     },
     {
       title: 'Veprime',
@@ -235,151 +340,272 @@ const SupplyInventoryDashboard = () => {
         <Space>
           <Button
             size={screens.xs ? 'small' : 'middle'}
+            icon={<EditOutlined />}
             onClick={() => {
               setEditingManufacturer(record);
               setIsManufacturerModalVisible(true);
             }}
           >
-            {screens.xs ? '✏️' : 'Edito'}
+            {!screens.xs && 'Edito'}
           </Button>
-          <Button
-            danger
-            size={screens.xs ? 'small' : 'middle'}
-            onClick={() => {
+          <Popconfirm
+            title="Jeni i sigurt që dëshironi të fshini këtë prodhues?"
+            onConfirm={() => {
               setManufacturers(manufacturers.filter(m => m.id !== record.id));
               message.success('Prodhuesi u fshi!');
             }}
+            okText="Po"
+            cancelText="Jo"
           >
-            {screens.xs ? '🗑️' : 'Fshi'}
+            <Button danger size={screens.xs ? 'small' : 'middle'} icon={<DeleteOutlined />}>
+              {!screens.xs && 'Fshi'}
+            </Button>
+          </Popconfirm>
+        </Space>
+      )
+    }
+  ];
+
+  const supplierColumns = [
+    { 
+      title: 'Emri', 
+      dataIndex: 'name', 
+      key: 'name',
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
+    { 
+      title: 'Personi Kontaktues', 
+      dataIndex: 'contactPerson', 
+      key: 'contactPerson',
+      responsive: ['md'],
+    },
+    { 
+      title: 'Telefoni', 
+      dataIndex: 'phone', 
+      key: 'phone',
+      responsive: ['lg'],
+    },
+    { 
+      title: 'Email', 
+      dataIndex: 'email', 
+      key: 'email',
+      responsive: ['lg'],
+    },
+    {
+      title: 'Statusi',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <Tag color={status === 'Aktiv' ? 'green' : 'red'}>
+          {status}
+        </Tag>
+      ),
+      filters: [
+        { text: 'Aktiv', value: 'Aktiv' },
+        { text: 'Jo Aktiv', value: 'Jo Aktiv' },
+      ],
+      onFilter: (value, record) => record.status === value,
+    },
+    {
+      title: 'Veprime',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button
+            size={screens.xs ? 'small' : 'middle'}
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEditingSupplier(record);
+              setIsSupplierModalVisible(true);
+            }}
+          >
+            {!screens.xs && 'Edito'}
           </Button>
+          <Popconfirm
+            title="Jeni i sigurt që dëshironi të fshini këtë furnitor?"
+            onConfirm={() => handleDeleteSupplier(record.id)}
+            okText="Po"
+            cancelText="Jo"
+          >
+            <Button danger size={screens.xs ? 'small' : 'middle'} icon={<DeleteOutlined />}>
+              {!screens.xs && 'Fshi'}
+            </Button>
+          </Popconfirm>
         </Space>
       )
     }
   ];
 
   return (
-    <div style={{ padding: screens.xs ? 12 : 24 }}>
-      <Title level={2} style={{ fontSize: screens.xs ? '20px' : '24px' }}>
-        Paneli i Inventarit dhe Furnitorëve
-      </Title>
+    <div style={{ padding: screens.xs ? '12px' : '24px', background: '#f0f2f5', minHeight: '100vh' }}>
+    
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic title="Total Pjesë" value={parts.length} />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
+          <Card 
+            style={{ borderRadius: 12, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}
+            bodyStyle={{ padding: '16px' }}
+          >
             <Statistic
-              title="Pjesë Në Alarm"
-              value={parts.filter(p => p.stock <= p.reorderLevel).length}
+              title="Total Pjesë"
+              value={parts.length}
+              prefix={<AppstoreOutlined style={{ color: '#1890ff' }} />}
+              valueStyle={{ color: '#1890ff' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic title="Total Furnitorë" value={suppliers.length} />
+          <Card 
+            style={{ borderRadius: 12, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}
+            bodyStyle={{ padding: '16px' }}
+          >
+            <Statistic
+              title="Pjesë Në Alarm"
+              value={parts.filter(p => p.stock <= p.reorderLevel).length}
+              prefix={<Alert style={{ color: '#ff4d4f' }} />}
+              valueStyle={{ color: '#ff4d4f' }}
+            />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Card>
+          <Card 
+            style={{ borderRadius: 12, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}
+            bodyStyle={{ padding: '16px' }}
+          >
+            <Statistic
+              title="Total Furnitorë"
+              value={suppliers.length}
+              prefix={<ShopOutlined style={{ color: '#52c41a' }} />}
+              valueStyle={{ color: '#52c41a' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card 
+            style={{ borderRadius: 12, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}
+            bodyStyle={{ padding: '16px' }}
+          >
             <Statistic
               title="Vlera Totale"
               value={parts.reduce((sum, p) => sum + (p.price * p.stock), 0).toFixed(2)}
               prefix="€"
+              valueStyle={{ color: '#722ed1' }}
             />
           </Card>
         </Col>
       </Row>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <TabPane tab="Inventari" key="inventory">
-          <Card
-            title="Menaxhimi i Pjesëve"
-            extra={
-              <Space>
-                <Input
-                  placeholder="Kërko..."
-                  prefix={<SearchOutlined />}
-                  size={screens.xs ? 'small' : 'middle'}
-                />
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  size={screens.xs ? 'small' : 'middle'}
-                  onClick={() => {
-                    setEditingPart(null);
-                    setIsPartModalVisible(true);
-                  }}
-                >
-                  {screens.xs ? 'Shto' : 'Shto Pjesë'}
-                </Button>
-              </Space>
-            }
+      <Card 
+        style={{ borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+        bodyStyle={{ padding: screens.xs ? '16px' : '24px' }}
+      >
+        <Tabs 
+          activeKey={activeTab} 
+          onChange={setActiveTab}
+          type="card"
+          size={screens.xs ? 'small' : 'middle'}
+        >
+          <TabPane 
+            tab={
+              <span>
+                <AppstoreOutlined />
+                Inventari
+              </span>
+            } 
+            key="inventory"
           >
+            <div style={{ marginBottom: 16, display: 'flex', flexDirection: screens.xs ? 'column' : 'row', gap: '12px' }}>
+              <Input
+                placeholder="Kërko pjesë..."
+                prefix={<SearchOutlined />}
+                size={screens.xs ? 'small' : 'middle'}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={screens.xs ? { marginBottom: 12 } : { width: 300 }}
+              />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                size={screens.xs ? 'small' : 'middle'}
+                onClick={() => {
+                  setEditingPart(null);
+                  form.resetFields();
+                  setIsPartModalVisible(true);
+                }}
+                style={screens.xs ? {} : { marginLeft: 'auto' }}
+              >
+                {screens.xs ? 'Shto' : 'Shto Pjesë'}
+              </Button>
+            </div>
+
             {parts.filter(p => p.stock <= p.reorderLevel).length > 0 && (
               <Alert
                 type="warning"
                 message={`${parts.filter(p => p.stock <= p.reorderLevel).length} pjesë në stok kritik`}
+                description="Këto pjesë kanë nevojë për rimbushje të menjëhershme."
                 showIcon
                 style={{ marginBottom: 16 }}
+                closable
               />
             )}
 
             <Table
               columns={partColumns}
-              dataSource={parts}
+              dataSource={filteredParts}
               rowKey="id"
               scroll={{ x: true }}
               size={screens.xs ? 'small' : 'middle'}
+              pagination={{ 
+                pageSize: 5, 
+                showSizeChanger: false,
+                showTotal: (total, range) => `${range[0]}-${range[1]} nga ${total} pjesë` 
+              }}
             />
-          </Card>
-        </TabPane>
+          </TabPane>
 
-        <TabPane tab="Furnitorët" key="suppliers">
-          <Card
-            title="Lista e Furnitorëve"
-            extra={
+          <TabPane 
+            tab={
+              <span>
+                <ShopOutlined />
+                Furnitorët
+              </span>
+            } 
+            key="suppliers"
+          >
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
                 size={screens.xs ? 'small' : 'middle'}
-                onClick={() => setIsSupplierModalVisible(true)}
+                onClick={() => {
+                  setEditingSupplier(null);
+                  setIsSupplierModalVisible(true);
+                }}
               >
                 {screens.xs ? 'Shto' : 'Shto Furnitor'}
               </Button>
-            }
-          >
+            </div>
+
             <Table
               dataSource={suppliers}
               rowKey="id"
               size={screens.xs ? 'small' : 'middle'}
               pagination={{ pageSize: 5 }}
-              columns={[
-                { title: 'Emri', dataIndex: 'name', key: 'name' },
-                { title: 'Personi Kontaktues', dataIndex: 'contactPerson', key: 'contactPerson' },
-                { title: 'Telefoni', dataIndex: 'phone', key: 'phone' },
-                { title: 'Email', dataIndex: 'email', key: 'email' },
-                {
-                  title: 'Statusi',
-                  dataIndex: 'status',
-                  key: 'status',
-                  render: (status) => (
-                    <Tag color={status === 'Aktiv' ? 'green' : 'red'}>
-                      {status}
-                    </Tag>
-                  )
-                }
-              ]}
+              columns={supplierColumns}
+              scroll={{ x: true }}
             />
-          </Card>
-        </TabPane>
+          </TabPane>
 
-        <TabPane tab="Prodhuesit" key="manufacturers">
-          <Card
-            title="Lista e Prodhuesve"
-            extra={
+          <TabPane 
+            tab={
+              <span>
+                <GlobalOutlined />
+                Prodhuesit
+              </span>
+            } 
+            key="manufacturers"
+          >
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -388,22 +614,28 @@ const SupplyInventoryDashboard = () => {
               >
                 {screens.xs ? 'Shto' : 'Shto Prodhues'}
               </Button>
-            }
-          >
+            </div>
+
             <Table
               columns={manufacturerColumns}
               dataSource={manufacturers}
               rowKey="id"
               size={screens.xs ? 'small' : 'middle'}
               pagination={{ pageSize: 5 }}
+              scroll={{ x: true }}
             />
-          </Card>
-        </TabPane>
+          </TabPane>
 
-        <TabPane tab="Kategoriat" key="categories">
-          <Card
-            title="Lista e Kategorive"
-            extra={
+          <TabPane 
+            tab={
+              <span>
+                <AppstoreOutlined />
+                Kategoritë
+              </span>
+            } 
+            key="categories"
+          >
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 type="primary"
                 size={screens.xs ? 'small' : 'middle'}
@@ -411,85 +643,91 @@ const SupplyInventoryDashboard = () => {
               >
                 {screens.xs ? 'Shto' : 'Shto Kategori'}
               </Button>
-            }
-          >
-            <Table
-              dataSource={categories}
-              rowKey="id"
-              pagination={{ pageSize: 5 }}
-              columns={[
-                { title: 'Emri', dataIndex: 'name', key: 'name' },
-                {
-                  title: 'Veprime',
-                  key: 'actions',
-                  render: (_, record) => (
-                    <Popconfirm
-                      title="Jeni i sigurt që dëshironi të fshini?"
-                      onConfirm={() => {
-                        setCategories(categories.filter(c => c.id !== record.id));
-                        message.success('Kategoria u fshi!');
-                      }}
-                    >
-                      <Button danger size={screens.xs ? 'small' : 'middle'}>
-                        {screens.xs ? '🗑️' : 'Fshi'}
-                      </Button>
-                    </Popconfirm>
-                  )
-                }
-              ]}
-            />
-          </Card>
-        </TabPane>
-      </Tabs>
+            </div>
+
+            <Row gutter={[16, 16]}>
+              {categories.map(category => (
+                <Col xs={24} sm={12} md={8} lg={6} key={category.id}>
+                  <Card 
+                    size="small" 
+                    style={{ borderRadius: 8 }}
+                    actions={[
+                      <Popconfirm
+                        title="Jeni i sigurt që dëshironi të fshini këtë kategori?"
+                        onConfirm={() => {
+                          setCategories(categories.filter(c => c.id !== category.id));
+                          message.success('Kategoria u fshi!');
+                        }}
+                        okText="Po"
+                        cancelText="Jo"
+                      >
+                        <DeleteOutlined key="delete" style={{ color: '#ff4d4f' }} />
+                      </Popconfirm>
+                    ]}
+                  >
+                    <Card.Meta
+                      title={category.name}
+                      description={`ID: ${category.id}`}
+                    />
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </TabPane>
+        </Tabs>
+      </Card>
 
       {/* Part Modal */}
       <Modal
-        title={editingPart ? 'Edito Pjesë' : 'Shto Pjesë'}
-        visible={isPartModalVisible}
-        onCancel={() => setIsPartModalVisible(false)}
+        title={editingPart ? 'Edito Pjesën' : 'Shto Pjesë të Re'}
+        open={isPartModalVisible}
+        onCancel={() => {
+          setIsPartModalVisible(false);
+          setEditingPart(null);
+          form.resetFields();
+        }}
         footer={null}
         destroyOnClose
+        width={screens.xs ? '90%' : 600}
       >
         <Form
           form={form}
           layout="vertical"
-          initialValues={{
+          initialValues={editingPart || {
             categoryId: categories.length > 0 ? categories[0].id.toString() : undefined,
             stock: 0,
             reorderLevel: 10,
             compatibleModelIds: []
           }}
-          onFinish={(values) => {
-            if (editingPart) {
-              handleEditPart({ ...editingPart, ...values, categoryId: Number(values.categoryId) });
-            } else {
-              handleAddPart({ ...values, categoryId: Number(values.categoryId) });
-            }
-            form.resetFields();
-          }}
+          onFinish={editingPart ? handleEditPart : handleAddPart}
         >
-          <Form.Item
-            name="partNumber"
-            label="Numri i Pjesës"
-            rules={[{ required: true, message: 'Ju lutem shkruani numrin e pjesës!' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="name"
-            label="Emri i Pjesës"
-            rules={[{ required: true, message: 'Ju lutem shkruani emrin e pjesës!' }]}
-          >
-            <Input />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="partNumber"
+                label="Numri i Pjesës"
+                rules={[{ required: true, message: 'Ju lutem shkruani numrin e pjesës!' }]}
+              >
+                <Input prefix="# " placeholder="BP-1001" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="name"
+                label="Emri i Pjesës"
+                rules={[{ required: true, message: 'Ju lutem shkruani emrin e pjesës!' }]}
+              >
+                <Input placeholder="Frena Disk" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item
             name="categoryId"
             label="Kategoria"
             rules={[{ required: true, message: 'Ju lutem zgjidhni kategorinë!' }]}
           >
-            <Select>
+            <Select placeholder="Zgjidhni kategorinë">
               {categories.map(c => (
                 <Option key={c.id} value={c.id.toString()}>
                   {c.name}
@@ -498,36 +736,52 @@ const SupplyInventoryDashboard = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="price"
-            label="Çmimi (€)"
-            rules={[{ required: true, message: 'Ju lutem shkruani çmimin!' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="price"
+                label="Çmimi (€)"
+                rules={[{ required: true, message: 'Ju lutem shkruani çmimin!' }]}
+              >
+                <InputNumber 
+                  min={0} 
+                  style={{ width: '100%' }} 
+                  placeholder="45.99"
+                  step={0.01}
+                  formatter={value => `€ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="stock"
+                label="Sasia në stok"
+                rules={[{ required: true, message: 'Ju lutem shkruani sasinë!' }]}
+              >
+                <InputNumber min={0} style={{ width: '100%' }} placeholder="25" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            name="stock"
-            label="Sasia në stok"
-            rules={[{ required: true, message: 'Ju lutem shkruani sasinë!' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item
-            name="reorderLevel"
-            label="Nivel i alarmin për rimbushje"
-            rules={[{ required: true, message: 'Ju lutem shkruani nivelin!' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item
-            name="location"
-            label="Vendndodhja në depo"
-          >
-            <Input />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="reorderLevel"
+                label="Nivel i alarmit për rimbushje"
+                rules={[{ required: true, message: 'Ju lutem shkruani nivelin!' }]}
+              >
+                <InputNumber min={0} style={{ width: '100%' }} placeholder="10" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="location"
+                label="Vendndodhja në depo"
+              >
+                <Input placeholder="A1-12" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item
             name="compatibleModelIds"
@@ -546,32 +800,141 @@ const SupplyInventoryDashboard = () => {
             </Select>
           </Form.Item>
 
+          <Form.Item
+            name="image"
+            label="Ngarko imazhin e pjesës"
+          >
+            <Upload
+              listType="picture"
+              beforeUpload={() => false}
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Zgjidhni skedarin</Button>
+            </Upload>
+          </Form.Item>
+
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              {editingPart ? 'Ruaj Ndryshimet' : 'Shto Pjesë'}
+            <Button type="primary" htmlType="submit" block size="large">
+              {editingPart ? 'Ruaj Ndryshimet' : 'Shto Pjesën'}
             </Button>
           </Form.Item>
         </Form>
       </Modal>
 
-      {/* Supplier Modal (empty template, mund ta plotësosh sipas nevojës) */}
+      {/* Supplier Modal */}
       <Modal
-        title="Shto Furnitor"
-        visible={isSupplierModalVisible}
-        onCancel={() => setIsSupplierModalVisible(false)}
+        title={editingSupplier ? 'Edito Furnitorin' : 'Shto Furnitor të Ri'}
+        open={isSupplierModalVisible}
+        onCancel={() => {
+          setIsSupplierModalVisible(false);
+          setEditingSupplier(null);
+        }}
         footer={null}
         destroyOnClose
+        width={screens.xs ? '90%' : 600}
       >
-        <Alert message="Modal për shtimin/editimin e furnitorëve do implementohet." type="info" />
+        <Form
+          layout="vertical"
+          initialValues={editingSupplier || {
+            status: 'Aktiv',
+            manufacturerIds: []
+          }}
+          onFinish={editingSupplier ? handleEditSupplier : handleAddSupplier}
+        >
+          <Form.Item
+            name="name"
+            label="Emri i Furnitorit"
+            rules={[{ required: true, message: 'Ju lutem shkruani emrin e furnitorit!' }]}
+          >
+            <Input prefix={<ShopOutlined />} placeholder="AutoParts Shpk" />
+          </Form.Item>
+
+          <Form.Item
+            name="contactPerson"
+            label="Personi Kontaktues"
+            rules={[{ required: true, message: 'Ju lutem shkruani emrin e personit kontaktues!' }]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="Filan Fisteku" />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="phone"
+                label="Telefoni"
+                rules={[{ required: true, message: 'Ju lutem shkruani numrin e telefonit!' }]}
+              >
+                <Input prefix={<PhoneOutlined />} placeholder="+38344123456" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: 'Ju lutem shkruani email-in!' },
+                  { type: 'email', message: 'Email-i nuk është valid!' }
+                ]}
+              >
+                <Input prefix={<MailOutlined />} placeholder="info@autoparts.com" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="address"
+            label="Adresa"
+          >
+            <Input.TextArea placeholder="Rr. Lidhja e Prizrenit, Prishtinë" rows={2} />
+          </Form.Item>
+
+          <Form.Item
+            name="manufacturerIds"
+            label="Prodhuesit e përfaqësuar"
+          >
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="Zgjidh prodhuesit"
+            >
+              {manufacturers.map(manufacturer => (
+                <Option key={manufacturer.id} value={manufacturer.id}>
+                  {manufacturer.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="status"
+            label="Statusi"
+            rules={[{ required: true, message: 'Ju lutem zgjidhni statusin!' }]}
+          >
+            <Select placeholder="Zgjidhni statusin">
+              <Option value="Aktiv">Aktiv</Option>
+              <Option value="Jo Aktiv">Jo Aktiv</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block size="large">
+              {editingSupplier ? 'Ruaj Ndryshimet' : 'Shto Furnitorin'}
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
 
       {/* Manufacturer Modal */}
       <Modal
-        title={editingManufacturer ? 'Edito Prodhues' : 'Shto Prodhues'}
-        visible={isManufacturerModalVisible}
-        onCancel={() => setIsManufacturerModalVisible(false)}
+        title={editingManufacturer ? 'Edito Prodhuesin' : 'Shto Prodhues të Ri'}
+        open={isManufacturerModalVisible}
+        onCancel={() => {
+          setIsManufacturerModalVisible(false);
+          setEditingManufacturer(null);
+        }}
         footer={null}
         destroyOnClose
+        width={screens.xs ? '90%' : 500}
       >
         <Form
           layout="vertical"
@@ -592,7 +955,7 @@ const SupplyInventoryDashboard = () => {
             label="Emri"
             rules={[{ required: true, message: 'Ju lutem shkruani emrin!' }]}
           >
-            <Input />
+            <Input placeholder="Bosch" />
           </Form.Item>
 
           <Form.Item
@@ -600,7 +963,7 @@ const SupplyInventoryDashboard = () => {
             label="Shteti"
             rules={[{ required: true, message: 'Ju lutem shkruani shtetin!' }]}
           >
-            <Input />
+            <Input placeholder="Gjermani" />
           </Form.Item>
 
           <Form.Item
@@ -608,12 +971,17 @@ const SupplyInventoryDashboard = () => {
             label="Viti i themelimit"
             rules={[{ required: true, message: 'Ju lutem shkruani vitin!' }]}
           >
-            <InputNumber min={1800} max={new Date().getFullYear()} style={{ width: '100%' }} />
+            <InputNumber 
+              min={1800} 
+              max={new Date().getFullYear()} 
+              style={{ width: '100%' }} 
+              placeholder="1886"
+            />
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              {editingManufacturer ? 'Ruaj Ndryshimet' : 'Shto Prodhues'}
+            <Button type="primary" htmlType="submit" block size="large">
+              {editingManufacturer ? 'Ruaj Ndryshimet' : 'Shto Prodhuesin'}
             </Button>
           </Form.Item>
         </Form>
@@ -621,11 +989,12 @@ const SupplyInventoryDashboard = () => {
 
       {/* Category Modal */}
       <Modal
-        title="Shto Kategori"
-        visible={isCategoryModalVisible}
+        title="Shto Kategori të Re"
+        open={isCategoryModalVisible}
         onCancel={() => setIsCategoryModalVisible(false)}
         footer={null}
         destroyOnClose
+        width={screens.xs ? '90%' : 400}
       >
         <Form
           layout="vertical"
@@ -638,10 +1007,10 @@ const SupplyInventoryDashboard = () => {
             label="Emri i kategorisë"
             rules={[{ required: true, message: 'Ju lutem shkruani emrin e kategorisë!' }]}
           >
-            <Input />
+            <Input placeholder="Sistem Frenimi" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
+            <Button type="primary" htmlType="submit" block size="large">
               Shto Kategori
             </Button>
           </Form.Item>
