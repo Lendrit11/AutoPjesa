@@ -143,7 +143,55 @@ const SupplyInventoryDashboard = () => {
     message.success('Pjesa u fshi!');
   };
 
- 
+  // SUPPLIER FUNCTIONS me API
+  const handleAddSupplier = async (values) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/Suppliers`, values);
+      setSuppliers([...suppliers, response.data]);
+      message.success('Furnitori u shtua me sukses!');
+      setIsSupplierModalVisible(false);
+    } catch (error) {
+      console.error('Gabim gjatë shtimit të furnitorit:', error);
+      message.error('Failed to add supplier');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditSupplier = async (values) => {
+    setLoading(true);
+    try {
+      const payload = { ...editingSupplier, ...values };
+      await axios.put(`${API_BASE_URL}/api/Suppliers/${editingSupplier.supplierId}`, payload);
+      setSuppliers(suppliers.map(s => s.supplierId === editingSupplier.supplierId ? payload : s));
+      message.success('Furnitori u përditësua!');
+      setIsSupplierModalVisible(false);
+      setEditingSupplier(null);
+    } catch (error) {
+      console.error('Gabim gjatë përditësimit të furnitorit:', error);
+      message.error('Gabim gjatë përditësimit të furnitorit!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteSupplier = async (id) => {
+    setLoading(true);
+    try {
+      await axios.delete(`${API_BASE_URL}/api/Suppliers/${id}`);
+      setSuppliers(suppliers.filter(s => s.supplierId !== id));
+      message.success('Furnitori u fshi!');
+    } catch (error) {
+      console.error('Gabim gjatë fshirjes së furnitorit:', error);
+      message.error('Failed to delete supplier');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+
 
   // CATEGORY FUNCTIONS (mbetet si mock)
   const handleAddCategory = (values) => {
@@ -764,7 +812,16 @@ const SupplyInventoryDashboard = () => {
 
 {/* Supplier Modal */}
 <Modal
-  >
+    title={editingSupplier ? 'Edito Furnitorin' : 'Shto Furnitor të Ri'}
+    open={isSupplierModalVisible}
+    onCancel={() => {
+        setIsSupplierModalVisible(false);
+        setEditingSupplier(null);
+    }}
+    footer={null}
+    destroyOnClose
+    width={screens.xs ? '90%' : 600}
+>
     <Form
         key={editingSupplier ? editingSupplier.supplierId : 'new'}
         layout="vertical"
