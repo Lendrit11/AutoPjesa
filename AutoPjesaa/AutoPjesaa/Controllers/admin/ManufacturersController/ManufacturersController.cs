@@ -34,5 +34,18 @@ namespace AutoPjesaa.Controllers
 
             return manufacturer;
         }
+
+        [HttpPost]
+        public async Task<ActionResult<Manufacturer>> CreateManufacturer(Manufacturer manufacturer)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            _context.Manufacturers.Add(manufacturer);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetManufacturer), new { id = manufacturer.ManufacturerId }, manufacturer);
+        }
     }
+
 }
