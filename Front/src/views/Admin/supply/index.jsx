@@ -205,7 +205,52 @@ const SupplyInventoryDashboard = () => {
     }
   };
 
-  
+  // MANUFACTURER FUNCTIONS me API
+  const handleAddManufacturer = async (values) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/Manufacturers`, values);
+      setManufacturers([...manufacturers, response.data]);
+      message.success('Prodhuesi u shtua!');
+      setIsManufacturerModalVisible(false);
+    } catch (error) {
+      console.error('Gabim gjatë shtimit të prodhuesit:', error);
+      message.error('Failed to add manufacturer');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditManufacturer = async (values) => {
+    setLoading(true);
+    try {
+      const payload = { ...editingManufacturer, ...values };
+      await axios.put(`${API_BASE_URL}/api/Manufacturers/${editingManufacturer.manufacturerId}`, payload);
+      setManufacturers(manufacturers.map(m => m.manufacturerId === editingManufacturer.manufacturerId ? payload : m));
+      message.success('Prodhuesi u përditësua!');
+      setIsManufacturerModalVisible(false);
+      setEditingManufacturer(null);
+    } catch (error) {
+      console.error('Gabim gjatë përditësimit të prodhuesit:', error);
+      message.error('Gabim gjatë përditësimit të prodhuesit!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteManufacturer = async (id) => {
+    setLoading(true);
+    try {
+      await axios.delete(`${API_BASE_URL}/api/Manufacturers/${id}`);
+      setManufacturers(manufacturers.filter(m => m.manufacturerId !== id));
+      message.success('Prodhuesi u fshi!');
+    } catch (error) {
+      console.error('Gabim gjatë fshirjes së prodhuesit:', error);
+      message.error('Failed to delete manufacturer');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // CATEGORY FUNCTIONS (mbetet si mock)
   const handleAddCategory = (values) => {
@@ -907,7 +952,15 @@ const SupplyInventoryDashboard = () => {
 
 {/* Manufacturer Modal */}
 <Modal
- 
+    title={editingManufacturer ? 'Edito Prodhuesin' : 'Shto Prodhues të Ri'}
+    open={isManufacturerModalVisible}
+    onCancel={() => {
+        setIsManufacturerModalVisible(false);
+        setEditingManufacturer(null);
+    }}
+    footer={null}
+    destroyOnClose
+    width={screens.xs ? '90%' : 500}
 >
     <Form
         key={editingManufacturer ? editingManufacturer.manufacturerId : 'new'}
