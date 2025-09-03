@@ -56,13 +56,8 @@ const SupplyInventoryDashboard = () => {
   const [manufacturersLoading, setManufacturersLoading] = useState(false);
 
   // MOCK DATA për pjesët e tjera
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Sistem Frenimi' },
-    { id: 2, name: 'Motor' },
-    { id: 3, name: 'Transmisioni' },
-    { id: 4, name: 'Sistem Elektrik' },
-    { id: 5, name: 'Sistem Shasing' }
-  ]);
+
+
 
   const [parts, setParts] = useState([
     {
@@ -84,6 +79,10 @@ const SupplyInventoryDashboard = () => {
   
   // MANUFACTURERS DATA nga API
   const [manufacturers, setManufacturers] = useState([]);
+
+  // Categories DATA nga API
+  const [categories, setCategories] = useState([]);
+const [categoriesLoading, setCategoriesLoading] = useState(false);
 
   // MODALS STATE
   const [isPartModalVisible, setIsPartModalVisible] = useState(false);
@@ -123,6 +122,20 @@ const SupplyInventoryDashboard = () => {
       setManufacturersLoading(false);
     }
   };
+ 
+    // FETCH Categories nga API
+  const fetchCategories = async () => {
+    setCategoriesLoading(true);
+    try {
+        const response = await axios.get(`${API_BASE_URL}/api/Categories`);
+        setCategories(response.data);
+    } catch (error) {
+        message.error('Gabim gjatë marrjes së kategorive');
+    } finally {
+        setCategoriesLoading(false);
+    }
+};
+
 
   // EFFECT për të ngarkuar të dhënat kur tabi aktiv ndryshon
   useEffect(() => {
@@ -130,6 +143,8 @@ const SupplyInventoryDashboard = () => {
       fetchSuppliers();
     } else if (activeTab === 'manufacturers') {
       fetchManufacturers();
+    }else if (activeTab === 'categories') {
+      fetchCategories();
     }
   }, [activeTab]);
 
@@ -251,17 +266,22 @@ const SupplyInventoryDashboard = () => {
       setLoading(false);
     }
   };
+// CATEGORY FUNCTIONS me API
+
+const handleAddCategory = async (values) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/api/Categories`, values);
+        setCategories([...categories, response.data]);
+        message.success('Kategoria u shtua!');
+    } catch (err) {
+        message.error('Gabim gjatë shtimit të kategorisë');
+    }
+};
+
+
 
   // CATEGORY FUNCTIONS (mbetet si mock)
-  const handleAddCategory = (values) => {
-    const newCategory = {
-      ...values,
-      id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
-    };
-    setCategories([...categories, newCategory]);
-    message.success('Kategoria u shtua!');
-    setIsCategoryModalVisible(false);
-  };
+
 
   // FILTER PARTS BASED ON SEARCH
   const filteredParts = parts.filter(part => 
