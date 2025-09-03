@@ -46,7 +46,7 @@ const { TabPane } = Tabs;
 const { Option } = Select;
 const { Title, Text } = Typography;
 
-const API_BASE_URL = 'http://localhost:5298'; 
+const API_BASE_URL = 'http://localhost:5298'; // Ndryshoje me URL-n tënde
 
 const SupplyInventoryDashboard = () => {
   const screens = useBreakpoint();
@@ -83,7 +83,7 @@ const SupplyInventoryDashboard = () => {
   const [suppliers, setSuppliers] = useState([]);
   
   // MANUFACTURERS DATA nga API
- 
+  const [manufacturers, setManufacturers] = useState([]);
 
   // MODALS STATE
   const [isPartModalVisible, setIsPartModalVisible] = useState(false);
@@ -110,11 +110,26 @@ const SupplyInventoryDashboard = () => {
     }
   };
 
- 
+  // FETCH MANUFACTURERS nga API
+  const fetchManufacturers = async () => {
+    setManufacturersLoading(true);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/Manufacturers`);
+      setManufacturers(response.data);
+    } catch (error) {
+      console.error('Gabim gjatë marrjes së prodhuesve:', error);
+      message.error('Failed to load manufacturers');
+    } finally {
+      setManufacturersLoading(false);
+    }
+  };
+
   // EFFECT për të ngarkuar të dhënat kur tabi aktiv ndryshon
   useEffect(() => {
     if (activeTab === 'suppliers') {
       fetchSuppliers();
+    } else if (activeTab === 'manufacturers') {
+      fetchManufacturers();
     }
   }, [activeTab]);
 
@@ -191,7 +206,6 @@ const SupplyInventoryDashboard = () => {
   };
 
   
-
 
   // CATEGORY FUNCTIONS (mbetet si mock)
   const handleAddCategory = (values) => {
@@ -746,8 +760,8 @@ const SupplyInventoryDashboard = () => {
             <Col xs={24} sm={12}>
               <Form.Item
     name="price"
-    label="Çmimi (€)"   
-    rules={[{ required: true, message: 'Ju lutem shkruani çmimin!' }]} 
+    label="Çmimi (€)"   // <-- Mbyllja e thonjëzave
+    rules={[{ required: true, message: 'Ju lutem shkruani çmimin!' }]}  // <-- Vendosja jashtë thonjëzave
 >
     <InputNumber 
         min={0} 
@@ -893,15 +907,7 @@ const SupplyInventoryDashboard = () => {
 
 {/* Manufacturer Modal */}
 <Modal
-    title={editingManufacturer ? 'Edito Prodhuesin' : 'Shto Prodhues të Ri'}
-    open={isManufacturerModalVisible}
-    onCancel={() => {
-        setIsManufacturerModalVisible(false);
-        setEditingManufacturer(null);
-    }}
-    footer={null}
-    destroyOnClose
-    width={screens.xs ? '90%' : 500}
+ 
 >
     <Form
         key={editingManufacturer ? editingManufacturer.manufacturerId : 'new'}
