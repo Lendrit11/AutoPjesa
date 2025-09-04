@@ -188,7 +188,82 @@ namespace AutoPjesaa.Controllers
             return Ok();
         }
 
-        
+        // DELETE: api/Parts/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePart(int id)
+        {
+            var part = await _context.Parts
+                .Include(p => p.Stocks)
+                .Include(p => p.PartImages)
+                .Include(p => p.PartCarModels)
+                .FirstOrDefaultAsync(p => p.PartId == id);
+
+            if (part == null) return NotFound();
+
+            if (part.Stocks.Any()) _context.Stocks.RemoveRange(part.Stocks);
+            if (part.PartImages.Any()) _context.PartImages.RemoveRange(part.PartImages);
+            if (part.PartCarModels.Any()) _context.PartCarModels.RemoveRange(part.PartCarModels);
+
+            _context.Parts.Remove(part);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+     
+
+        // GET: api/Parts/CarModels
+        [HttpGet("CarModels")]
+        public async Task<IActionResult> GetCarModels()
+        {
+            var carModels = await _context.CarModels
+                .Include(cm => cm.Manufacturer)
+                .Select(cm => new
+                {
+                    cm.CarModelId,
+                    Name = cm.modelName,
+                    ManufacturerId = cm.ManufacturerId,
+                    ManufacturerName = cm.Manufacturer.Name
+                })
+                .ToListAsync();
+            return Ok(carModels);
+        }
+
+        // POST: api/Parts/CarModels
+        [HttpPost("CarModels")]
+        public async Task<IActionResult> AddCarModel([FromBody] AddCarModelDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var carModel = new CarModel
+            {
+                modelName = dto.ModelName,
+                ManufacturerId = dto.ManufacturerId
+            };
+
+            _context.CarModels.Add(carModel);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                carModel.CarModelId,
+                carModel.modelName,
+                carModel.ManufacturerId
+            });
+        }
+
+        // DELETE: api/Parts/CarModels/{id}
+        [HttpDelete("CarModels/{id}")]
+        public async Task<IActionResult> DeleteCarModel(int id)
+        {
+            var carModel = await _context.CarModels.FindAsync(id);
+            if (carModel == null) return NotFound();
+
+            _context.CarModels.Remove(carModel);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }
 
