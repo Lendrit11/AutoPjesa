@@ -95,6 +95,27 @@ const SupplyInventoryDashboard = () => {
   const [selectedManufacturerIdForQuickAdd, setSelectedManufacturerIdForQuickAdd] = useState(null);
  
 
+//SupplyDashboard
+useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Merr pjesët
+        const partsRes = await axios.get(`${API_BASE_URL}/api/Parts`);
+        setParts(partsRes.data || []);
+      
+
+        // Merr furnitorët
+        const suppliersRes = await axios.get(`${API_BASE_URL}/api/Suppliers`);
+        setSuppliers(suppliersRes.data || []);
+     
+      } catch (err) {
+        console.error('Gabim gjatë marrjes së të dhënave:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+//Inventori 
 useEffect(() => {
   if (editingPart) {
     form.setFieldsValue({
@@ -138,7 +159,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_BASE_URL}/api/Parts`);
-      console.log(res.data);
+     
       setParts(res.data || []);
     } catch (err) {
       console.error('Error fetching parts', err);
@@ -808,39 +829,66 @@ const handleAddEditPart = async (values) => {
   ];
 
   // ------------------ Render ------------------
+  //Pjesaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   return (
     <div style={{ padding: screens.xs ? 12 : 24, background: '#f0f2f5', minHeight: '100vh' }}>
-      <Row gutter={[16,16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card bodyStyle={{ padding: 16 }} style={{ borderRadius: 12 }}>
-            <Statistic title="Total Pjesë" value={parts.length} prefix={<AppstoreOutlined style={{ color: '#1890ff' }} />} valueStyle={{ color: '#1890ff' }} />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card bodyStyle={{ padding: 16 }} style={{ borderRadius: 12 }}>
-            <Statistic title="Pjesë Në Alarm" value={parts.filter(p => {
-              const qty = p.stock ?? (p.Stock ? p.Stock.quantity : 0);
-              const reorder = p.reorderLevel ?? (p.Stock ? p.Stock.reorderLevel : 0);
-              return qty <= reorder;
-            }).length} prefix={<ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />} valueStyle={{ color: '#ff4d4f' }} />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card bodyStyle={{ padding: 16 }} style={{ borderRadius: 12 }}>
-            <Statistic title="Total Furnitorë" value={suppliers.length} prefix={<ShopOutlined style={{ color: '#52c41a' }} />} valueStyle={{ color: '#52c41a' }} />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card bodyStyle={{ padding: 16 }} style={{ borderRadius: 12 }}>
-            <Statistic title="Vlera Totale" value={`€${Number(parts.reduce((sum,p) => {
-              const price = Number(p.price ?? (p.Stock ? p.Stock.price : 0)) || 0;
-              const qty = Number(p.stock ?? (p.Stock ? p.Stock.quantity : 0)) || 0;
-              return sum + price * qty;
-            },0)).toFixed(2)}`} valueStyle={{ color: '#722ed1' }} />
-          </Card>
-        </Col>
-      </Row>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+  {/* Total pjesë */}
+  <Col xs={24} sm={12} md={6}>
+    <Card bodyStyle={{ padding: 16 }} style={{ borderRadius: 12 }}>
+      <Statistic
+        title="Total Pjesë"
+        value={parts.length}
+        prefix={<AppstoreOutlined style={{ color: '#1890ff' }} />}
+        valueStyle={{ color: '#1890ff' }}
+      />
+    </Card>
+  </Col>
 
+  {/* Pjesë në alarm */}
+  <Col xs={24} sm={12} md={6}>
+    <Card bodyStyle={{ padding: 16 }} style={{ borderRadius: 12 }}>
+      <Statistic
+        title="Pjesë Në Alarm"
+        value={parts.filter(p => {
+          const qty = Number(p.stockQuantity) || 0;
+          const reorder = Number(p.stockReorderLevel) || 0;
+          return qty <= reorder;
+        }).length}
+        prefix={<ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />}
+        valueStyle={{ color: '#ff4d4f' }}
+      />
+    </Card>
+  </Col>
+
+  {/* Furnitorët */}
+  <Col xs={24} sm={12} md={6}>
+    <Card bodyStyle={{ padding: 16 }} style={{ borderRadius: 12 }}>
+      <Statistic
+        title="Total Furnitorë"
+        value={suppliers.length}
+        prefix={<ShopOutlined style={{ color: '#52c41a' }} />}
+        valueStyle={{ color: '#52c41a' }}
+      />
+    </Card>
+  </Col>
+
+  {/* Vlera totale e pjesëve */}
+  <Col xs={24} sm={12} md={6}>
+    <Card bodyStyle={{ padding: 16 }} style={{ borderRadius: 12 }}>
+       <Statistic
+      title="Vlera Totale"
+      value={`€${parts.reduce((sum, p) => {
+        const price = Number(p.stockPrice) || 0;
+        return sum + price;
+      }, 0).toFixed(2)}`}
+      valueStyle={{ color: '#722ed1' }}
+    />
+    </Card>
+  </Col>
+</Row>
+
+{/*Pjesssssssssssaaaaaaaaaa*/ }
       <Card style={{ borderRadius: 12 }}>
         <Tabs activeKey={activeTab} onChange={setActiveTab} type="card" size={screens.xs ? 'small' : 'middle'}>
           <TabPane tab={<><AppstoreOutlined /> Inventari</>} key="inventory">
