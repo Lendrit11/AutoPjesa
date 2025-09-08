@@ -6,10 +6,10 @@
         public string OrderNumber { get; set; }
         public string Customer { get; set; }
         public string CustomerPhone { get; set; }
-        public DateTime OrderDate { get; set; }  // Përdor DateTime për output
+        public DateTime OrderDate { get; set; }
         public decimal Total { get; set; }
         public string Status { get; set; }
         public string ShippingAddress { get; set; }
-        public List<PartDto> Parts { get; set; } = new List<PartDto>();
+        public List<PartDto> Parts { get; set; } = new();
     }
 }

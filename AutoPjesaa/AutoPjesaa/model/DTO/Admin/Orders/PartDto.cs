@@ -3,9 +3,12 @@
     public class PartDto
     {
 
-        public int PartId { get; set; }
+        public string PartNumber { get; set; }
         public string Name { get; set; }
         public int Quantity { get; set; }
-        public decimal Price { get; set; }
+        // ✅ E shton këto, backend-i i plotëson kur është e nevojshme:
+        public int PartId { get; set; }      // mbushet nga backend
+        public decimal Price { get; set; }   // llogaritet nga backend
+
     }
 }
