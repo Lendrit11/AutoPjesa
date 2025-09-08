@@ -32,6 +32,7 @@ import {
 import axios from 'axios';
 import moment from 'moment';
 
+const API_BASE_URL = 'http://localhost:5298';
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 
@@ -56,13 +57,11 @@ const OrdersPage = () => {
     'Completed': 'green',
     'Cancelled': 'red'
   };
-
-  // Fetch orders
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/orders');
-      // Sigurohu që orders është gjithmonë array
+      const res = await axios.get(`${API_BASE_URL}/api/admin/orders`);
+      // Ketu e shikon sa dhe si i vjen te dhenat
       setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -77,15 +76,13 @@ const OrdersPage = () => {
   }, []);
 
   // Filter
-  const filteredOrders = Array.isArray(orders)
-    ? orders.filter(order => {
-        const matchesSearch =
-          order.orderNumber?.includes(searchText) ||
-          order.customer?.toLowerCase().includes(searchText.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-        return matchesSearch && matchesStatus;
-      })
-    : [];
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch =
+      order.orderNumber?.includes(searchText) ||
+      order.customer?.toLowerCase().includes(searchText.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   // Modals
   const viewOrderDetails = (order) => {
@@ -96,7 +93,9 @@ const OrdersPage = () => {
   const updateOrderStatus = async (orderId, newStatus) => {
     setLoading(true);
     try {
-      await axios.put(`/api/admin/orders/${orderId}/status`, { status: newStatus });
+      await axios.put(`${API_BASE_URL}/api/admin/orders/${orderId}/status`, newStatus, {
+        headers: { 'Content-Type': 'application/json' }
+      });
       message.success(`Statusi u përditësua në ${newStatus}`);
       await fetchOrders();
     } catch (err) {
@@ -110,9 +109,9 @@ const OrdersPage = () => {
   const deleteOrder = async (orderId) => {
     setLoading(true);
     try {
-      await axios.delete(`/api/admin/orders/${orderId}`);
+      await axios.delete(`${API_BASE_URL}/api/admin/orders/${orderId}`);
       message.success('Porosia u fshi me sukses');
-      setOrders(prev => Array.isArray(prev) ? prev.filter(o => o.id !== orderId) : []);
+      setOrders(prev => prev.filter(o => o.id !== orderId));
     } catch (err) {
       console.error(err);
       message.error('Gabim gjatë fshirjes së porosisë');
@@ -266,64 +265,152 @@ const OrdersPage = () => {
       </Modal>
 
       {/* Modal për krijimin e porosisë së re */}
-      <Modal
-        title="Krijo Porosi të Re"
-        open={isCreateModalOpen}
-        onCancel={() => setIsCreateModalOpen(false)}
-        footer={null}
-        width={isMobile ? '90%' : 600}
-      >
-        <Form
-          layout="vertical"
-          onFinish={async (values) => {
-            try {
-              const payload = {
-                userId,
-                customer: values.customer,
-                customerPhone: values.customerPhone,
-                orderDate: values.orderDate.format('YYYY-MM-DD'),
-                shippingAddress: values.shippingAddress,
-                parts: values.parts.map(p => ({ partId: p.partId, quantity: p.quantity, price: p.price }))
-              };
-              await axios.post('/api/admin/orders', payload);
-              message.success('Porosia u krijua me sukses!');
-              setIsCreateModalOpen(false);
-              await fetchOrders();
-            } catch (err) {
-              console.error(err);
-              message.error('Gabim gjatë krijimit të porosisë');
-            }
-          }}
-          initialValues={{ parts: [{ partId: '', name: '', quantity: 1, price: 0 }] }}
-        >
-          <Form.Item label="Klienti" name="customer" rules={[{ required: true, message: 'Ju lutem shkruani emrin e klientit' }]}><Input /></Form.Item>
-          <Form.Item label="Telefon" name="customerPhone" rules={[{ required: true, message: 'Ju lutem shkruani numrin e telefonit' }]}><Input /></Form.Item>
-          <Form.Item label="Data e Porosisë" name="orderDate" rules={[{ required: true, message: 'Ju lutem zgjidhni datën e porosisë' }]}><DatePicker style={{ width: '100%' }} /></Form.Item>
+     <Modal
+  title="Krijo Porosi të Re"
+  open={isCreateModalOpen}
+  onCancel={() => setIsCreateModalOpen(false)}
+  footer={null}
+  width={isMobile ? '90%' : 600}
+>
+  <Form
+    layout="vertical"
+    initialValues={{
+      parts: [{ partId: '', name: '', quantity: 1, price: 0 }]
+    }}
+    onFinish={async (values) => {
+  try {
+    const payload = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      customerPhone: values.customerPhone,
+      orderDate: values.orderDate.format('YYYY-MM-DD'),
+      shippingAddress: values.shippingAddress,
+      parts: values.parts.map(p => ({
+        partNumber: p.PartNumber,
+        name: p.name,
+        quantity: p.quantity
+      }))
+    };
 
-          <Form.List name="parts">
-            {(fields, { add, remove }) => (
-              <>
-                <Text strong>Pjesët</Text>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-                    <Form.Item {...restField} name={[name, 'partId']} rules={[{ required: true, message: 'Shkruani ID-në e pjesës' }]}><Input placeholder="ID Pjese" /></Form.Item>
-                    <Form.Item {...restField} name={[name, 'name']} rules={[{ required: true, message: 'Shkruani emrin e pjesës' }]}><Input placeholder="Emri i pjesës" /></Form.Item>
-                    <Form.Item {...restField} name={[name, 'quantity']} rules={[{ required: true, message: 'Sasia duhet të jetë > 0' }]} initialValue={1}><InputNumber min={1} placeholder="Sasia" /></Form.Item>
-                    <Form.Item {...restField} name={[name, 'price']} rules={[{ required: true, message: 'Shkruani çmimin' }]} initialValue={0}>
-                      <InputNumber min={0} step={0.01} placeholder="Çmimi" formatter={value => `$ ${value}`} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
-                    </Form.Item>
-                    {fields.length > 1 && <Button danger onClick={() => remove(name)}>Hiq</Button>}
-                  </Space>
-                ))}
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>Shto pjesë të re</Button>
-              </>
-            )}
-          </Form.List>
+    console.log('Payload:', payload); // për debug
 
-          <Form.Item label="Adresa për Dërgesë" name="shippingAddress" rules={[{ required: true, message: 'Ju lutem shkruani adresën' }]}><Input.TextArea rows={2} /></Form.Item>
-          <Form.Item><Button type="primary" htmlType="submit" block>Krijo Porosi</Button></Form.Item>
-        </Form>
-      </Modal>
+    await axios.post(`${API_BASE_URL}/api/admin/orders`, payload);
+
+    message.success('Porosia u krijua me sukses!');
+    setIsCreateModalOpen(false);
+    await fetchOrders();
+  } catch (err) {
+    console.error(err);
+    message.error('Gabim gjatë krijimit të porosisë');
+  }
+}}
+  >
+    <Form.Item
+      label="Emri i klientit"
+      name="firstName"
+      rules={[{ required: true, message: 'Ju lutem shkruani emrin' }]}
+    >
+      <Input placeholder="Shkruani emrin e klientit" />
+    </Form.Item>
+
+    <Form.Item
+      label="Mbiemri i klientit"
+      name="lastName"
+      rules={[{ required: true, message: 'Ju lutem shkruani mbiemrin' }]}
+    >
+      <Input placeholder="Shkruani mbiemrin e klientit" />
+    </Form.Item>
+
+    <Form.Item
+      label="Numri i telefonit"
+      name="customerPhone"
+      rules={[{ required: true, message: 'Ju lutem shkruani numrin e telefonit' }]}
+    >
+      <Input placeholder="Shkruani numrin e telefonit" />
+    </Form.Item>
+
+    <Form.Item
+      label="Data e Porosisë"
+      name="orderDate"
+      rules={[{ required: true, message: 'Ju lutem zgjidhni datën e porosisë' }]}
+    >
+      <DatePicker style={{ width: '100%' }} />
+    </Form.Item>
+
+    <Form.List name="parts">
+      {(fields, { add, remove }) => (
+        <>
+          <Text strong>Pjesët</Text>
+          {fields.map(({ key, name, ...restField }) => (
+            <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+              <Form.Item
+                {...restField}
+                name={[name, 'PartNumber']}
+                rules={[{ required: true, message: 'Shkruani Numri i Pjesës' }]}
+              >
+                <Input placeholder="Numri i Pjesës" />
+              </Form.Item>
+
+              <Form.Item
+                {...restField}
+                name={[name, 'name']}
+                rules={[{ required: true, message: 'Shkruani emrin e pjesës' }]}
+              >
+                <Input placeholder="Emri i pjesës" />
+              </Form.Item>
+
+              <Form.Item
+                {...restField}
+                name={[name, 'quantity']}
+                rules={[{ required: true, message: 'Sasia duhet të jetë > 0' }]}
+                initialValue={1}
+              >
+                <InputNumber min={1} placeholder="Sasia" />
+              </Form.Item>
+
+              <Form.Item
+            {...restField}
+            name={[name, 'price']}
+            rules={[{ required: true, message: 'Çmimi është i nevojshëm' }]}
+          >
+            <InputNumber
+              min={0}
+              step={0.01}
+              placeholder="Çmimi"
+              readOnly
+              formatter={value => `$ ${value}`}
+              parser={value => value.replace(/\$\s?|(,*)/g, '')}
+            />
+          </Form.Item>
+
+              {fields.length > 1 && (
+                <Button danger onClick={() => remove(name)}>Hiq</Button>
+              )}
+            </Space>
+          ))}
+          <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+            Shto pjesë të re
+          </Button>
+        </>
+      )}
+    </Form.List>
+
+    <Form.Item
+      label="Adresa për Dërgesë"
+      name="shippingAddress"
+      rules={[{ required: true, message: 'Ju lutem shkruani adresën' }]}
+    >
+      <Input.TextArea rows={2} placeholder="Shkruani adresën e dërgesës" />
+    </Form.Item>
+
+    <Form.Item>
+      <Button type="primary" htmlType="submit" block>
+        Krijo Porosi
+      </Button>
+    </Form.Item>
+  </Form>
+</Modal>
+
     </div>
   );
 };
