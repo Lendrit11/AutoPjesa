@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+// AccountUserControl.jsx
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Card,
   Table,
@@ -10,56 +12,118 @@ import {
   Select,
   Space,
   Typography,
+  message,
 } from "antd";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
 
-const dummyUsers = [
-  { id: 1, name: "Ardit Gashi", email: "ardit@example.com", role: "admin", status: "active" },
-  { id: 2, name: "Blerta Morina", email: "blerta@example.com", role: "staff", status: "blocked" },
-  { id: 3, name: "Lirim Zeka", email: "lirim@example.com", role: "staff", status: "active" },
-];
-
 const AccountUserControl = () => {
-  const [users, setUsers] = useState(dummyUsers);
+  const [users, setUsers] = useState([]);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const changeRole = (id, role) => {
-    setUsers((prev) => prev.map((user) => (user.id === id ? { ...user, role } : user)));
+  const API_BASE = "http://localhost:5298/api/Users";
+
+  // ========================
+  // FETCH USERS
+  // ========================
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get(API_BASE);
+       console.log('Users fetched:', res.data);
+      setUsers(res.data.map((u) => ({ ...u, id: u.id || u.UserId })));
+    } catch (err) {
+      message.error("Gabim gjatë marrjes së përdoruesve!");
+      console.error(err);
+    }
   };
 
-  const toggleStatus = (id) => {
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === id
-          ? { ...user, status: user.status === "active" ? "blocked" : "active" }
-          : user
-      )
-    );
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // ========================
+  // CHANGE ROLE
+  // ========================
+  const changeRole = async (id, role) => {
+    try {
+      await axios.put(`${API_BASE}/${id}/role`, { role });
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, role } : u))
+      );
+      message.success("Roli u ndryshua me sukses!");
+    } catch (err) {
+      message.error("Gabim gjatë ndryshimit të rolit!");
+      console.error(err);
+    }
   };
 
-  const deleteUser = (id) => {
+  // ========================
+  // TOGGLE STATUS
+  // ========================
+  const toggleStatus = async (id) => {
+    const user = users.find((u) => u.id === id);
+    if (!user) return;
+    const newStatus = user.status === "active" ? "blocked" : "active";
+    try {
+      await axios.put(`${API_BASE}/${id}/status`, { status: newStatus });
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
+      );
+      message.success("Statusi u ndryshua me sukses!");
+    } catch (err) {
+      message.error("Gabim gjatë ndryshimit të statusit!");
+      console.error(err);
+    }
+  };
+
+  // ========================
+  // DELETE USER
+  // ========================
+  const deleteUser = (userId) => {
+    if (!userId) {
+      message.error("ID e përdoruesit nuk është e vlefshme!");
+      return;
+    }
+
     Modal.confirm({
       title: "Jeni i sigurt që dëshironi ta fshini përdoruesin?",
       okText: "Po, Fshij",
       cancelText: "Anulo",
-      onOk: () => {
-        setUsers((prev) => prev.filter((user) => user.id !== id));
-        Modal.success({ content: "Përdoruesi u fshi me sukses!" });
+      onOk: async () => {
+        try {
+          await axios.delete(`${API_BASE}/${userId}`);
+          message.success("Përdoruesi u fshi me sukses!");
+          setUsers((prev) => prev.filter((u) => u.id !== userId));
+        } catch (err) {
+          message.error("Gabim gjatë fshirjes së përdoruesit!");
+          console.error("Delete user error:", err);
+        }
       },
     });
   };
 
-  const handleEditProfile = (values) => {
+  // ========================
+  // UPDATE ADMIN PROFILE
+  // ========================
+  const handleEditProfile = async (values) => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await axios.put(`${API_BASE}/profile`, values);
+      message.success("Profili u përditësua me sukses!");
+      form.setFieldsValue(values);
+    } catch (err) {
+      message.error("Gabim gjatë përditësimit të profilit!");
+      console.error(err);
+    } finally {
       setLoading(false);
-      Modal.success({ content: "Profili u përditësua me sukses!" });
-    }, 2000);
+    }
   };
 
+  // ========================
+  // TABLE COLUMNS
+  // ========================
   const columns = [
     {
       title: "Emri",
@@ -88,13 +152,8 @@ const AccountUserControl = () => {
         <Select
           value={record.role}
           onChange={(val) => changeRole(record.id, val)}
-          bordered={false}
+          variant="filled"
           style={{ width: 110 }}
-          popupMatchSelectWidth={false}
-          dropdownStyle={{
-            borderRadius: 12,
-            boxShadow: "0 8px 16px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.06)",
-          }}
         >
           <Option value="admin">Admin</Option>
           <Option value="staff">User</Option>
@@ -119,7 +178,10 @@ const AccountUserControl = () => {
             padding: "0 14px",
             fontSize: 13,
             textTransform: "uppercase",
-            boxShadow: record.status === "active" ? "0 0 8px #b7eb8f" : "0 0 8px #ffa39e",
+            boxShadow:
+              record.status === "active"
+                ? "0 0 8px #b7eb8f"
+                : "0 0 8px #ffa39e",
           }}
         >
           {record.status === "active" ? "Aktiv" : "Bllokuar"}
@@ -157,7 +219,8 @@ const AccountUserControl = () => {
         minHeight: "100vh",
         background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
         padding: "24px",
-        fontFamily: "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        fontFamily:
+          "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
       }}
     >
       {/* Profili */}
@@ -170,17 +233,26 @@ const AccountUserControl = () => {
           backgroundColor: "#fff",
           padding: "16px",
         }}
-        bodyStyle={{ padding: 0 }}
       >
         <div style={{ padding: "0 16px 24px" }}>
-          <Title level={2} style={{ color: "#111", marginBottom: 12, fontSize: "clamp(20px, 4vw, 28px)" }}>
+          <Title
+            level={2}
+            style={{
+              color: "#111",
+              marginBottom: 12,
+              fontSize: "clamp(20px, 4vw, 28px)",
+            }}
+          >
             Profili i Administratorit
           </Title>
           <Form
             form={form}
             layout="vertical"
             onFinish={handleEditProfile}
-            initialValues={{ name: "Admini Kryesor", email: "admin@example.com" }}
+            initialValues={{
+              name: "Admini Kryesor",
+              email: "admin@example.com",
+            }}
             size="large"
           >
             <Form.Item
@@ -189,7 +261,10 @@ const AccountUserControl = () => {
               rules={[{ required: true, message: "Ju lutem shkruani emrin!" }]}
               style={{ marginBottom: 24 }}
             >
-              <Input placeholder="Shkruani emrin" style={{ borderRadius: 12, border: "none" }} />
+              <Input
+                placeholder="Shkruani emrin"
+                style={{ borderRadius: 12, border: "none" }}
+              />
             </Form.Item>
             <Form.Item
               label="Email"
@@ -200,13 +275,29 @@ const AccountUserControl = () => {
               ]}
               style={{ marginBottom: 24 }}
             >
-              <Input placeholder="shembull@example.com" style={{ borderRadius: 12, border: "none" }} />
+              <Input
+                placeholder="shembull@example.com"
+                style={{ borderRadius: 12, border: "none" }}
+              />
             </Form.Item>
-            <Form.Item label="Fjalëkalimi i Ri" name="password" style={{ marginBottom: 32 }}>
-              <Input.Password placeholder="(Opsionale)" style={{ borderRadius: 12, border: "none" }} />
+            <Form.Item
+              label="Fjalëkalimi i Ri"
+              name="password"
+              style={{ marginBottom: 32 }}
+            >
+              <Input.Password
+                placeholder="(Opsionale)"
+                style={{ borderRadius: 12, border: "none" }}
+              />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" block loading={loading} className="submit-button">
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={loading}
+                className="submit-button"
+              >
                 Përditëso Profilin
               </Button>
             </Form.Item>
@@ -224,9 +315,15 @@ const AccountUserControl = () => {
           backgroundColor: "#fff",
           padding: "16px",
         }}
-        bodyStyle={{ padding: 0 }}
         title={
-          <Title level={3} style={{ margin: 0, fontWeight: 700, fontSize: "clamp(18px, 3vw, 24px)" }}>
+          <Title
+            level={3}
+            style={{
+              margin: 0,
+              fontWeight: 700,
+              fontSize: "clamp(18px, 3vw, 24px)",
+            }}
+          >
             Menaxhimi i Përdoruesve
           </Title>
         }
@@ -238,11 +335,10 @@ const AccountUserControl = () => {
           pagination={{ pageSize: 5 }}
           rowClassName="animated-row"
           style={{ padding: "0 12px 12px" }}
-          scroll={{ x: "max-content" }} // për telefon / tableta
+          scroll={{ x: "max-content" }}
         />
       </Card>
 
-      {/* Styles */}
       <style>{`
         .animated-button {
           transition: box-shadow 0.3s ease, transform 0.2s ease;
