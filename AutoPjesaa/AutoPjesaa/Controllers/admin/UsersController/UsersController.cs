@@ -84,10 +84,56 @@ namespace AutoPjesa.API.Controllers
             return NoContent();
         }
 
-       
+        // DELETE: api/users/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _context.AppUsers
+                .Include(u => u.UserRoles)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            // Fshi rolet e lidhura (nëse ekzistojnë)
+            if (user.UserRoles.Any())
+            {
+                _context.UserRoles.RemoveRange(user.UserRoles);
+            }
+
+            // Fshi user-in
+            _context.AppUsers.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User deleted successfully" });
+        }
 
 
-        
-        
+
+        // PUT: api/users/profile
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateAdminProfile([FromBody] UpdateAdminProfileDto dto)
+        {
+            // supozojmë se admini ka UserId=1
+            var user = await _context.AppUsers.FindAsync(1);
+            if (user == null) return NotFound("Admin not found");
+
+            var names = dto.Name.Split(' ', 2);
+            user.FirstName = names[0];
+            user.LastName = names.Length > 1 ? names[1] : "";
+
+            user.email = dto.Email;
+
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                // këtu mund me hash fjalëkalimin
+                user.password = dto.Password;
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }
