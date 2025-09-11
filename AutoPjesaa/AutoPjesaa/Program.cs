@@ -1,4 +1,8 @@
-﻿using AutoPjesaa.Infrastructure.authentication;
+﻿using AutoPjesa.Infrastructure.Persistence;
+using AutoPjesaa.Infrastructure.authentication;
+
+using AutoPjesaa.Services; // Import i shërbimeve, përfshirë OrderStatusUpdaterService
+using AutoPjesaa.Services.OrderStatusUpdaterService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,20 +18,6 @@ if (string.IsNullOrEmpty(secretKey))
 
 var key = Encoding.UTF8.GetBytes(secretKey);
 var symmetricKey = new SymmetricSecurityKey(key);
-
-// Autentikimi dhe autorizimi
-builder.Services.AddAuthorization();
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173") // URL e frontend-it
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
 
 // JWT Auth
 builder.Services.AddAuthentication(options =>
@@ -52,7 +42,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
-            var token = context.Request.Cookies["token"]; // ✅ Drejt!
+            var token = context.Request.Cookies["token"]; // ✅ Lexo token nga cookie
             if (!string.IsNullOrEmpty(token))
             {
                 context.Token = token;
@@ -60,15 +50,32 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+});
 
+// Autorization
+builder.Services.AddAuthorization();
+
+// CORS për frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 // DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AutoPjesa.Infrastructure.Persistence.AutoPjesaDbContext>(options =>
+builder.Services.AddDbContext<AutoPjesaDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Shërbimet
+// ✅ Regjistro Background Service
+builder.Services.AddHostedService<OrderStatusUpdaterService>();
+
+// Shërbimet e tjera
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -79,7 +86,7 @@ var app = builder.Build();
 // Middleware dhe konfigurime
 app.UseStaticFiles();
 
-// Endpoint për upload file
+// Endpoint për upload file (mund ta ndash në controller nëse preferon)
 app.MapPost("/api", async (HttpRequest request, IWebHostEnvironment env) =>
 {
     if (!request.HasFormContentType)
