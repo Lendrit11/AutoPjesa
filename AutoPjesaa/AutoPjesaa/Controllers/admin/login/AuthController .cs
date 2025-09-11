@@ -30,7 +30,10 @@ namespace AutoPjesaa.Controllers.admin.login
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.email == loginDto.Email);
-
+            if(user.Status == "blocked")
+            {
+                return BadRequest("This user its blocked");
+            }
             if (user == null || user.password != loginDto.Password)
                 return Unauthorized("Invalid credentials.");
 
