@@ -1,36 +1,53 @@
+import React from 'react';
+import { Button, Checkbox, Form, Input, theme as antTheme } from 'antd';
+import { useNavigate, useLocation } from 'react-router-dom';
+import loginAdminImage from '../../../assets/images/loginAdmin/admin.jpg';
+
 import './index.less';
 
-import { Button, Checkbox, Form, Input, theme as antTheme } from 'antd';
-import { useDispatch } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
-
-import { formatSearch } from '../../../utils/formatSearch';
-
-// Initial form values
 const initialValues = {
   username: 'guest',
   password: 'guest',
-  // remember: true,
 };
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
   const { token } = antTheme.useToken();
 
   const onFinished = async (form) => {
-    // Këtu bëhet login request ose auth
     console.log('Form data:', form);
-
-    const redirect = formatSearch(location.search).redirect || '/';
-    navigate(redirect);
+    navigate('/admin/dashboard');
   };
 
   return (
-    <div className="login-page" style={{ backgroundColor: token.colorBgContainer }}>
-      <Form onFinish={onFinished} className="login-page-form" initialValues={initialValues}>
-        <h2>REACT AND ADMIN</h2>
+    <div
+      className="login-page"
+      style={{
+        backgroundImage: `url(${loginAdminImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '20px',
+      }}
+    >
+      <Form
+        onFinish={onFinished}
+        className="login-page-form"
+        initialValues={initialValues}
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.7)', // tejdukshmëri 70%
+          padding: '30px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          width: '100%',
+          maxWidth: '400px',
+        }}
+      >
+        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>AutoPjesa  Login</h2>
 
         <Form.Item
           name="username"
@@ -61,7 +78,7 @@ const LoginForm = () => {
         </Form.Item>
 
         <Form.Item>
-          <Button htmlType="submit" type="primary" className="login-page-form_button">
+          <Button htmlType="submit" type="primary" block>
             Login
           </Button>
         </Form.Item>
