@@ -64,6 +64,40 @@ namespace AutoPjesaa.Controllers
             });
         }
 
-       
+        // PUT: api/CarModels/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCarModel(int id, [FromBody] AddCarModelDto dto)
+        {
+            var carModel = await _context.CarModels.FindAsync(id);
+            if (carModel == null) return NotFound();
+
+            carModel.modelName = dto.ModelName ?? carModel.modelName;
+            carModel.ManufacturerId = dto.ManufacturerId != 0 ? dto.ManufacturerId : carModel.ManufacturerId;
+            carModel.YearStart = dto.YearStart.HasValue ? new DateOnly(dto.YearStart.Value, 1, 1) : carModel.YearStart;
+            carModel.YearEnd = dto.YearEnd.HasValue ? new DateOnly(dto.YearEnd.Value, 1, 1) : carModel.YearEnd;
+
+            await _context.SaveChangesAsync();
+            return Ok(new
+            {
+                carModel.CarModelId,
+                carModel.modelName,
+                carModel.ManufacturerId,
+                YearStart = carModel.YearStart.Year,
+                YearEnd = carModel.YearEnd?.Year
+            });
+        }
+
+        // DELETE: api/CarModels/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCarModel(int id)
+        {
+            var carModel = await _context.CarModels.FindAsync(id);
+            if (carModel == null) return NotFound();
+
+            _context.CarModels.Remove(carModel);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }
