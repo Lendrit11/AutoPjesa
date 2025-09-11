@@ -47,8 +47,11 @@ const AccountUserControl = () => {
   // CHANGE ROLE
   // ========================
   const changeRole = async (id, role) => {
+      console.log("ID:", id);
+  console.log("Role:", role);
     try {
-      await axios.put(`${API_BASE}/${id}/role`, { role });
+     const res= await axios.put(`${API_BASE}/${id}/role`, { role });
+    
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, role } : u))
       );
@@ -81,28 +84,26 @@ const AccountUserControl = () => {
   // ========================
   // DELETE USER
   // ========================
-  const deleteUser = (userId) => {
-    if (!userId) {
-      message.error("ID e përdoruesit nuk është e vlefshme!");
-      return;
-    }
+const deleteUser = async (userId) => {
+  if (!userId) {
+    message.error("ID e përdoruesit nuk është e vlefshme!");
+    return;
+  }
 
-    Modal.confirm({
-      title: "Jeni i sigurt që dëshironi ta fshini përdoruesin?",
-      okText: "Po, Fshij",
-      cancelText: "Anulo",
-      onOk: async () => {
-        try {
-          await axios.delete(`${API_BASE}/${userId}`);
-          message.success("Përdoruesi u fshi me sukses!");
-          setUsers((prev) => prev.filter((u) => u.id !== userId));
-        } catch (err) {
-          message.error("Gabim gjatë fshirjes së përdoruesit!");
-          console.error("Delete user error:", err);
-        }
-      },
-    });
-  };
+  try {
+    // Kërkesa për fshirje të përdoruesit
+    const res = await axios.delete(`${API_BASE}/${userId}`);
+    console.log(res);
+    message.success("Përdoruesi u fshi me sukses!");
+
+    // Përditëso listën e përdoruesve duke hequr përdoruesin nga lista
+    setUsers((prev) => prev.filter((u) => u.id !== userId));
+  } catch (err) {
+    message.error("Gabim gjatë fshirjes së përdoruesit!");
+    console.error("Delete user error:", err);
+  }
+};
+
 
   // ========================
   // UPDATE ADMIN PROFILE
@@ -145,7 +146,7 @@ const AccountUserControl = () => {
       key: "role",
       filters: [
         { text: "Admin", value: "admin" },
-        { text: "User", value: "staff" },
+        { text: "User", value: "user" },
       ],
       onFilter: (value, record) => record.role === value,
       render: (_, record) => (
@@ -156,7 +157,7 @@ const AccountUserControl = () => {
           style={{ width: 110 }}
         >
           <Option value="admin">Admin</Option>
-          <Option value="staff">User</Option>
+          <Option value="user">User</Option>
         </Select>
       ),
     },
