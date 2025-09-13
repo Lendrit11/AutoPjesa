@@ -94,6 +94,60 @@ namespace AutoPjesaa.Controllers.Admin
             return Ok(trendData);
         }
 
-       
+        /// <summary>
+        /// Merr përmbledhjen e shitjeve totale dhe shitjet ditore për 14 ditët e fundit
+        /// </summary>
+        [HttpGet("sales-summary")]
+        public async Task<IActionResult> GetSalesSummary()
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var daysBack = 14;
+
+            var orders = await _context.Orders
+                .Where(o => o.OrderDate >= today.AddDays(-daysBack))
+                .ToListAsync();
+
+            var totalSales = orders.Sum(o => o.TotalAmount);
+
+            var dailySales = orders
+                .GroupBy(o => o.OrderDate)
+                .Select(g => new
+                {
+                    Date = g.Key.ToDateTime(TimeOnly.MinValue).ToString("yyyy-MM-dd"),
+                    Total = g.Sum(x => x.TotalAmount)
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            return Ok(new { totalSales, dailySales });
+        }
+
+        /// <summary>
+        /// Merr përmbledhjen e pagesave (porositë e kompletuara) dhe pagesat ditore për 14 ditët e fundit
+        /// </summary>
+        [HttpGet("payments-summary")]
+        public async Task<IActionResult> GetPaymentsSummary()
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var daysBack = 14;
+
+            var completedOrders = await _context.Orders
+                .Where(o => o.OrderStatus == "Completed" && o.OrderDate >= today.AddDays(-daysBack))
+                .ToListAsync();
+
+            var totalPayments = completedOrders.Count;
+
+            var dailyPayments = completedOrders
+                .GroupBy(o => o.OrderDate)
+                .Select(g => new
+                {
+                    Date = g.Key.ToDateTime(TimeOnly.MinValue).ToString("yyyy-MM-dd"),
+                    Count = g.Count()
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            return Ok(new { totalPayments, dailyPayments });
+        }
     }
 }
