@@ -1,152 +1,177 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';  
 import { Row, Col, Card, Badge, Progress, List, Radio, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import {
-  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  AreaChart, Area, BarChart, Bar,
   PieChart, Pie, Cell,
-  ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis,
-  CartesianGrid, Legend, Brush,
+  ResponsiveContainer, Tooltip as RTooltip, XAxis,
 } from 'recharts';
 import dayjs from 'dayjs';
 
-// Ikona SVG (placeholder)
+const API_BASE_URL = 'http://localhost:5298';
+
+// Ikonat
 const CaretUpIcon = ({ color }) => <span style={{ color }}>▲</span>;
 const CaretDownIcon = ({ color }) => <span style={{ color }}>▼</span>;
 
-// MOCK DATA
-const trendData = new Array(14).fill(null).map((_, index) => ({
-  name: dayjs().add(index, 'day').format('YYYY-MM-DD'),
-  number: Math.floor(Math.random() * 8 + 1),
-}));
-
-const trafficData = new Array(20).fill(null).map((_, index) => ({
-  name: dayjs().add(index * 30, 'minute').format('HH:mm'),
-  traffic: Math.floor(Math.random() * 120 + 1),
-  payments: Math.floor(Math.random() * 120 + 1),
-}));
-
-const pieData = {
-  all: [
-    { name: 'Brake Pads', value: 454, price: 89.99 },
-    { name: 'Oil Filters', value: 332, price: 24.99 },
-    { name: 'Spark Plugs', value: 287, price: 12.99 },
-    { name: 'Air Filters', value: 198, price: 32.50 },
-    { name: 'Timing Belts', value: 156, price: 45.75 },
-    { name: 'Others', value: 132, price: 0 },
-  ],
-};
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#E36E7E', '#8F66DE'];
-
+// CustomTooltip për charts
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
   return (
-    <div className="customTooltip">
-      <span className="customTooltip-title">
+    <div style={{ background: '#fff', border: '1px solid #ccc', padding: 10 }}>
+      <span>
         <Badge color={payload[0].fill} /> {label} : {payload[0].value}
       </span>
     </div>
   );
 };
 
-const Trend = ({ wow, dod, style }) => (
-  <div className="trend" style={style}>
-    <div className="trend-item">
-      <span className="trend-item-label">WoW Change</span>
-      <span className="trend-item-text">{wow}</span>
+// Ndryshim component
+const Ndryshim = ({ wow, dod }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+    <div>
+      <span>Ndryshim Javë‐java: </span>
+      <span>{wow}</span>
       <CaretUpIcon color="#f5222d" />
     </div>
-    <div className="trend-item">
-      <span className="trend-item-label">DoD Change</span>
-      <span className="trend-item-text">{dod}</span>
+    <div>
+      <span>Ndryshim Ditë për Ditë: </span>
+      <span>{dod}</span>
       <CaretDownIcon color="#52c41a" />
     </div>
   </div>
 );
 
-const Field = ({ name, number }) => (
-  <div className="field">
-    <span className="field-label">{name}</span>
-    <span className="field-number">{number}</span>
+// Fusha component për emrin dhe numrin
+const Fusha = ({ name, number }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+    <span>{name}</span>
+    <span>{number}</span>
   </div>
 );
 
-const ColCard = ({ metaName, metaCount, body, footer, loading }) => (
-  <Col xs={24} sm={12} md={12} lg={12} xl={12} xxl={6}>
-    <Card loading={loading} className="overview" bordered={false}>
-      <div className="overview-header">
-        <div className="overview-header-meta">{metaName}</div>
-        <div className="overview-header-count">{metaCount}</div>
-        <Tooltip title="Introduce">
-          <InfoCircleOutlined className="overview-header-action" />
-        </Tooltip>
-      </div>
-      <div className="overview-body">{body}</div>
-      <div className="overview-footer">{footer}</div>
-    </Card>
-  </Col>
+// Kartela Card component
+const Kartela = ({ metaName, metaCount, body, footer, loading }) => (
+  <Card loading={loading} bordered={false} style={{ marginBottom: 16 }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div>{metaName}</div>
+      <div>{metaCount}</div>
+      <Tooltip title="Informata">
+        <InfoCircleOutlined />
+      </Tooltip>
+    </div>
+    <div style={{ marginTop: 10 }}>{body}</div>
+    <div style={{ marginTop: 10 }}>{footer}</div>
+  </Card>
 );
 
-const Overview = ({ loading }) => (
-  <Row gutter={[12, 12]}>
-    <ColCard
-      loading={loading}
-      metaName="Total Sales"
-      metaCount="$ 126,560"
-      body={<Trend wow="12%" dod="12%" />}
-      footer={<Field name="Daily Sales" number="$12,423" />}
-    />
-    <ColCard
-      loading={loading}
-      metaName="Visits"
-      metaCount="8846"
-      body={
-        <ResponsiveContainer height={100}>
-          <AreaChart data={trendData}>
-            <XAxis dataKey="name" hide />
-            <RTooltip content={<CustomTooltip />} />
-            <Area type="monotone" dataKey="number" strokeOpacity={0} fill="#8E65D3" />
-          </AreaChart>
-        </ResponsiveContainer>
-      }
-      footer={<Field name="Daily Sales" number="1234" />}
-    />
-    <ColCard
-      loading={loading}
-      metaName="Payments"
-      metaCount="6560"
-      body={
-        <ResponsiveContainer height={100}>
-          <BarChart data={trendData}>
-            <XAxis dataKey="name" hide />
-            <RTooltip content={<CustomTooltip />} />
-            <Bar dataKey="number" barSize={10} fill="#3B80D9" />
-          </BarChart>
-        </ResponsiveContainer>
-      }
-      footer={<Field name="Conversion Rate" number="60%" />}
-    />
-    <ColCard
-      loading={loading}
-      metaName="Operational Effect"
-      metaCount="8846"
-      body={<Progress strokeColor="#58BFC1" percent={85} />}
-      footer={<Trend wow="12%" dod="12%" style={{ position: 'inherit' }} />}
-    />
-  </Row>
-);
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#E36E7E', '#8F66DE'];
 
-const SalePercent = ({ loading }) => {
+const Përmbledhje = ({ loading, data }) => {
+  if (!data) return null;
+
+  const {
+    totalUsers,
+    totalAdmins,
+    newUsersThisMonth,
+    newAdminsThisMonth,
+    salesSummary,
+    paymentsSummary,
+    userRegistrationTrends,
+  } = data;
+
+  const trendData = userRegistrationTrends.map(item => ({
+    name: item.date,
+    number: item.users,
+    admins: item.admins,
+  }));
+
+  return (
+    <>
+      {/* Rreshti i parë */}
+      <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Col xs={24} sm={12}>
+          <Kartela
+            loading={loading}
+            metaName="Shitje Totale"
+            metaCount={`Euro ${typeof salesSummary?.totalSales === 'number' ? salesSummary.totalSales.toLocaleString() : '0'}`}
+            body={<Ndryshim wow="12%" dod="12%" />}
+          />
+        </Col>
+        <Col xs={24} sm={12}>
+          <Kartela
+            loading={loading}
+            metaName="Përdoruesit Aktual"
+            metaCount={totalUsers?.toLocaleString()}
+            body={
+              <ResponsiveContainer height={100}>
+                <AreaChart data={trendData}>
+                  <XAxis dataKey="name" hide />
+                  <RTooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="number" strokeOpacity={0} fill="#8E65D3" />
+                </AreaChart>
+              </ResponsiveContainer>
+            }
+            footer={<Fusha name="Rritja Ditore" number={newUsersThisMonth?.toLocaleString()} />}
+          />
+        </Col>
+      </Row>
+
+      {/* Rreshti i dytë */}
+      <Row gutter={16}>
+        <Col xs={24} sm={12}>
+          <Kartela
+            loading={loading}
+            metaName="Pagesa"
+            metaCount={paymentsSummary?.totalPayments?.toLocaleString()}
+            body={
+              <ResponsiveContainer height={100}>
+                <BarChart data={paymentsSummary?.dailyPayments || []}>
+                  <XAxis dataKey="Date" hide />
+                  <RTooltip content={<CustomTooltip />} />
+                  <Bar dataKey="Count" barSize={10} fill="#3B80D9" />
+                </BarChart>
+              </ResponsiveContainer>
+            }
+            footer={<Fusha name="Shkalla e Konvertimit" number="60%" />}
+          />
+        </Col>
+        <Col xs={24} sm={12}>
+          <Kartela
+            loading={loading}
+            metaName="Adminët në Sistem"
+            metaCount={totalAdmins}
+            body={<Progress strokeColor="#58BFC1" percent={100} />}
+            footer={<Fusha name="Shtuar këtë muaj" number={newAdminsThisMonth} />}
+          />
+        </Col>
+      </Row>
+    </>
+  );
+};
+
+const PërqindjeShitje = ({ loading }) => {
+  const pieData = {
+    all: [
+      { name: 'Furça- frenash', value: 454, price: 89.99 },
+      { name: 'Filtra të vajit', value: 332, price: 24.99 },
+      { name: 'Pastila frenash', value: 287, price: 12.99 },
+      { name: 'Filtra ajri', value: 198, price: 32.50 },
+      { name: 'Belat kohore', value: 156, price: 45.75 },
+      { name: 'Të tjera', value: 132, price: 0 },
+    ],
+  };
+
   const [dataType, setDataType] = useState('all');
   const dataSet = pieData[dataType];
 
   return (
     <Card
-      title="Top Selling Parts"
+      title="Pjesët më të Shitura"
       loading={loading}
       extra={
         <Radio.Group value={dataType} onChange={e => setDataType(e.target.value)} buttonStyle="solid">
-          <Radio.Button value="all">All Sales</Radio.Button>
+          <Radio.Button value="all">Të gjitha Shitjet</Radio.Button>
         </Radio.Group>
       }
     >
@@ -154,23 +179,23 @@ const SalePercent = ({ loading }) => {
         <Col xs={24} sm={12}>
           <ResponsiveContainer height={250}>
             <PieChart>
-              <Tooltip
+              <RTooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length > 0) {
                     const { name, value, price } = payload[0].payload;
                     const total = dataSet.reduce((sum, item) => sum + item.value, 0);
                     const percent = ((value / total) * 100).toFixed(2) + '%';
-                    const revenue = (value * price).toLocaleString('en-US', {
+                    const revenue = (value * price).toLocaleString('sq-AL', {
                       style: 'currency',
-                      currency: 'USD',
+                      currency: 'ALL',
                     });
 
                     return (
-                      <div className="customTooltip">
+                      <div style={{ background: '#fff', padding: 10, border: '1px solid #ccc' }}>
                         <p><strong>{name}</strong></p>
-                        <p>Sold: {value}</p>
-                        <p>Revenue: {revenue}</p>
-                        <p>Market Share: {percent}</p>
+                        <p>Shitur: {value}</p>
+                        <p>Të ardhurat: {revenue}</p>
+                        <p>Pjesë e tregut: {percent}</p>
                       </div>
                     );
                   }
@@ -197,15 +222,15 @@ const SalePercent = ({ loading }) => {
             renderItem={(item, i) => {
               const total = dataSet.reduce((sum, part) => sum + part.value, 0);
               const percent = ((item.value / total) * 100).toFixed(2) + '%';
-              const revenue = (item.value * item.price).toLocaleString('en-US', {
+              const revenue = (item.value * item.price).toLocaleString('sq-AL', {
                 style: 'currency',
-                currency: 'USD',
+                currency: 'ALL',
               });
               return (
-                <List.Item>
+                <List.Item key={item.name}>
                   <Badge color={COLORS[i % COLORS.length]} />
                   <span style={{ width: 120, display: 'inline-block' }}>{item.name}</span>
-                  <span style={{ margin: '0 10px' }}>{item.value} sold</span>
+                  <span style={{ margin: '0 10px' }}>{item.value} të shitura</span>
                   <span>{revenue}</span>
                   <span style={{ float: 'right' }}>{percent}</span>
                 </List.Item>
@@ -218,37 +243,46 @@ const SalePercent = ({ loading }) => {
   );
 };
 
-const TimeLine = ({ loading }) => (
-  <Card loading={loading} style={{ marginTop: 12 }}>
-    <ResponsiveContainer height={400}>
-      <LineChart data={trafficData} syncId="anyId">
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip content={<CustomTooltip />} />
-        <Line type="monotone" dataKey="traffic" stroke="#3F90F7" />
-        <Line type="monotone" dataKey="payments" stroke="#61BE82" />
-        <Brush dataKey="name" fill="#13c2c2" />
-        <Legend />
-      </LineChart>
-    </ResponsiveContainer>
-  </Card>
-);
-
-// Page Component
 const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const userCountsResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/user-counts`);
+        const userCounts = await userCountsResponse.json();
+
+        const userTrendsResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/user-registration-trends`);
+        const userTrends = await userTrendsResponse.json();
+
+        const salesSummaryResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/sales-summary`);
+        const salesSummary = await salesSummaryResponse.json();
+
+        const paymentsSummaryResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/payments-summary`);
+        const paymentsSummary = await paymentsSummaryResponse.json();
+
+        setDashboardData({
+          ...userCounts,
+          userRegistrationTrends: userTrends,
+          salesSummary,
+          paymentsSummary,
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   return (
     <div style={{ padding: 20 }}>
-      <Overview loading={loading} />
-      <SalePercent loading={loading} />
-      <TimeLine loading={loading} />
+      <Përmbledhje loading={loading} data={dashboardData} />
+      <PërqindjeShitje loading={loading} />
     </div>
   );
 };
