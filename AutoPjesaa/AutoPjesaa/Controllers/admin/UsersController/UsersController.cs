@@ -1,8 +1,10 @@
 ﻿using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoPjesaa.model.DTO.Admin.Users;
 using AutoPjesa.Domain.Entities;
 using AutoPjesa.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +12,7 @@ namespace AutoPjesa.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")] // Kërkon JWT token dhe Roli të jetë Admin
     public class UsersController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
@@ -50,7 +53,6 @@ namespace AutoPjesa.API.Controllers
 
             if (user == null) return NotFound("User not found");
 
-            // Merr role ekzistuese
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == dto.Role);
             if (role == null)
             {
@@ -60,7 +62,6 @@ namespace AutoPjesa.API.Controllers
             var userRole = user.UserRoles.FirstOrDefault();
             if (userRole != null)
             {
-                // Fshij role-in ekzistues për të shmangur gabimin me primary key
                 _context.UserRoles.Remove(userRole);
             }
 
@@ -77,9 +78,7 @@ namespace AutoPjesa.API.Controllers
             var user = await _context.AppUsers.FindAsync(id);
             if (user == null) return NotFound("User not found");
 
-            // Vendos Status sipas DTO: "blocked" ose "active"
             user.Status = dto.Status.ToLower() == "blocked" ? "blocked" : "active";
-
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -97,43 +96,66 @@ namespace AutoPjesa.API.Controllers
                 return NotFound(new { message = "User not found" });
             }
 
-            // Fshi rolet e lidhura (nëse ekzistojnë)
             if (user.UserRoles.Any())
             {
                 _context.UserRoles.RemoveRange(user.UserRoles);
             }
 
-            // Fshi user-in
             _context.AppUsers.Remove(user);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "User deleted successfully" });
         }
 
-
-
         // PUT: api/users/profile
         [HttpPut("profile")]
         public async Task<IActionResult> UpdateAdminProfile([FromBody] UpdateAdminProfileDto dto)
         {
-            // supozojmë se admini ka UserId=1
-            var user = await _context.AppUsers.FindAsync(1);
-            if (user == null) return NotFound("Admin not found");
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized("Invalid token: UserId not found.");
+            }
 
+            var user = await _context.AppUsers.FindAsync(userId);
+            if (user == null) return NotFound("Admin not found");
+            
             var names = dto.Name.Split(' ', 2);
             user.FirstName = names[0];
             user.LastName = names.Length > 1 ? names[1] : "";
-
             user.email = dto.Email;
+
 
             if (!string.IsNullOrWhiteSpace(dto.Password))
             {
-                // këtu mund me hash fjalëkalimin
-                user.password = dto.Password;
+                user.password = BCrypt.Net.BCrypt.HashPassword(dto.Password); // Hash password
             }
 
             await _context.SaveChangesAsync();
             return NoContent();
         }
+        // GET: api/users/profile
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetAdminProfile()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized("Invalid token: UserId not found.");
+            }
+
+            var user = await _context.AppUsers.FindAsync(userId);
+            if (user == null) return NotFound("Admin not found");
+
+            var profileDto = new
+            {
+                name = user.FirstName + " " + user.LastName,
+                email = user.email
+            };
+
+            return Ok(profileDto);
+        }
+
     }
 }
+

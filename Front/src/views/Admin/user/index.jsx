@@ -1,4 +1,3 @@
-// AccountUserControl.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -6,7 +5,6 @@ import {
   Table,
   Button,
   Tag,
-  Modal,
   Form,
   Input,
   Select,
@@ -14,44 +12,83 @@ import {
   Typography,
   message,
 } from "antd";
-
+import { useNavigate } from 'react-router-dom';
 const { Option } = Select;
 const { Title, Text } = Typography;
+
+const getTokenFromCookie = () => {
+  const match = document.cookie.match(new RegExp("(^| )token=([^;]+)"));
+  if (match) return decodeURIComponent(match[2]);
+  return null;
+};
 
 const AccountUserControl = () => {
   const [users, setUsers] = useState([]);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-
+const navigate = useNavigate(); 
   const API_BASE = "http://localhost:5298/api/Users";
 
-  // ========================
-  // FETCH USERS
-  // ========================
+  // Merr token-in nga cookie
+  const token = getTokenFromCookie();
+
+  // Konfigurimi i axios me token në header Authorization
+  const axiosConfig = {
+    withCredentials: true,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+
+  // Funksioni për marrjen e përdoruesve
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(API_BASE);
-       console.log('Users fetched:', res.data);
+      const res = await axios.get(API_BASE, axiosConfig);
       setUsers(res.data.map((u) => ({ ...u, id: u.id || u.UserId })));
     } catch (err) {
-      message.error("Gabim gjatë marrjes së përdoruesve!");
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        message.error("Nuk jeni të autorizuar. Ju lutem identifikohuni.");
+        // Opsional: ridrejto te login
+        // window.location.href = "/login";
+      } else {
+        message.error("Gabim gjatë marrjes së përdoruesve!");
+      }
+      console.error(err);
+    }
+  };
+
+  // Funksioni për marrjen e profilit të adminit
+  const fetchProfile = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/profile`, axiosConfig);
+      form.setFieldsValue({
+        name: res.data.name,
+        email: res.data.email,
+      });
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        message.error("Nuk jeni të autorizuar. Ju lutem identifikohuni.");
+        // window.location.href = "/login";
+      } else {
+        message.error("Gabim gjatë marrjes së profilit!");
+      }
       console.error(err);
     }
   };
 
   useEffect(() => {
+    if (!token) {
+  navigate('/admin/login');
+  return;
+}
+    fetchProfile();
     fetchUsers();
-  }, []);
+  }, [token]);
 
-  // ========================
-  // CHANGE ROLE
-  // ========================
   const changeRole = async (id, role) => {
-      console.log("ID:", id);
-  console.log("Role:", role);
     try {
-     const res= await axios.put(`${API_BASE}/${id}/role`, { role });
-    
+      await axios.put(`${API_BASE}/${id}/role`, { role }, axiosConfig);
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, role } : u))
       );
@@ -62,15 +99,12 @@ const AccountUserControl = () => {
     }
   };
 
-  // ========================
-  // TOGGLE STATUS
-  // ========================
   const toggleStatus = async (id) => {
     const user = users.find((u) => u.id === id);
     if (!user) return;
     const newStatus = user.status === "active" ? "blocked" : "active";
     try {
-      await axios.put(`${API_BASE}/${id}/status`, { status: newStatus });
+      await axios.put(`${API_BASE}/${id}/status`, { status: newStatus }, axiosConfig);
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
       );
@@ -81,37 +115,25 @@ const AccountUserControl = () => {
     }
   };
 
-  // ========================
-  // DELETE USER
-  // ========================
-const deleteUser = async (userId) => {
-  if (!userId) {
-    message.error("ID e përdoruesit nuk është e vlefshme!");
-    return;
-  }
+  const deleteUser = async (userId) => {
+    if (!userId) {
+      message.error("ID e përdoruesit nuk është e vlefshme!");
+      return;
+    }
+    try {
+      await axios.delete(`${API_BASE}/${userId}`, axiosConfig);
+      message.success("Përdoruesi u fshi me sukses!");
+      setUsers((prev) => prev.filter((u) => u.id !== userId));
+    } catch (err) {
+      message.error("Gabim gjatë fshirjes së përdoruesit!");
+      console.error(err);
+    }
+  };
 
-  try {
-    // Kërkesa për fshirje të përdoruesit
-    const res = await axios.delete(`${API_BASE}/${userId}`);
-    console.log(res);
-    message.success("Përdoruesi u fshi me sukses!");
-
-    // Përditëso listën e përdoruesve duke hequr përdoruesin nga lista
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
-  } catch (err) {
-    message.error("Gabim gjatë fshirjes së përdoruesit!");
-    console.error("Delete user error:", err);
-  }
-};
-
-
-  // ========================
-  // UPDATE ADMIN PROFILE
-  // ========================
   const handleEditProfile = async (values) => {
     setLoading(true);
     try {
-      await axios.put(`${API_BASE}/profile`, values);
+      await axios.put(`${API_BASE}/profile`, values, axiosConfig);
       message.success("Profili u përditësua me sukses!");
       form.setFieldsValue(values);
     } catch (err) {
@@ -122,9 +144,6 @@ const deleteUser = async (userId) => {
     }
   };
 
-  // ========================
-  // TABLE COLUMNS
-  // ========================
   const columns = [
     {
       title: "Emri",
@@ -153,7 +172,6 @@ const deleteUser = async (userId) => {
         <Select
           value={record.role}
           onChange={(val) => changeRole(record.id, val)}
-          variant="filled"
           style={{ width: 110 }}
         >
           <Option value="admin">Admin</Option>
@@ -250,10 +268,6 @@ const deleteUser = async (userId) => {
             form={form}
             layout="vertical"
             onFinish={handleEditProfile}
-            initialValues={{
-              name: "Admini Kryesor",
-              email: "admin@example.com",
-            }}
             size="large"
           >
             <Form.Item
@@ -262,10 +276,7 @@ const deleteUser = async (userId) => {
               rules={[{ required: true, message: "Ju lutem shkruani emrin!" }]}
               style={{ marginBottom: 24 }}
             >
-              <Input
-                placeholder="Shkruani emrin"
-                style={{ borderRadius: 12, border: "none" }}
-              />
+              <Input placeholder="Shkruani emrin" />
             </Form.Item>
             <Form.Item
               label="Email"
@@ -276,29 +287,17 @@ const deleteUser = async (userId) => {
               ]}
               style={{ marginBottom: 24 }}
             >
-              <Input
-                placeholder="shembull@example.com"
-                style={{ borderRadius: 12, border: "none" }}
-              />
+              <Input placeholder="shembull@example.com" />
             </Form.Item>
             <Form.Item
               label="Fjalëkalimi i Ri"
               name="password"
               style={{ marginBottom: 32 }}
             >
-              <Input.Password
-                placeholder="(Opsionale)"
-                style={{ borderRadius: 12, border: "none" }}
-              />
+              <Input.Password placeholder="(Opsionale)" />
             </Form.Item>
             <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                block
-                loading={loading}
-                className="submit-button"
-              >
+              <Button type="primary" htmlType="submit" block loading={loading}>
                 Përditëso Profilin
               </Button>
             </Form.Item>
@@ -334,9 +333,8 @@ const deleteUser = async (userId) => {
           dataSource={users}
           rowKey="id"
           pagination={{ pageSize: 5 }}
-          rowClassName="animated-row"
-          style={{ padding: "0 12px 12px" }}
           scroll={{ x: "max-content" }}
+          rowClassName={() => "animated-row"}
         />
       </Card>
 
