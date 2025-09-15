@@ -20,12 +20,21 @@ namespace AutoPjesa.API.Controllers
     public class BlogController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
-      
+        private readonly IWebHostEnvironment _environment;
 
-        public BlogController(AutoPjesaDbContext context)
+        public BlogController(AutoPjesaDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
-           
+            _environment = environment;
+        }
+
+        // Merr UserId nga JWT token
+        private int? GetUserIdFromToken()
+        {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                return userId;
+            return null;
         }
 
         // GET: api/Blog
@@ -54,6 +63,7 @@ namespace AutoPjesa.API.Controllers
 
             return Ok(blogs);
         }
+
         // GET: api/Blog/search?title=xxx
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string title)
@@ -85,10 +95,9 @@ namespace AutoPjesa.API.Controllers
             return Ok(blogs);
         }
 
-
         // POST: api/Blog/upload-photo
         [HttpPost("upload-photo")]
-      
+        [Authorize]
         public async Task<IActionResult> UploadPhoto(IFormFile photo)
         {
             if (photo == null || photo.Length == 0)
@@ -112,7 +121,7 @@ namespace AutoPjesa.API.Controllers
 
         // POST: api/Blog
         [HttpPost]
-      
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] BlogCreateDto dto)
         {
             if (!ModelState.IsValid)
@@ -154,7 +163,7 @@ namespace AutoPjesa.API.Controllers
 
         // PUT: api/Blog/5
         [HttpPut("{id}")]
-       
+        [Authorize]
         public async Task<IActionResult> Update(int id, [FromBody] BlogUpdateDto dto)
         {
             if (!ModelState.IsValid)
@@ -184,7 +193,7 @@ namespace AutoPjesa.API.Controllers
 
         // DELETE: api/Blog/5
         [HttpDelete("{id}")]
-       
+        [Authorize] // ruaje këtë nëse do me leju vetëm përdorues të kyçur
         public async Task<IActionResult> Delete(int id)
         {
             var blog = await _context.Blogs.FindAsync(id);
