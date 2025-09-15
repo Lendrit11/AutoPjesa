@@ -13,6 +13,6 @@ public class PartsDto
     public int StockQuantity { get; set; }
     public int ReorderLevel { get; set; }
     public decimal Discount { get; set; } = 0;
-    public string? ImageUrl { get; set; }
+    public List<string>? ImageUrls { get; set; }
     public List<int>? CompatibleModelIds { get; set; }
 }
