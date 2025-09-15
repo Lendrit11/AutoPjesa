@@ -1,5 +1,6 @@
 ﻿using AutoPjesa.Domain.Entities;
 using AutoPjesa.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace AutoPjesaa.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]  // Kërkon autentifikim për të gjithë metodat në këtë controller
     public class ManufacturersController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
@@ -16,7 +18,6 @@ namespace AutoPjesaa.Controllers
             _context = context;
         }
 
-        // GET: api/Manufacturers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Manufacturer>>> GetManufacturers()
         {
@@ -25,7 +26,6 @@ namespace AutoPjesaa.Controllers
                 .ToListAsync();
         }
 
-        // GET: api/Manufacturers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Manufacturer>> GetManufacturer(int id)
         {
@@ -39,7 +39,6 @@ namespace AutoPjesaa.Controllers
             return manufacturer;
         }
 
-        // POST: api/Manufacturers
         [HttpPost]
         public async Task<ActionResult<Manufacturer>> CreateManufacturer(Manufacturer manufacturer)
         {
@@ -52,7 +51,6 @@ namespace AutoPjesaa.Controllers
             return CreatedAtAction(nameof(GetManufacturer), new { id = manufacturer.ManufacturerId }, manufacturer);
         }
 
-        // PUT: api/Manufacturers/5
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateManufacturer(int id, Manufacturer manufacturer)
         {
@@ -76,7 +74,6 @@ namespace AutoPjesaa.Controllers
             return NoContent();
         }
 
-        // DELETE: api/Manufacturers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteManufacturer(int id)
         {

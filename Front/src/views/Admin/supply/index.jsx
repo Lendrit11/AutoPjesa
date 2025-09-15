@@ -1,4 +1,5 @@
 // SupplyInventoryDashboard.jsx
+import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import {
   Card,
@@ -95,26 +96,52 @@ const SupplyInventoryDashboard = () => {
   const [selectedManufacturerIdForQuickAdd, setSelectedManufacturerIdForQuickAdd] = useState(null);
  
 
-//SupplyDashboard
+// Shto në fillim të komponentit, pas useState
+const navigate = useNavigate();
+
+// ✅ Kontrollo nëse jemi të kyçur
 useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Merr pjesët
-        const partsRes = await axios.get(`${API_BASE_URL}/api/Parts`);
-        setParts(partsRes.data || []);
-      
+  const token = getCookie('token');
+  if (!token) {
+    message.error('Ju duhet të kyçeni për të aksesuar këtë faqe');
+    navigate('/admin/login');
+    return;
+  }
+}, [navigate]);
 
-        // Merr furnitorët
-        const suppliersRes = await axios.get(`${API_BASE_URL}/api/Suppliers`);
-        setSuppliers(suppliersRes.data || []);
-     
-      } catch (err) {
-        console.error('Gabim gjatë marrjes së të dhënave:', err);
+// ✅ Pastaj modifiko fetchData për të përdorur token-in
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const token = getCookie('token');
+      if (!token) {
+        navigate('/admin/login');
+        return;
       }
-    };
 
-    fetchData();
-  }, []);
+      // Merr pjesët ME token
+      const partsRes = await axios.get(`${API_BASE_URL}/api/Parts`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setParts(partsRes.data || []);
+
+      // Merr furnitorët ME token
+      const suppliersRes = await axios.get(`${API_BASE_URL}/api/Suppliers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSuppliers(suppliersRes.data || []);
+     
+    } catch (err) {
+      console.error('Gabim gjatë marrjes së të dhënave:', err);
+      if (err.response?.status === 401) {
+        message.error('Session ka skaduar. Ju lutem kyçuni përsëri.');
+        navigate('/admin/login');
+      }
+    }
+  };
+
+  fetchData();
+}, [navigate]);
 //Inventori 
 useEffect(() => {
   if (editingPart) {
@@ -150,129 +177,76 @@ useEffect(() => {
 }, [editingPart, form, manufacturers]);
 
 
-
-
-
-  // ------------------ Fetch functions ------------------
   
-  const fetchParts = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/Parts`);
-     
-      setParts(res.data || []);
-    } catch (err) {
-      console.error('Error fetching parts', err);
-      message.error('Gabim gjatë marrjes së pjesëve');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSuppliers = async () => {
-    setSuppliersLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/Suppliers`);
-      setSuppliers(res.data || []);
-    } catch (err) {
-      console.error('Error fetching suppliers', err);
-      message.error('Gabim gjatë marrjes së furnitorëve');
-    } finally {
-      setSuppliersLoading(false);
-    }
-  };
-//Pjessaaaaaaaaa
-  const fetchManufacturers = async () => {
-    setManufacturersLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/Manufacturers`);
-      setManufacturers(res.data || []);
-    } catch (err) {
-      console.error('Error fetching manufacturers', err);
-      message.error('Gabim gjatë marrjes së prodhuesve');
-    } finally {
-      setManufacturersLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    setCategoriesLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/admin/categories`);
-      setCategories(res.data || []);
-    } catch (err) {
-      console.error('Error fetching categories', err);
-      message.error('Gabim gjatë marrjes së kategorive');
-    } finally {
-      setCategoriesLoading(false);
-    }
-  };
 
 
-  const fetchCarModels = async () => {
-  setCarModelsLoading(true); // tregon loading te frontend
-  try {
-    // Marrim të dhënat nga backend
-    const res = await axios.get(`${API_BASE_URL}/api/CarModels`);
-
-    // Normalizojmë çdo objekt për t'u siguruar që ka fushat e duhura
-    const normalized = (res.data || []).map(cm => ({
-      carModelId: cm.carModelId ?? cm.CarModelId ?? cm.id, // merr id-në
-      modelName: cm.modelName ?? cm.model ?? cm.name ?? cm.Name, // emri i modelit
-      manufacturerId: cm.manufacturerId ?? cm.ManufacturerId ?? cm.manufacturerId, // id e prodhuesit
-      manufacturerName: cm.manufacturerName ?? cm.ManufacturerName ?? (cm.Manufacturer ? cm.Manufacturer.name : undefined), // emri i prodhuesit
-      yearStart: cm.yearStart ?? cm.YearStart ?? cm.yearStartValue, // viti fillestar
-      yearEnd: cm.yearEnd ?? cm.YearEnd ?? cm.yearEndValue // viti perfundimtar
-    }));
-
-    setCarModels(normalized); // vendosim te state
-  } catch (err) {
-    console.error('Error fetching car models', err);
-    message.error('Gabim gjatë marrjes së modeleve të makinave');
-  } finally {
-    setCarModelsLoading(false); // fikim loading
+  const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+const token = getCookie('token');
+const axiosConfig = {
+  headers: {
+    Authorization: `Bearer ${token}`
   }
 };
-  //Pjesaaaaaaaaaaaaaaaaaaaaaaaaaa
-  // load data per active tab
-  useEffect(() => {
-    if (activeTab === 'inventory') {
-      fetchParts();
-      fetchCategories();
-    } else if (activeTab === 'suppliers') {
-      fetchSuppliers();
-    } else if (activeTab === 'manufacturers') {
-      fetchManufacturers();
-    } else if (activeTab === 'categories') {
-      fetchCategories();
-    } else if (activeTab === 'carModels') {
-      fetchCarModels();
-      fetchManufacturers(); // needed to link manufacturer dropdown
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
-
 /// ------------------ Parts CRUD ------------------
+const fetchParts = async () => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/Parts`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    setParts(res.data || []);
+  } catch (err) {
+    console.error('Error fetching parts', err);
+    message.error('Gabim gjatë marrjes së pjesëve');
+  } finally {
+    setLoading(false);
+  }
+};
+
 const handleAddPart = async (values) => {
   setLoading(true);
   try {
     const payload = {
-  name: values.name,
-  partNumber: values.partNumber,
-  description: values.description,
-  manufacturer: manufacturers.find(m => m.manufacturerId === values.manufacturerId)?.name || "",
-  categoryId: values.categoryId,
-  compatibleFromYear: Number(values.compatibleFromYear),
-  compatibleToYear: Number(values.compatibleToYear),
-  StockQuantity: Number(values.stockQuantity),
-  Price: Number(values.price),
-  ReorderLevel: Number(values.reorderLevel),
-  Discount: Number(values.discount),
-  imageUrls: fileList.map(f => f.url || f.thumbUrl),
-  compatibleModelIds: values.compatibleModelIds?.map(id => Number(id)) || [],
-};
-    const res = await axios.post(`${API_BASE_URL}/api/Parts`, payload);
-    
+      name: values.name,
+      partNumber: values.partNumber,
+      description: values.description,
+      manufacturer: manufacturers.find(m => m.manufacturerId === values.manufacturerId)?.name || "",
+      categoryId: values.categoryId,
+      compatibleFromYear: Number(values.compatibleFromYear),
+      compatibleToYear: Number(values.compatibleToYear),
+      StockQuantity: Number(values.stockQuantity),
+      Price: Number(values.price),
+      ReorderLevel: Number(values.reorderLevel),
+      Discount: Number(values.discount),
+      imageUrls: fileList.map(f => f.url || f.thumbUrl),
+      compatibleModelIds: values.compatibleModelIds?.map(id => Number(id)) || [],
+    };
+
+    const token = getCookie('token');
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/Parts`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     setParts(prev => [...prev, res.data]);
     setIsPartModalVisible(false);
     form.resetFields();
@@ -286,26 +260,35 @@ const handleAddPart = async (values) => {
     setLoading(false);
   }
 };
-//pjesaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+
 const handleEditPart = async (values) => {
   if (!editingPart) return;
 
   setLoading(true);
-
   try {
-        const selectedManufacturer = manufacturers.find(m => m.manufacturerId === values.manufacturerId);
+    const selectedManufacturer = manufacturers.find(m => m.manufacturerId === values.manufacturerId);
+
     const payload = {
       ...editingPart,
       ...values,
-      ManufacturerName: selectedManufacturer?.name || "", 
+      ManufacturerName: selectedManufacturer?.name || "",
       imageUrls: fileList.length
         ? fileList.map(f => f.url || f.thumbUrl)
         : editingPart.imageUrls,
     };
 
-    console.log("Payload to update:", payload);
+    const token = getCookie('token');
 
-    await axios.put(`${API_BASE_URL}/api/Parts/${editingPart.partId ?? editingPart.id}`, payload);
+    await axios.put(
+      `${API_BASE_URL}/api/Parts/${editingPart.partId ?? editingPart.id}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
 
     setParts(prev =>
       prev.map(p =>
@@ -326,12 +309,21 @@ const handleEditPart = async (values) => {
   }
 };
 
-//pjesa
 const handleDeletePart = async (id) => {
   if (!id) return;
   setLoading(true);
   try {
-    await axios.delete(`${API_BASE_URL}/api/Parts/${id}`);
+    const token = getCookie('token');
+
+    await axios.delete(
+      `${API_BASE_URL}/api/Parts/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     setParts(prev => prev.filter(p => (p.partId ?? p.id) !== id));
     message.success('Pjesa u fshi me sukses!');
   } catch (err) {
@@ -355,253 +347,444 @@ const handleAddEditPart = async (values) => {
  
 
   // ------------------ Suppliers CRUD ------------------
-  const handleAddSupplier = async (values) => {
-    setLoading(true);
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/Suppliers`, values);
-      setSuppliers(prev => [...prev, res.data]);
-      setIsSupplierModalVisible(false);
-      message.success('Furnitori u shtua');
-    } catch (err) {
-      console.error('Error adding supplier', err);
-      message.error('Gabim gjatë shtimit të furnitorit');
-    } finally {
-      setLoading(false);
+ const fetchSuppliers = async () => {
+  setSuppliersLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Nuk jeni i kyçur. Ju lutem kyçuni.');
+      return;
     }
-  };
 
-  const handleEditSupplier = async (values) => {
-    if (!editingSupplier) return;
-    setLoading(true);
-    try {
-      const payload = { ...editingSupplier, ...values };
-      await axios.put(`${API_BASE_URL}/api/Suppliers/${editingSupplier.supplierId}`, payload);
-      setSuppliers(prev => prev.map(s => s.supplierId === editingSupplier.supplierId ? payload : s));
-      setEditingSupplier(null);
-      setIsSupplierModalVisible(false);
-      message.success('Furnitori u përditësua');
-    } catch (err) {
-      console.error('Error editing supplier', err);
-      message.error('Gabim gjatë përditësimit të furnitorit');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const res = await axios.get(`${API_BASE_URL}/api/Suppliers`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setSuppliers(res.data || []);
+  } catch (err) {
+    console.error('Error fetching suppliers', err);
+    message.error('Gabim gjatë marrjes së furnitorëve');
+  } finally {
+    setSuppliersLoading(false);
+  }
+};
 
-  const handleDeleteSupplier = async (id) => {
-    setLoading(true);
-    try {
-      await axios.delete(`${API_BASE_URL}/api/Suppliers/${id}`);
-      setSuppliers(prev => prev.filter(s => s.supplierId !== id));
-      message.success('Furnitori u fshi');
-    } catch (err) {
-      console.error('Error deleting supplier', err);
-      message.error('Gabim gjatë fshirjes së furnitorit');
-    } finally {
-      setLoading(false);
+const handleAddSupplier = async (values) => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Nuk jeni i kyçur. Ju lutem kyçuni.');
+      return;
     }
-  };
+
+    const res = await axios.post(`${API_BASE_URL}/api/Suppliers`, values, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    setSuppliers(prev => [...prev, res.data]);
+    setIsSupplierModalVisible(false);
+    message.success('Furnitori u shtua');
+  } catch (err) {
+    console.error('Error adding supplier', err);
+    message.error('Gabim gjatë shtimit të furnitorit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleEditSupplier = async (values) => {
+  if (!editingSupplier) return;
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Nuk jeni i kyçur. Ju lutem kyçuni.');
+      return;
+    }
+
+    const payload = { ...editingSupplier, ...values };
+
+    await axios.put(`${API_BASE_URL}/api/Suppliers/${editingSupplier.supplierId}`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    setSuppliers(prev => prev.map(s => s.supplierId === editingSupplier.supplierId ? payload : s));
+    setEditingSupplier(null);
+    setIsSupplierModalVisible(false);
+    message.success('Furnitori u përditësua');
+  } catch (err) {
+    console.error('Error editing supplier', err);
+    message.error('Gabim gjatë përditësimit të furnitorit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleDeleteSupplier = async (id) => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Nuk jeni i kyçur. Ju lutem kyçuni.');
+      return;
+    }
+
+    await axios.delete(`${API_BASE_URL}/api/Suppliers/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    setSuppliers(prev => prev.filter(s => s.supplierId !== id));
+    message.success('Furnitori u fshi');
+  } catch (err) {
+    console.error('Error deleting supplier', err);
+    message.error('Gabim gjatë fshirjes së furnitorit');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ------------------ Manufacturers CRUD ------------------
   const handleAddManufacturer = async (values) => {
-    setLoading(true);
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/Manufacturers`, values);
-      setManufacturers(prev => [...prev, res.data]);
-      setIsManufacturerModalVisible(false);
-      message.success('Prodhuesi u shtua');
-    } catch (err) {
-      console.error('Error adding manufacturer', err);
-      message.error('Gabim gjatë shtimit të prodhuesit');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEditManufacturer = async (values) => {
-    if (!editingManufacturer) return;
-    setLoading(true);
-    try {
-      const payload = { ...editingManufacturer, ...values };
-      await axios.put(`${API_BASE_URL}/api/Manufacturers/${editingManufacturer.manufacturerId}`, payload);
-      setManufacturers(prev => prev.map(m => m.manufacturerId === editingManufacturer.manufacturerId ? payload : m));
-      setEditingManufacturer(null);
-      setIsManufacturerModalVisible(false);
-      message.success('Prodhuesi u përditësua');
-    } catch (err) {
-      console.error('Error editing manufacturer', err);
-      message.error('Gabim gjatë përditësimit të prodhuesit');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteManufacturer = async (id) => {
-    setLoading(true);
-    try {
-      await axios.delete(`${API_BASE_URL}/api/Manufacturers/${id}`);
-      setManufacturers(prev => prev.filter(m => m.manufacturerId !== id));
-      message.success('Prodhuesi u fshi');
-    } catch (err) {
-      console.error('Error deleting manufacturer', err);
-      message.error('Gabim gjatë fshirjes së prodhuesit');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ------------------ Categories CRUD (admin) ------------------
-  const handleAddEditCategory = async (values) => {
-    setLoading(true);
-    try {
-      if (editingCategory) {
-        await axios.put(`${API_BASE_URL}/api/admin/categories/${editingCategory.categoryId}`, values);
-        setCategories(prev => prev.map(c => c.categoryId === editingCategory.categoryId ? { ...c, ...values } : c));
-        message.success('Kategoria u përditësua');
-      } else {
-        const res = await axios.post(`${API_BASE_URL}/api/admin/categories`, values);
-        setCategories(prev => [...prev, res.data]);
-        message.success('Kategoria u shtua');
-      }
-      setIsCategoryModalVisible(false);
-      setEditingCategory(null);
-      form.resetFields();
-    } catch (err) {
-      console.error('Error saving category', err);
-      message.error('Gabim gjatë ruajtjes së kategorisë');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteCategory = async (id) => {
-    setLoading(true);
-    try {
-      await axios.delete(`${API_BASE_URL}/api/admin/categories/${id}`);
-      setCategories(prev => prev.filter(c => c.categoryId !== id));
-      message.success('Kategoria u fshi');
-    } catch (err) {
-      console.error('Error deleting category', err);
-      message.error('Gabim gjatë fshirjes së kategorisë');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ------------------ CarModels CRUD ------------------
-  const handleAddCarModel = async (values) => {
-    setLoading(true);
-    try {
-      
-      const res = await axios.post(`${API_BASE_URL}/api/CarModels`, {
-        modelName: values.modelName ?? values.name ?? values.modelName,
-        manufacturerId: Number(values.manufacturerId)
-      });
-      // normalizo dhe shto
-      const cm = res.data || {};
-      const newCm = {
-        carModelId: cm.carModelId ?? cm.CarModelId ?? cm.id,
-       modelName: values.modelName ?? values.name,
-        manufacturerId: cm.manufacturerId ?? values.manufacturerId,
-        manufacturerName: cm.manufacturerName ?? manufacturers.find(m => m.manufacturerId === values.manufacturerId)?.name
-      };
-      setCarModels(prev => [...prev, newCm]);
-      setIsAddCarModelModalVisible(false);
-      form.resetFields();
-      message.success('Modeli u shtua');
-    } catch (err) {
-      console.error('Error adding car model', err);
-      const detail = err.response?.data || err.message;
-      message.error(detail || 'Gabim gjatë shtimit të modelit');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEditCarModel = async (values) => {
-    if (!editingCarModel) return;
-    setLoading(true);
-    try {
-      await axios.put(`${API_BASE_URL}/api/CarModels/${editingCarModel.carModelId}`, {
-        modelName: values.modelName,
-        manufacturerId: Number(values.manufacturerId),
-        yearStart: values.yearStart,
-        yearEnd: values.yearEnd
-      });
-      setCarModels(prev => prev.map(cm => cm.carModelId === editingCarModel.carModelId ? {
-        ...cm,
-        modelName: values.modelName,
-        manufacturerId: Number(values.manufacturerId),
-        manufacturerName: manufacturers.find(m => m.manufacturerId === Number(values.manufacturerId))?.name,
-        yearStart: values.yearStart,
-        yearEnd: values.yearEnd
-      } : cm));
-      setIsEditCarModelModalVisible(false);
-      setEditingCarModel(null);
-      form.resetFields();
-      message.success('Modeli u përditësua');
-    } catch (err) {
-      console.error('Error editing car model', err);
-      message.error('Gabim gjatë përditësimit të modelit');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteCarModel = async (id) => {
-    setLoading(true);
-    try {
-      await axios.delete(`${API_BASE_URL}/api/CarModels/${id}`);
-      setCarModels(prev => prev.filter(cm => cm.carModelId !== id));
-      message.success('Modeli u fshi');
-    } catch (err) {
-      console.error('Error deleting car model', err);
-      message.error('Gabim gjatë fshirjes së modelit');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Quick add car model from select dropdown (local-only or can POST to backend)
-  const handleQuickAddCarModel = async (manufacturerId = selectedManufacturerIdForQuickAdd) => {
-    if (!newCarModelName || !newCarModelName.trim()) {
-      message.warn('Shtyp emrin e modelit për të shtuar');
+  setLoading(true);
+  try {
+    const token = getCookie('token');  // Shto marrjen e token-it në header
+    if (!token) {
+      message.error('Nuk jeni të loguar');
       return;
     }
-    // Prefer to POST to backend so id is real; fallback to local if backend fails.
-    setLoading(true);
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/Parts/CarModels`, {
-        modelName: newCarModelName,
-        manufacturerId: Number(manufacturerId)
-      });
-      const cm = res.data || {};
-      const newCm = {
-        carModelId: cm.carModelId ?? cm.CarModelId ?? cm.id ?? Math.floor(Math.random() * 1000000),
-        modelName: cm.modelName ?? newCarModelName,
-        manufacturerId: cm.manufacturerId ?? manufacturerId,
-        manufacturerName: manufacturers.find(m => m.manufacturerId === Number(manufacturerId))?.name
-      };
-      setCarModels(prev => [...prev, newCm]);
-      setNewCarModelName('');
-      message.success('Modeli u shtua');
-    } catch (err) {
-      console.error('Quick add error', err);
-      // fallback local add
-      const newId = carModels.length ? Math.max(...carModels.map(m => m.carModelId || 0)) + 1 : 1;
-      const fallback = {
-        carModelId: newId,
-        modelName: newCarModelName,
-        manufacturerId: manufacturerId,
-        manufacturerName: manufacturers.find(m => m.manufacturerId === manufacturerId)?.name
-      };
-      setCarModels(prev => [...prev, fallback]);
-      setNewCarModelName('');
-      message.warning('Shto lokale sepse backend ktheu gabim');
-    } finally {
-      setLoading(false);
+
+    const res = await axios.post(
+      `${API_BASE_URL}/api/Manufacturers`,
+      values,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setManufacturers(prev => [...prev, res.data]);
+    setIsManufacturerModalVisible(false);
+    message.success('Prodhuesi u shtua');
+  } catch (err) {
+    console.error('Error adding manufacturer', err);
+    message.error(err.response?.data?.message || 'Gabim gjatë shtimit të prodhuesit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleEditManufacturer = async (values) => {
+  if (!editingManufacturer) return;
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Nuk jeni të loguar');
+      return;
     }
-  };
+
+    const payload = { ...editingManufacturer, ...values };
+    await axios.put(
+      `${API_BASE_URL}/api/Manufacturers/${editingManufacturer.manufacturerId}`,
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setManufacturers(prev => prev.map(m => m.manufacturerId === editingManufacturer.manufacturerId ? payload : m));
+    setEditingManufacturer(null);
+    setIsManufacturerModalVisible(false);
+    message.success('Prodhuesi u përditësua');
+  } catch (err) {
+    console.error('Error editing manufacturer', err);
+    message.error(err.response?.data?.message || 'Gabim gjatë përditësimit të prodhuesit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleDeleteManufacturer = async (id) => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Nuk jeni të loguar');
+      return;
+    }
+
+    await axios.delete(
+      `${API_BASE_URL}/api/Manufacturers/${id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setManufacturers(prev => prev.filter(m => m.manufacturerId !== id));
+    message.success('Prodhuesi u fshi');
+  } catch (err) {
+    console.error('Error deleting manufacturer', err);
+    message.error(err.response?.data?.message || 'Gabim gjatë fshirjes së prodhuesit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const fetchManufacturers = async () => {
+  setManufacturersLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Nuk jeni të loguar');
+      setManufacturers([]);
+      return;
+    }
+
+    const res = await axios.get(
+      `${API_BASE_URL}/api/Manufacturers`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setManufacturers(res.data || []);
+  } catch (err) {
+    console.error('Error fetching manufacturers', err);
+    message.error('Gabim gjatë marrjes së prodhuesve');
+  } finally {
+    setManufacturersLoading(false);
+  }
+};
+  // ------------------ Categories CRUD (admin) ------------------
+  const handleAddEditCategory = async (values) => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Ju lutem logohuni.');
+      return;
+    }
+    const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
+
+    if (editingCategory) {
+      await axios.put(`${API_BASE_URL}/api/admin/categories/${editingCategory.categoryId}`, values, axiosConfig);
+      setCategories(prev => prev.map(c => c.categoryId === editingCategory.categoryId ? { ...c, ...values } : c));
+      message.success('Kategoria u përditësua');
+    } else {
+      const res = await axios.post(`${API_BASE_URL}/api/admin/categories`, values, axiosConfig);
+      setCategories(prev => [...prev, res.data]);
+      message.success('Kategoria u shtua');
+    }
+    setIsCategoryModalVisible(false);
+    setEditingCategory(null);
+    form.resetFields();
+  } catch (err) {
+    console.error('Error saving category', err);
+    message.error('Gabim gjatë ruajtjes së kategorisë');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleDeleteCategory = async (id) => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Ju lutem logohuni.');
+      return;
+    }
+    const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
+
+    await axios.delete(`${API_BASE_URL}/api/admin/categories/${id}`, axiosConfig);
+    setCategories(prev => prev.filter(c => c.categoryId !== id));
+    message.success('Kategoria u fshi');
+  } catch (err) {
+    console.error('Error deleting category', err);
+    message.error('Gabim gjatë fshirjes së kategorisë');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const fetchCategories = async () => {
+  setCategoriesLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('Ju lutem logohuni.');
+      setCategoriesLoading(false);
+      return;
+    }
+    const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
+
+    const res = await axios.get(`${API_BASE_URL}/api/admin/categories`, axiosConfig);
+    setCategories(res.data || []);
+  } catch (err) {
+    console.error('Error fetching categories', err);
+    message.error('Gabim gjatë marrjes së kategorive');
+  } finally {
+    setCategoriesLoading(false);
+  }
+};
+
+  // -------------/////----- CarModels CRUD ---------/////////---------
+
+
+// fetchCarModels
+const fetchCarModels = async () => {
+  setCarModelsLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('/admin/login');
+      return;
+    }
+
+    const res = await axios.get(`${API_BASE_URL}/api/CarModels`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const normalized = (res.data || []).map(cm => ({
+      carModelId: cm.carModelId ?? cm.CarModelId ?? cm.id,
+      modelName: cm.modelName ?? cm.model ?? cm.name ?? cm.Name,
+      manufacturerId: cm.manufacturerId ?? cm.ManufacturerId ?? cm.manufacturerId,
+      manufacturerName: cm.manufacturerName ?? cm.ManufacturerName ?? (cm.Manufacturer ? cm.Manufacturer.Name : undefined),
+      yearStart: cm.yearStart ?? cm.YearStart ?? cm.yearStartValue,
+      yearEnd: cm.yearEnd ?? cm.YearEnd ?? cm.yearEndValue
+    }));
+
+    setCarModels(normalized);
+  } catch (err) {
+    console.error('Error fetching car models', err);
+    message.error('Gabim gjatë marrjes së modeleve të makinave');
+  } finally {
+    setCarModelsLoading(false);
+  }
+};
+
+// handleAddCarModel
+const handleAddCarModel = async (values) => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('/admin/login');
+      return;
+    }
+
+    const res = await axios.post(`${API_BASE_URL}/api/CarModels`, {
+      modelName: values.modelName,
+      manufacturerId: Number(values.manufacturerId),
+      yearStart: values.yearStart,    // nëse ke këto fusha
+      yearEnd: values.yearEnd
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const cm = res.data;
+    const newCm = {
+      carModelId: cm.carModelId ?? cm.CarModelId ?? cm.id,
+      modelName: cm.modelName, 
+      manufacturerId: cm.manufacturerId,
+      manufacturerName: manufacturers.find(m => m.manufacturerId === cm.manufacturerId)?.name
+    };
+    setCarModels(prev => [...prev, newCm]);
+    setIsAddCarModelModalVisible(false);
+    form.resetFields();
+    message.success('Modeli u shtua me sukses');
+  } catch (err) {
+    console.error('Error adding car model', err);
+    message.error(err.response?.data || 'Gabim gjatë shtimit të modelit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// handleEditCarModel
+const handleEditCarModel = async (values) => {
+  if (!editingCarModel) return;
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('/admin/login');
+      return;
+    }
+
+    await axios.put(`${API_BASE_URL}/api/CarModels/${editingCarModel.carModelId}`, {
+      modelName: values.modelName,
+      manufacturerId: Number(values.manufacturerId),
+      yearStart: values.yearStart,
+      yearEnd: values.yearEnd
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    setCarModels(prev => prev.map(cm => cm.carModelId === editingCarModel.carModelId
+      ? { ...cm, modelName: values.modelName, manufacturerId: Number(values.manufacturerId), manufacturerName: manufacturers.find(m => m.manufacturerId === Number(values.manufacturerId))?.name, yearStart: values.yearStart, yearEnd: values.yearEnd }
+      : cm
+    ));
+    setIsEditCarModelModalVisible(false);
+    setEditingCarModel(null);
+    form.resetFields();
+    message.success('Modeli u përditësua me sukses');
+  } catch (err) {
+    console.error('Error editing car model', err);
+    message.error(err.response?.data || 'Gabim gjatë përditësimit të modelit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// handleDeleteCarModel
+const handleDeleteCarModel = async (id) => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      message.error('/admin/login');
+      return;
+    }
+
+    await axios.delete(`${API_BASE_URL}/api/CarModels/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    setCarModels(prev => prev.filter(cm => cm.carModelId !== id));
+    message.success('Modeli u fshi me sukses');
+  } catch (err) {
+    console.error('Error deleting car model', err);
+    message.error(err.response?.data || 'Gabim gjatë fshirjes së modelit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  
+  
+  // load data per active tab
+  useEffect(() => {
+    if (activeTab === 'inventory') {
+      fetchParts();
+      fetchCategories();
+    } else if (activeTab === 'suppliers') {
+      fetchSuppliers();
+    } else if (activeTab === 'manufacturers') {
+      fetchManufacturers();
+    } else if (activeTab === 'categories') {
+      fetchCategories();
+    } else if (activeTab === 'carModels') {
+      fetchCarModels();
+      fetchManufacturers(); 
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   // ------------------ Upload handling (preview only) ------------------
   const uploadBefore = (file) => {

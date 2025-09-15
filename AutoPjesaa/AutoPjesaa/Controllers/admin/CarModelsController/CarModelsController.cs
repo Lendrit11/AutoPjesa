@@ -3,11 +3,13 @@ using AutoPjesa.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutoPjesaa.model.DTO.Admin.CarModel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AutoPjesaa.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // 🔐 Kërkon autentifikim me token për të gjitha metodat
     public class CarModelsController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
@@ -17,8 +19,9 @@ namespace AutoPjesaa.Controllers
             _context = context;
         }
 
-        // GET: api/CarModels
+        // ✅ GET: api/CarModels
         [HttpGet]
+        [AllowAnonymous] // (Opsionale) Lejon qasjen pa autentifikim në GET
         public async Task<IActionResult> GetCarModels()
         {
             var carModels = await _context.CarModels
@@ -37,11 +40,12 @@ namespace AutoPjesaa.Controllers
             return Ok(carModels);
         }
 
-        // POST: api/CarModels
+        // ✅ POST: api/CarModels
         [HttpPost]
         public async Task<IActionResult> AddCarModel([FromBody] AddCarModelDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var carModel = new CarModel
             {
@@ -64,12 +68,13 @@ namespace AutoPjesaa.Controllers
             });
         }
 
-        // PUT: api/CarModels/{id}
+        // ✅ PUT: api/CarModels/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCarModel(int id, [FromBody] AddCarModelDto dto)
         {
             var carModel = await _context.CarModels.FindAsync(id);
-            if (carModel == null) return NotFound();
+            if (carModel == null)
+                return NotFound();
 
             carModel.modelName = dto.ModelName ?? carModel.modelName;
             carModel.ManufacturerId = dto.ManufacturerId != 0 ? dto.ManufacturerId : carModel.ManufacturerId;
@@ -77,6 +82,7 @@ namespace AutoPjesaa.Controllers
             carModel.YearEnd = dto.YearEnd.HasValue ? new DateOnly(dto.YearEnd.Value, 1, 1) : carModel.YearEnd;
 
             await _context.SaveChangesAsync();
+
             return Ok(new
             {
                 carModel.CarModelId,
@@ -87,17 +93,18 @@ namespace AutoPjesaa.Controllers
             });
         }
 
-        // DELETE: api/CarModels/{id}
+        // ✅ DELETE: api/CarModels/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCarModel(int id)
         {
             var carModel = await _context.CarModels.FindAsync(id);
-            if (carModel == null) return NotFound();
+            if (carModel == null)
+                return NotFound();
 
             _context.CarModels.Remove(carModel);
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok(new { message = "Car model deleted successfully." });
         }
     }
 }

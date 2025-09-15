@@ -1,13 +1,15 @@
 ﻿using AutoPjesa.Domain.Entities;
 using AutoPjesa.Infrastructure.Persistence;
+using AutoPjesaa.model.DTO.Admin.PartsController;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AutoPjesaa.model.DTO.Admin.PartsController;
 
 namespace AutoPjesaa.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]  // Kërkon autentifikim me token për të gjitha metodat
     public class PartsController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
@@ -66,12 +68,12 @@ namespace AutoPjesaa.Controllers
             return Ok(result);
         }
 
-
         // POST: api/Parts
         [HttpPost]
         public async Task<IActionResult> AddPart([FromBody] PartsDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var part = new Part
             {
@@ -149,18 +151,15 @@ namespace AutoPjesaa.Controllers
             if (part == null)
                 return NotFound();
 
-            // Kontrollo nëse dto.ManufacturerName është null ose bosh
             if (string.IsNullOrWhiteSpace(dto.ManufacturerName))
                 return BadRequest("ManufacturerName is required.");
 
-            // Merr Manufacturer nga emri (case insensitive)
             var manufacturer = await _context.Manufacturers
                 .FirstOrDefaultAsync(m => m.Name.ToLower() == dto.ManufacturerName.ToLower());
 
             if (manufacturer == null)
                 return BadRequest($"Manufacturer '{dto.ManufacturerName}' not found.");
 
-            // Merr Category nga emri (nëse është dhënë)
             Category? category = null;
             if (!string.IsNullOrWhiteSpace(dto.CategoryName))
             {
@@ -171,7 +170,6 @@ namespace AutoPjesaa.Controllers
                     return BadRequest($"Category '{dto.CategoryName}' not found.");
             }
 
-            // Merr Modelet kompatibile nga emrat dhe filtro për prodhuesin e saktë
             List<CarModel> compatibleModels = new List<CarModel>();
             if (dto.CompatibleModelNames != null && dto.CompatibleModelNames.Any())
             {
@@ -179,7 +177,6 @@ namespace AutoPjesaa.Controllers
                     .Where(cm => dto.CompatibleModelNames.Contains(cm.modelName) && cm.ManufacturerId == manufacturer.ManufacturerId)
                     .ToListAsync();
 
-                // Kontrollo nëse ka modele që nuk janë gjetur
                 var notFoundModels = dto.CompatibleModelNames
                     .Except(compatibleModels.Select(cm => cm.modelName))
                     .ToList();
@@ -188,7 +185,7 @@ namespace AutoPjesaa.Controllers
                     return BadRequest($"The following models were not found: {string.Join(", ", notFoundModels)}");
             }
 
-            // Përditëso fushat bazë të pjesës
+            // Përditëso fushat bazë
             part.Name = dto.Name ?? part.Name;
             part.PartNumber = dto.PartNumber ?? part.PartNumber;
             part.Description = dto.Description ?? part.Description;
@@ -200,7 +197,6 @@ namespace AutoPjesaa.Controllers
             part.CompatibleFromYear = dto.CompatibleFromYear != 0 ? dto.CompatibleFromYear : part.CompatibleFromYear;
             part.CompatibleToYear = dto.CompatibleToYear != 0 ? dto.CompatibleToYear : part.CompatibleToYear;
 
-            // Përditëso stock-in
             var stock = part.Stocks.FirstOrDefault();
             if (stock != null)
             {
@@ -211,7 +207,6 @@ namespace AutoPjesaa.Controllers
                 stock.LastUpdated = DateTime.Now;
             }
 
-            // Përditëso imazhet
             if (dto.ImageUrls != null)
             {
                 _context.PartImages.RemoveRange(part.PartImages);
@@ -233,7 +228,6 @@ namespace AutoPjesaa.Controllers
                 }
             }
 
-            // Përditëso kompatibilitetin me modelet
             _context.PartCarModels.RemoveRange(part.PartCarModels);
 
             foreach (var model in compatibleModels)
@@ -249,8 +243,6 @@ namespace AutoPjesaa.Controllers
             return Ok();
         }
 
-
-
         // DELETE: api/Parts/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePart(int id)
@@ -261,7 +253,8 @@ namespace AutoPjesaa.Controllers
                 .Include(p => p.PartCarModels)
                 .FirstOrDefaultAsync(p => p.PartId == id);
 
-            if (part == null) return NotFound();
+            if (part == null)
+                return NotFound();
 
             if (part.Stocks.Any()) _context.Stocks.RemoveRange(part.Stocks);
             if (part.PartImages.Any()) _context.PartImages.RemoveRange(part.PartImages);
@@ -297,3 +290,4 @@ namespace AutoPjesaa.Controllers
         }
     }
 }
+

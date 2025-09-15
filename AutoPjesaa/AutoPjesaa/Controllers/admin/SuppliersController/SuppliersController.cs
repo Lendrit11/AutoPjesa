@@ -1,5 +1,6 @@
 ﻿using AutoPjesa.Domain.Entities;
 using AutoPjesa.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace AutoPjesaa.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // Kërkon autorizim për të gjitha metodat
     public class SuppliersController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
@@ -20,9 +22,11 @@ namespace AutoPjesaa.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Supplier>>> GetSuppliers()
         {
-            return await _context.Suppliers
-                .Include(s => s.SupplierManufacturers) // Marr lidhjet me Manufacturer
+            var suppliers = await _context.Suppliers
+                .Include(s => s.SupplierManufacturers)
                 .ToListAsync();
+
+            return Ok(suppliers);
         }
 
         // GET: api/Suppliers/5
@@ -34,14 +38,14 @@ namespace AutoPjesaa.Controllers
                 .FirstOrDefaultAsync(s => s.SupplierId == id);
 
             if (supplier == null)
-                return NotFound();
+                return NotFound(new { message = "Furnitori nuk u gjet." });
 
-            return supplier;
+            return Ok(supplier);
         }
 
         // POST: api/Suppliers
         [HttpPost]
-        public async Task<ActionResult<Supplier>> CreateSupplier(Supplier supplier)
+        public async Task<ActionResult<Supplier>> CreateSupplier([FromBody] Supplier supplier)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -54,10 +58,10 @@ namespace AutoPjesaa.Controllers
 
         // PUT: api/Suppliers/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSupplier(int id, Supplier supplier)
+        public async Task<IActionResult> UpdateSupplier(int id, [FromBody] Supplier supplier)
         {
             if (id != supplier.SupplierId)
-                return BadRequest("ID mismatch");
+                return BadRequest(new { message = "ID e dhënë nuk përputhet me Furnitorin." });
 
             _context.Entry(supplier).State = EntityState.Modified;
 
@@ -68,7 +72,7 @@ namespace AutoPjesaa.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!SupplierExists(id))
-                    return NotFound();
+                    return NotFound(new { message = "Furnitori nuk ekziston." });
                 else
                     throw;
             }
@@ -82,7 +86,7 @@ namespace AutoPjesaa.Controllers
         {
             var supplier = await _context.Suppliers.FindAsync(id);
             if (supplier == null)
-                return NotFound();
+                return NotFound(new { message = "Furnitori nuk ekziston." });
 
             _context.Suppliers.Remove(supplier);
             await _context.SaveChangesAsync();
@@ -96,3 +100,4 @@ namespace AutoPjesaa.Controllers
         }
     }
 }
+

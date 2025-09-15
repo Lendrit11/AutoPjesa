@@ -1,6 +1,7 @@
 ﻿using AutoPjesa.Domain.Entities;
 using AutoPjesa.Infrastructure.Persistence;
 using AutoPjesaa.model.DTO.Admin.Category;
+using Microsoft.AspNetCore.Authorization;  // <-- Shto këtë
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace AutoPjesaa.Controllers.Admin.CategoryCon
 {
     [ApiController]
     [Route("api/admin/categories")]
+    [Authorize]  // <-- Shtojmë sigurinë këtu (duhet token i vlefshëm)
     public class CategoriesController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
