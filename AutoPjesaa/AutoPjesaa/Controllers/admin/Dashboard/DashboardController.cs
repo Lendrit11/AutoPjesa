@@ -1,14 +1,18 @@
 ﻿using AutoPjesa.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace AutoPjesaa.Controllers.Admin
 {
     [ApiController]
     [Route("api/admin/dashboard")]
+    [Authorize] // Kërkon autentifikim për gjithë controllerin
     public class DashboardController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
@@ -18,12 +22,37 @@ namespace AutoPjesaa.Controllers.Admin
             _context = context;
         }
 
+        // Metodë ndihmëse për marrjen e UserId nga tokeni
+        private int? GetUserIdFromToken()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                return userId;
+            return null;
+        }
+
+        // Kontrollon nëse përdoruesi ka rol Admin
+        private async Task<bool> IsUserAdmin(int userId)
+        {
+            var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+            if (adminRole == null) return false;
+
+            return await _context.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.RoleId == adminRole.RoleId);
+        }
+
         /// <summary>
         /// Merr numrin total të përdoruesve dhe adminëve, dhe sa janë shtuar këtë muaj
         /// </summary>
         [HttpGet("user-counts")]
         public async Task<IActionResult> GetUserCounts()
         {
+            var userId = GetUserIdFromToken();
+            if (userId == null)
+                return Unauthorized("Nuk jeni të identifikuar.");
+
+            if (!await IsUserAdmin(userId.Value))
+                return Forbid("Nuk keni leje të aksesoni këtë informacion.");
+
             var totalUsers = await _context.AppUsers.CountAsync();
 
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
@@ -60,6 +89,13 @@ namespace AutoPjesaa.Controllers.Admin
         [HttpGet("user-registration-trends")]
         public async Task<IActionResult> GetUserRegistrationTrends()
         {
+            var userId = GetUserIdFromToken();
+            if (userId == null)
+                return Unauthorized("Nuk jeni të identifikuar.");
+
+            if (!await IsUserAdmin(userId.Value))
+                return Forbid("Nuk keni leje të aksesoni këtë informacion.");
+
             var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
 
             var today = DateOnly.FromDateTime(DateTime.Today);
@@ -74,6 +110,7 @@ namespace AutoPjesaa.Controllers.Admin
                  .Where(ur => ur.RoleId == adminRole.RoleId)
                  .Select(ur => ur.UserId)
                 .ToListAsync();
+
             var trendData = Enumerable.Range(0, 14).Select(i =>
             {
                 var date = startDate.AddDays(i);
@@ -100,6 +137,13 @@ namespace AutoPjesaa.Controllers.Admin
         [HttpGet("sales-summary")]
         public async Task<IActionResult> GetSalesSummary()
         {
+            var userId = GetUserIdFromToken();
+            if (userId == null)
+                return Unauthorized("Nuk jeni të identifikuar.");
+
+            if (!await IsUserAdmin(userId.Value))
+                return Forbid("Nuk keni leje të aksesoni këtë informacion.");
+
             var today = DateOnly.FromDateTime(DateTime.Today);
             var daysBack = 14;
 
@@ -128,6 +172,13 @@ namespace AutoPjesaa.Controllers.Admin
         [HttpGet("payments-summary")]
         public async Task<IActionResult> GetPaymentsSummary()
         {
+            var userId = GetUserIdFromToken();
+            if (userId == null)
+                return Unauthorized("Nuk jeni të identifikuar.");
+
+            if (!await IsUserAdmin(userId.Value))
+                return Forbid("Nuk keni leje të aksesoni këtë informacion.");
+
             var today = DateOnly.FromDateTime(DateTime.Today);
             var daysBack = 14;
 
@@ -149,5 +200,6 @@ namespace AutoPjesaa.Controllers.Admin
 
             return Ok(new { totalPayments, dailyPayments });
         }
+
     }
 }

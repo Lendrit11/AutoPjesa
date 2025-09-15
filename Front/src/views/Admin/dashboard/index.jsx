@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';  
-import { Row, Col, Card, Badge, Progress, List, Radio, Tooltip } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Row, Col, Card, Badge, Progress, Tooltip, Typography } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import {
-  AreaChart, Area, BarChart, Bar,
-  PieChart, Pie, Cell,
-  ResponsiveContainer, Tooltip as RTooltip, XAxis,
+  AreaChart, Area, ResponsiveContainer, Tooltip as RTooltip, XAxis, BarChart, Bar,
 } from 'recharts';
-import dayjs from 'dayjs';
+
+const { Title, Text } = Typography;
 
 const API_BASE_URL = 'http://localhost:5298';
 
 // Ikonat
-const CaretUpIcon = ({ color }) => <span style={{ color }}>▲</span>;
-const CaretDownIcon = ({ color }) => <span style={{ color }}>▼</span>;
+const CaretUpIcon = ({ color }) => <span style={{ color, marginLeft: 4 }}>▲</span>;
+const CaretDownIcon = ({ color }) => <span style={{ color, marginLeft: 4 }}>▼</span>;
 
-// CustomTooltip për charts
+// Tooltip për grafik
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
   return (
@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-// Ndryshim component
+// Komponenta Ndryshim
 const Ndryshim = ({ wow, dod }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
     <div>
@@ -42,7 +42,7 @@ const Ndryshim = ({ wow, dod }) => (
   </div>
 );
 
-// Fusha component për emrin dhe numrin
+// Komponenta Fusha
 const Fusha = ({ name, number }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
     <span>{name}</span>
@@ -50,23 +50,38 @@ const Fusha = ({ name, number }) => (
   </div>
 );
 
-// Kartela Card component
+// Komponenta Kartela
 const Kartela = ({ metaName, metaCount, body, footer, loading }) => (
-  <Card loading={loading} bordered={false} style={{ marginBottom: 16 }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div>{metaName}</div>
-      <div>{metaCount}</div>
-      <Tooltip title="Informata">
-        <InfoCircleOutlined />
-      </Tooltip>
+  <Card 
+    loading={loading} 
+    bordered={false} 
+    style={{ 
+      marginBottom: 20, 
+      borderRadius: 12, 
+      boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+      minHeight: 260,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      backgroundColor: '#fff'
+    }}
+    bodyStyle={{ padding: '24px 20px 20px', flex: 1 }}
+  >
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <Title level={5} style={{ margin: 0, color: '#2c3e50' }}>{metaName}</Title>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#1f2937' }}>{metaCount}</Text>
+        <Tooltip title="Informata">
+          <InfoCircleOutlined style={{ color: '#8c8c8c' }} />
+        </Tooltip>
+      </div>
     </div>
-    <div style={{ marginTop: 10 }}>{body}</div>
-    <div style={{ marginTop: 10 }}>{footer}</div>
+    <div style={{ flexGrow: 1 }}>{body}</div>
+    <div style={{ marginTop: 20 }}>{footer}</div>
   </Card>
 );
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#E36E7E', '#8F66DE'];
-
+// Përmbledhja
 const Përmbledhje = ({ loading, data }) => {
   if (!data) return null;
 
@@ -88,7 +103,6 @@ const Përmbledhje = ({ loading, data }) => {
 
   return (
     <>
-      {/* Rreshti i parë */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={12}>
           <Kartela
@@ -101,7 +115,7 @@ const Përmbledhje = ({ loading, data }) => {
         <Col xs={24} sm={12}>
           <Kartela
             loading={loading}
-            metaName="Përdoruesit Aktual"
+            metaName="Përdoruesit te Regjistruar"
             metaCount={totalUsers?.toLocaleString()}
             body={
               <ResponsiveContainer height={100}>
@@ -117,7 +131,6 @@ const Përmbledhje = ({ loading, data }) => {
         </Col>
       </Row>
 
-      {/* Rreshti i dytë */}
       <Row gutter={16}>
         <Col xs={24} sm={12}>
           <Kartela
@@ -150,118 +163,51 @@ const Përmbledhje = ({ loading, data }) => {
   );
 };
 
-const PërqindjeShitje = ({ loading }) => {
-  const pieData = {
-    all: [
-      { name: 'Furça- frenash', value: 454, price: 89.99 },
-      { name: 'Filtra të vajit', value: 332, price: 24.99 },
-      { name: 'Pastila frenash', value: 287, price: 12.99 },
-      { name: 'Filtra ajri', value: 198, price: 32.50 },
-      { name: 'Belat kohore', value: 156, price: 45.75 },
-      { name: 'Të tjera', value: 132, price: 0 },
-    ],
-  };
-
-  const [dataType, setDataType] = useState('all');
-  const dataSet = pieData[dataType];
-
-  return (
-    <Card
-      title="Pjesët më të Shitura"
-      loading={loading}
-      extra={
-        <Radio.Group value={dataType} onChange={e => setDataType(e.target.value)} buttonStyle="solid">
-          <Radio.Button value="all">Të gjitha Shitjet</Radio.Button>
-        </Radio.Group>
-      }
-    >
-      <Row gutter={20}>
-        <Col xs={24} sm={12}>
-          <ResponsiveContainer height={250}>
-            <PieChart>
-              <RTooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length > 0) {
-                    const { name, value, price } = payload[0].payload;
-                    const total = dataSet.reduce((sum, item) => sum + item.value, 0);
-                    const percent = ((value / total) * 100).toFixed(2) + '%';
-                    const revenue = (value * price).toLocaleString('sq-AL', {
-                      style: 'currency',
-                      currency: 'ALL',
-                    });
-
-                    return (
-                      <div style={{ background: '#fff', padding: 10, border: '1px solid #ccc' }}>
-                        <p><strong>{name}</strong></p>
-                        <p>Shitur: {value}</p>
-                        <p>Të ardhurat: {revenue}</p>
-                        <p>Pjesë e tregut: {percent}</p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Pie
-                data={dataSet}
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-                strokeOpacity={0}
-              >
-                {dataSet.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </Col>
-        <Col xs={24} sm={12}>
-          <List
-            bordered
-            dataSource={dataSet}
-            renderItem={(item, i) => {
-              const total = dataSet.reduce((sum, part) => sum + part.value, 0);
-              const percent = ((item.value / total) * 100).toFixed(2) + '%';
-              const revenue = (item.value * item.price).toLocaleString('sq-AL', {
-                style: 'currency',
-                currency: 'ALL',
-              });
-              return (
-                <List.Item key={item.name}>
-                  <Badge color={COLORS[i % COLORS.length]} />
-                  <span style={{ width: 120, display: 'inline-block' }}>{item.name}</span>
-                  <span style={{ margin: '0 10px' }}>{item.value} të shitura</span>
-                  <span>{revenue}</span>
-                  <span style={{ float: 'right' }}>{percent}</span>
-                </List.Item>
-              );
-            }}
-          />
-        </Col>
-      </Row>
-    </Card>
-  );
+// Funksion ndihmës për me marrë tokenin nga cookies
+const getTokenFromCookie = () => {
+  const tokenMatch = document.cookie.match(/(?:^|; )token=([^;]+)/);
+  return tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
 };
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
 
   useEffect(() => {
+    const token = getTokenFromCookie();
+
+    if (!token) {
+      navigate('/admin/login');
+      return;
+    }
+
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const userCountsResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/user-counts`);
-        const userCounts = await userCountsResponse.json();
+        const headers = {
+          'Authorization': `Bearer ${token}`
+        };
 
-        const userTrendsResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/user-registration-trends`);
-        const userTrends = await userTrendsResponse.json();
+        const userCounts = await fetch(`${API_BASE_URL}/api/admin/dashboard/user-counts`, {
+          headers,
+          credentials: 'include',
+        }).then(res => res.json());
 
-        const salesSummaryResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/sales-summary`);
-        const salesSummary = await salesSummaryResponse.json();
+        const userTrends = await fetch(`${API_BASE_URL}/api/admin/dashboard/user-registration-trends`, {
+          headers,
+          credentials: 'include',
+        }).then(res => res.json());
 
-        const paymentsSummaryResponse = await fetch(`${API_BASE_URL}/api/admin/dashboard/payments-summary`);
-        const paymentsSummary = await paymentsSummaryResponse.json();
+        const salesSummary = await fetch(`${API_BASE_URL}/api/admin/dashboard/sales-summary`, {
+          headers,
+          credentials: 'include',
+        }).then(res => res.json());
+
+        const paymentsSummary = await fetch(`${API_BASE_URL}/api/admin/dashboard/payments-summary`, {
+          headers,
+          credentials: 'include',
+        }).then(res => res.json());
 
         setDashboardData({
           ...userCounts,
@@ -271,18 +217,19 @@ const DashboardPage = () => {
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        navigate('/admin/login'); // nëse ka error auth
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [navigate]);
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 20, backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
+      <Title level={2} style={{ marginBottom: 24 }}>Dashboard Admin</Title>
       <Përmbledhje loading={loading} data={dashboardData} />
-      <PërqindjeShitje loading={loading} />
     </div>
   );
 };
