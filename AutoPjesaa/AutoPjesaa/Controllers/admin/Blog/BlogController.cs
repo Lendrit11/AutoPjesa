@@ -54,9 +54,61 @@ namespace AutoPjesa.API.Controllers
 
             return Ok(blogs);
         }
+        // GET: api/Blog/search?title=xxx
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                return BadRequest("Ju lutem jepni një titull për kërkim.");
+
+            var blogs = await _context.Blogs
+                .Include(b => b.User)
+                .Where(b => b.Title.ToLower().Contains(title.ToLower()))
+                .OrderByDescending(b => b.CreatedAt)
+                .Select(b => new
+                {
+                    b.blogId,
+                    b.Title,
+                    b.description,
+                    b.photoUrl,
+                    b.CreatedAt,
+                    User = new
+                    {
+                        b.User.UserId,
+                        b.User.FirstName,
+                        b.User.LastName,
+                        b.User.email
+                    }
+                })
+                .ToListAsync();
+
+            return Ok(blogs);
+        }
 
 
-        
+        // POST: api/Blog/upload-photo
+        [HttpPost("upload-photo")]
+      
+        public async Task<IActionResult> UploadPhoto(IFormFile photo)
+        {
+            if (photo == null || photo.Length == 0)
+                return BadRequest("Nuk u ngarkua asnjë file.");
+
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = Guid.NewGuid() + Path.GetExtension(photo.FileName);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            await using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await photo.CopyToAsync(stream);
+            }
+
+            var url = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+            return Ok(new { url });
+        }
 
         // POST: api/Blog
         [HttpPost]
