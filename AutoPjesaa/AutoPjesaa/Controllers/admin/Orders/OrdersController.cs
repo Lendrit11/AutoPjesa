@@ -1,13 +1,16 @@
 ﻿using AutoPjesa.Domain.Entities;
 using AutoPjesa.Infrastructure.Persistence;
 using AutoPjesaa.model.DTO.Admin.Orders;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AutoPjesaa.Controllers.Admin.OrderCon
 {
     [ApiController]
     [Route("api/admin/orders")]
+    [Authorize(Roles = "Admin")]  // Vetëm admin mund të aksesojë
     public class AdminOrdersController : ControllerBase
     {
         private readonly AutoPjesaDbContext _context;
@@ -15,6 +18,15 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
         public AdminOrdersController(AutoPjesaDbContext context)
         {
             _context = context;
+        }
+
+        // Metodë ndihmëse për marrjen e UserId nga tokeni
+        private int? GetUserIdFromToken()
+        {
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                return userId;
+            return null;
         }
 
         // GET: api/admin/orders
@@ -36,12 +48,9 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
                 OrderDate = o.OrderDate.ToDateTime(TimeOnly.MinValue),
                 Total = o.TotalAmount,
                 Status = o.OrderStatus,
-
-                // Merr ShippingAddress direkt nga Order, pa fallback në User.Addresses
                 ShippingAddress = !string.IsNullOrEmpty(o.ShippingAddress)
                     ? o.ShippingAddress
                     : "Nuk ka adresë",
-
                 Parts = o.OrderDetails.Select(od => new PartDto
                 {
                     PartId = od.PartId,
@@ -54,8 +63,6 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
             return Ok(result);
         }
 
-
-
         // POST: api/admin/orders
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
@@ -63,18 +70,15 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
             if (dto.Parts == null || !dto.Parts.Any())
                 return BadRequest("Të paktën një pjesë duhet të përfshihet në porosi.");
 
-            // Gjej përdoruesin
-            var user = await _context.AppUsers.FirstOrDefaultAsync(u =>
-                u.FirstName == dto.FirstName &&
-                u.LastName == dto.LastName &&
-                u.PhoneNumber == dto.CustomerPhone);
+            var userId = GetUserIdFromToken();
+            if (userId == null)
+                return Unauthorized("Nuk jeni të identifikuar.");
 
+            var user = await _context.AppUsers.FindAsync(userId.Value);
             if (user == null)
-                return NotFound("Nuk u gjet përdoruesi me këto të dhëna.");
+                return NotFound("Përdoruesi nuk u gjet.");
 
-            // Merr të gjitha pjesët me PartNumber që vijnë nga frontend
             var partNumbers = dto.Parts.Select(p => p.PartNumber).ToList();
-
             var partsFromDb = await _context.Parts
                 .Include(p => p.Stocks)
                 .Where(p => partNumbers.Contains(p.PartNumber))
@@ -92,7 +96,6 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
                 if (matchedPart == null)
                     return BadRequest($"Pjesa me PartNumber {partDto.PartNumber} nuk ekziston.");
 
-                // Merr stock-un e fundit aktiv për këtë pjesë
                 var stock = matchedPart.Stocks
                     .OrderByDescending(s => s.LastUpdated)
                     .FirstOrDefault();
@@ -103,7 +106,6 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
                 if (stock.Quantity < partDto.Quantity)
                     return BadRequest($"Nuk ka sasi të mjaftueshme në stok për pjesën {matchedPart.Name}.");
 
-                // Llogarit çmimin me zbritje nëse është aktive
                 decimal effectivePrice = stock.Price;
 
                 if (stock.Discount > 0 && stock.expireddiscount >= DateTime.Now)
@@ -111,11 +113,9 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
                     effectivePrice -= (stock.Price * stock.Discount / 100);
                 }
 
-                // Llogarit totalin
                 decimal lineTotal = effectivePrice * partDto.Quantity;
                 totalAmount += lineTotal;
 
-                // Shto detajin e porosisë
                 orderDetails.Add(new OrderDetail
                 {
                     PartId = matchedPart.PartId,
@@ -123,11 +123,9 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
                     Price = effectivePrice
                 });
 
-                // Ul sasinë nga stoku
                 stock.Quantity -= partDto.Quantity;
             }
 
-            // Krijo porosinë
             var order = new Order
             {
                 UserId = user.UserId,
@@ -143,7 +141,6 @@ namespace AutoPjesaa.Controllers.Admin.OrderCon
 
             return Ok(new { message = "Porosia u krijua me sukses", orderId = order.OrderId });
         }
-
 
         // PUT: api/admin/orders/{id}/status
         [HttpPut("{id}/status")]

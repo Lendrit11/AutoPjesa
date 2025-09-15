@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';  
 import {
   Card,
   Table,
@@ -31,15 +31,22 @@ import {
 } from '@ant-design/icons';
 import axios from 'axios';
 import moment from 'moment';
-
+import { useNavigate } from 'react-router-dom';
 const API_BASE_URL = 'http://localhost:5298';
 const { Text } = Typography;
 const { useBreakpoint } = Grid;
 
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 const OrdersPage = () => {
   const screens = useBreakpoint();
   const isMobile = !screens.md;
-
+const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -57,20 +64,28 @@ const OrdersPage = () => {
     'Completed': 'green',
     'Cancelled': 'red'
   };
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE_URL}/api/admin/orders`);
-      // Ketu e shikon sa dhe si i vjen te dhenat
-      setOrders(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error(err);
-      message.error('Gabim gjatë marrjes së porosive');
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchOrders = async () => {
+  setLoading(true);
+  try {
+    const token = getCookie('token');
+   if (!token) {
+  navigate('/admin/login');
+  return;
+}
 
+    const res = await axios.get(`${API_BASE_URL}/api/admin/orders`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    setOrders(Array.isArray(res.data) ? res.data : []);
+  } catch (err) {
+    console.error(err);
+    message.error('Gabim gjatë marrjes së porosive');
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -91,35 +106,59 @@ const OrdersPage = () => {
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
-    setLoading(true);
-    try {
-      await axios.put(`${API_BASE_URL}/api/admin/orders/${orderId}/status`, newStatus, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-      message.success(`Statusi u përditësua në ${newStatus}`);
-      await fetchOrders();
-    } catch (err) {
-      console.error(err);
-      message.error('Gabim gjatë përditësimit të statusit');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
 
-  const deleteOrder = async (orderId) => {
-    setLoading(true);
-    try {
-      await axios.delete(`${API_BASE_URL}/api/admin/orders/${orderId}`);
-      message.success('Porosia u fshi me sukses');
-      setOrders(prev => prev.filter(o => o.id !== orderId));
-    } catch (err) {
-      console.error(err);
-      message.error('Gabim gjatë fshirjes së porosisë');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const token = getCookie('token');
+ if (!token) {
+  navigate('/admin/login');
+  return;
+}
 
+  try {
+    await axios.put(
+      `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
+      JSON.stringify(newStatus),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    message.success(`Statusi u përditësua në ${newStatus}`);
+    await fetchOrders();
+  } catch (err) {
+    console.error(err);
+    message.error('Gabim gjatë përditësimit të statusit');
+  } finally {
+    setLoading(false);
+  }
+};
+
+const deleteOrder = async (orderId) => {
+  setLoading(true);
+
+  const token = getCookie('token');
+ if (!token) {
+  navigate('/admin/login');
+  return;
+}
+
+  try {
+    await axios.delete(`${API_BASE_URL}/api/admin/orders/${orderId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    message.success('Porosia u fshi me sukses');
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+  } catch (err) {
+    console.error(err);
+    message.error('Gabim gjatë fshirjes së porosisë');
+  } finally {
+    setLoading(false);
+  }
+};
   const handleExport = () => {
     message.info('Funksionaliteti i eksportit do të implementohet këtu');
   };
@@ -277,7 +316,13 @@ const OrdersPage = () => {
     initialValues={{
       parts: [{ partId: '', name: '', quantity: 1, price: 0 }]
     }}
-    onFinish={async (values) => {
+   onFinish={async (values) => {
+  const token = getCookie('token');
+if (!token) {
+  navigate('/admin/login');
+  return;
+}
+
   try {
     const payload = {
       firstName: values.firstName,
@@ -294,16 +339,22 @@ const OrdersPage = () => {
 
     console.log('Payload:', payload); // për debug
 
-    await axios.post(`${API_BASE_URL}/api/admin/orders`, payload);
+    await axios.post(`${API_BASE_URL}/api/admin/orders`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
 
     message.success('Porosia u krijua me sukses!');
     setIsCreateModalOpen(false);
     await fetchOrders();
   } catch (err) {
-    console.error(err);
+    console.error('Gabim gjatë krijimit të porosisë:', err);
     message.error('Gabim gjatë krijimit të porosisë');
   }
 }}
+
   >
     <Form.Item
       label="Emri i klientit"
