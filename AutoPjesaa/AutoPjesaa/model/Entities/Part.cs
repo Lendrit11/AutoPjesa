@@ -15,7 +15,7 @@ namespace AutoPjesa.Domain.Entities
         public string Manufacturer { get; set; }
         public int CompatibleFromYear { get; set; }
         public int CompatibleToYear { get; set; }
-           public Category Category { get; set; } = null!;
+        public Category Category { get; set; } = null!;
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
         public ICollection<PartImage> PartImages { get; set; } = new List<PartImage>();
