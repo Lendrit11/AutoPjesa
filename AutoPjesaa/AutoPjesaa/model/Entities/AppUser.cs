@@ -18,7 +18,7 @@ namespace AutoPjesa.Domain.Entities
         public string password { get; set; } = null!;
         [Required]
         public DateOnly CreatedAt { get; set; }
-        public string Status { get; set; } = "active";
+
         public ICollection<Address> Addresses { get; set; } = new List<Address>();
         public ICollection<Cart> Carts { get; set; } = new List<Cart>();
         public ICollection<Order> Orders { get; set; } = new List<Order>();

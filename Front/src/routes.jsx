@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Loader from './components/Loader/Loader';
 import Website from './layout/Website';
 import Admin from './layout/Admin';
+import AuthLayout from "./layout/Admin/AuthLayout/AuthLayout";
 export const RenderRoutes = (routes = []) => (
   <Suspense fallback={<Loader />}>
     <Routes>
@@ -30,7 +31,8 @@ export const RenderRoutes = (routes = []) => (
 );
 
 const routes = [
-    {
+  // Website Routes
+  {
     path: '/login',
     layout: Website,
     element: lazy(() => import('./views/Website/login')),
@@ -80,7 +82,9 @@ const routes = [
     layout: Website,
     element: lazy(() => import('./views/Website/shop')),
   },
-    {
+
+  // Admin Routes
+  {
     path: '/admin/dashboard',
     layout: Admin,
     element: lazy(() => import('./views/Admin/dashboard')),
@@ -88,30 +92,34 @@ const routes = [
   {
     path: '/admin/supply',
     layout: Admin,
-    element: lazy(() => import('./views/Admin/supply/index.jsx')),
+    element: lazy(() => import('./views/Admin/supply/index')),
   },
-  ,
   {
-    path: '/admin/login',
-    layout: Admin,
-    element: lazy(() => import('./views/Admin/login')),
-  },
-  ,
+  path: '/admin/login',
+  layout: AuthLayout,  // Layout pa Navbar
+  element: lazy(() => import('./views/Admin/login')),
+},
   {
     path: '/admin/orders',
     layout: Admin,
-    element: lazy(() => import('./views/Admin/orders/index.jsx')),
+    element: lazy(() => import('./views/Admin/orders/index')),
   },
-  ,
+  {
+    path: '/admin/blog',
+    layout: Admin,
+    element: lazy(() => import('./views/Admin/blog/index')),
+  },
   {
     path: '/admin/user',
     layout: Admin,
-    element: lazy(() => import('./views/Admin/user/index.jsx')),
+    element: lazy(() => import('./views/Admin/user/index')),
   },
-    {
+
+  // Catch-all
+  {
     path: '*',
     layout: Website,
-    element: lazy(() => import('./views/Website/Home'))
+    element: lazy(() => import('./views/Website/Home')),
   }
 ];
 

@@ -1,59 +1,72 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import "../../../../assets/css/mobile.css";
 import { toast } from "react-toastify";
 import axios from "axios";
-import '../../../../assets/css/mobile.css'; // Ndryshuar
-
-const MobileMenu = ({ onClose, className }) => {
-  const [submenuActive, setSubmenuActive] = useState(null);
-  const [query, setQuery] = useState("");
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const inputRef = useRef(null);
+const Mobile = ({ onClose, className }) => {
+  const [openSubmenu, setOpenSubmenu] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [results, setResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleMenuClose = () => {
-    if (onClose) onClose();
-  };
 
-  const handleLogout = async () => {
-    try {
-      await axios.post("http://localhost:5298/api/user/login/logout", {}, { withCredentials: true });
+
+const handleLogout = async () => {
+  try {
+    // Nëse do lexosh token nga localStorage, p.sh:
+    // const token = localStorage.getItem("token");
+
+    // Nëse nuk e ke nevojë token për logout (sepse serveri lexon cookie)
+    // atëherë hiqe referencën token nga ky funksion!
+
+    const response = await axios.post(
+      "http://localhost:5298/api/user/login/logout",
+      {},
+      { withCredentials: true }
+    );
       toast.success("Logout i suksesshëm!");
       navigate("/login");
-    } catch (error) {
-      console.error("Gabim gjatë logout:", error);
-    }
+    // bëj redirect, pastro localStorage, state, etj.
+  } catch (error) {
+    console.error("Gabim gjatë logout:", error);
+  }
+};
+
+  const toggleSubmenu = (id) => {
+    setOpenSubmenu(openSubmenu === id ? null : id);
   };
 
-  const toggleDropdown = (id) => {
-    setSubmenuActive(submenuActive === id ? null : id);
-  };
-
-  const searchItems = async (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!searchTerm.trim()) return;
+
     try {
-      const res = await fetch(`http://localhost:5298/api/user/Blog/search?term=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      setFilteredItems(data);
-      setShowDropdown(true);
-    } catch (err) {
-      console.error("Gabim në kërkim:", err);
+      const response = await fetch(
+        `http://localhost:5298/api/user/Blog/search?term=${encodeURIComponent(searchTerm)}`
+      );
+      if (!response.ok) throw new Error("Network response was not ok");
+
+      const data = await response.json();
+      setResults(data);
+      setShowResults(true);
+    } catch (error) {
+      console.error("Search error:", error);
     }
   };
 
   const handleResultClick = (partId) => {
     navigate(`/Product/${partId}`);
-    setShowDropdown(false);
-    setQuery("");
-    handleMenuClose();
+    setShowResults(false);
+    setSearchTerm("");
+    onClose(); // mbyll menu mobile pas klikimit
   };
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (inputRef.current && !inputRef.current.contains(e.target)) {
-        setShowDropdown(false);
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowResults(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -61,56 +74,57 @@ const MobileMenu = ({ onClose, className }) => {
   }, []);
 
   return (
-    <div className={`mobile-panel ${className || ""}`}>
-      <div className="mobile-panel__inner">
-
+    <div className={`mobile-menu_wrapper ${className}`}>
+      <div className="offcanvas-menu-inner">
         <button
-          className="mobile-panel__close-btn"
+          className="btn-close"
           onClick={(e) => {
             e.preventDefault();
-            handleMenuClose();
+            onClose();
           }}
-          aria-label="Close"
+          aria-label="Close menu"
         >
           <i className="ion-android-close"></i>
         </button>
 
-        <div className="mobile-panel__search" ref={inputRef}>
-          <form onSubmit={searchItems} className="mobile-search__form">
+        {/* 🔍 Mobile Search */}
+        <div className="offcanvas-inner_search" ref={searchRef}>
+          <form className="inner-searchbox" onSubmit={handleSearch}>
             <input
               type="text"
-              placeholder="Kërko produkt..."
-              value={query}
+              placeholder="Search for item..."
+              value={searchTerm}
               onChange={(e) => {
-                setQuery(e.target.value);
+                setSearchTerm(e.target.value);
                 if (e.target.value === "") {
-                  setFilteredItems([]);
-                  setShowDropdown(false);
+                  setResults([]);
+                  setShowResults(false);
                 }
               }}
               onFocus={() => {
-                if (filteredItems.length > 0) setShowDropdown(true);
+                if (results.length > 0) setShowResults(true);
               }}
             />
-            <button type="submit" className="mobile-search__btn">
+            <button className="search_btn" type="submit">
               <i className="ion-ios-search-strong"></i>
             </button>
           </form>
 
-          {showDropdown && filteredItems.length > 0 && (
-            <div className="mobile-search__results">
-              {filteredItems.map((item) => (
+          {showResults && results.length > 0 && (
+            <div className="search-results-dropdown">
+              {results.map((part) => (
                 <div
-                  key={item.partId}
-                  className="mobile-search__item"
-                  onClick={() => handleResultClick(item.partId)}
+                  key={part.partId}
+                  className="search-result-item"
+                  onClick={() => handleResultClick(part.partId)}
+                  style={{ cursor: "pointer" }}
                 >
-                  {item.imageUrl && (
-                    <img src={item.imageUrl} alt={item.name} width={50} />
+                  {part.imageUrl && (
+                    <img src={part.imageUrl} alt={part.name} width={50} />
                   )}
                   <div>
-                    <h5>{item.name}</h5>
-                    <p>{item.price} €</p>
+                    <h5>{part.name}</h5>
+                    <p>{part.price} €</p>
                   </div>
                 </div>
               ))}
@@ -118,33 +132,40 @@ const MobileMenu = ({ onClose, className }) => {
           )}
         </div>
 
-        <nav className="mobile-panel__nav">
-          <ul className="mobile-nav__list">
+        {/* 📱 Mobile Navigation */}
+        <nav className="offcanvas-navigation">
+          <ul className="mobile-menu">
             <li><Link to="/home">Home</Link></li>
             <li><Link to="/shop">Shop</Link></li>
             <li><Link to="/contact">Contact</Link></li>
             <li><Link to="/about">About</Link></li>
-
-            <li className={`mobile-nav__item--has-children ${submenuActive === "settings" ? "open" : ""}`}>
-              <a href="#!" onClick={(e) => {
-                e.preventDefault();
-                toggleDropdown("settings");
-              }}>
-                <p>Settings</p>
+            <li className={`menu-item-has-children ${openSubmenu === "home" ? "active" : ""}`}>
+              <a
+                href="#!"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleSubmenu("home");
+                }}
+              >
+                <br />
+                <span className="">Settings</span>
+                <br />
               </a>
-              <ul className={`mobile-submenu ${submenuActive === "settings" ? "visible" : ""}`}>
-                <li><Link to="/login">Login</Link></li>
-                <li><Link to="/Profile">Account</Link></li>
-                <li><Link to="/Wishlist">Wishlist</Link></li>
-                <li><Link to="#" onClick={handleLogout}>Log out</Link></li>
+              <ul className={`sub-menu ${openSubmenu === "home" ? "open" : ""}`}>
+                <li className="unactive"><Link to="/login">Login</Link></li>
+                <li className="unactive"><Link to="/Profile">Account</Link></li>
+                <li className="unactive"><Link to="/Wishlist">Wishlist</Link></li>
+                                <li className="unactive">
+               <Link to="#" onClick={handleLogout}>Log out</Link>
+             </li>
               </ul>
             </li>
           </ul>
         </nav>
-
       </div>
+      
     </div>
   );
 };
 
-export default MobileMenu;
+export default Mobile;

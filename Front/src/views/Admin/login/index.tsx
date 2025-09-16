@@ -2,43 +2,67 @@ import React from 'react';
 import { Button, Checkbox, Form, Input, theme as antTheme } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify'; // ⬅️ import toast
-import 'react-toastify/dist/ReactToastify.css'; // ⬅️ import CSS
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import './index.less';
 
-const initialValues = {
+interface LoginFormValues {
+  email: string;
+  password: string;
+  remember?: boolean;
+}
+
+const initialValues: LoginFormValues = {
   email: '',
   password: '',
+  remember: false,
 };
 
-const LoginForm = () => {
+const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = antTheme.useToken();
 
-  const onFinished = async (form) => {
+  // ✅ Funksioni për të ruajtur token në cookie
+  const setTokenCookie = (token: string, remember: boolean) => {
+    if (remember) {
+      const expires = new Date(Date.now() + 7 * 864e5).toUTCString(); // 7 ditë
+      document.cookie = `token=${encodeURIComponent(token)}; expires=${expires}; path=/`;
+    } else {
+      document.cookie = `token=${encodeURIComponent(token)}; path=/`; // session cookie
+    }
+  };
+
+  const onFinished = async (form: LoginFormValues) => {
     try {
       const response = await axios.post('http://localhost:5298/admin/login/Auth', {
         email: form.email,
         password: form.password,
       });
 
-      const data = response.data;
-      console.log('Login sukses:', data);
+      const { token } = response.data;
 
-      // Sukses mesazh (opsional)
-      toast.success('Logged in successfully!');
+      if (!token) {
+        toast.error('❌ Token not received from server');
+        return;
+      }
 
-      // Navigate
+      // ✅ Ruaj token në cookie
+      setTokenCookie(token, !!form.remember);
+
+      toast.success('✅ Logged in successfully!');
       navigate('/admin/dashboard');
-    } catch (error) {
-      if (error.response) {
-        console.error('Login error:', error.response.data);
-        toast.error(error.response.data); // toast gabimi
+      window.location.reload(); // opsionale
+
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data || 'Login failed';
+        console.error('Axios error:', message);
+        toast.error(`❌ ${message}`);
       } else {
-        console.error('Network error:', error.message);
-        toast.error('Network error: ' + error.message);
+        console.error('Unexpected error:', error);
+        toast.error('❌ An unexpected error occurred.');
       }
     }
   };
@@ -57,13 +81,12 @@ const LoginForm = () => {
         padding: '20px',
       }}
     >
-      {/* Toast container për me i shfaq mesazhet */}
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
 
       <Form
         onFinish={onFinished}
-        className="login-page-form"
         initialValues={initialValues}
+        className="login-page-form"
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.7)',
           padding: '30px',
@@ -86,7 +109,7 @@ const LoginForm = () => {
           name="password"
           rules={[{ required: true, message: 'Please enter your password' }]}
         >
-          <Input type="password" placeholder="Password" />
+          <Input.Password placeholder="Password" />
         </Form.Item>
 
         <Form.Item name="remember" valuePropName="checked">

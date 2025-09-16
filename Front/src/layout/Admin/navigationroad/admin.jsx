@@ -25,10 +25,17 @@ const managerMenu = {
           },
           {
             id: 'Supply',
-            title: 'supply ',
+            title: 'Supply ',
             type: 'item',
             icon: <FiBox style={iconStyle} />,
             url: '/admin/supply'
+          },
+          {
+            id: 'Blog',
+            title: 'Blog ',
+            type: 'item',
+            icon: <FiBox style={iconStyle} />,
+            url: '/admin/Blog'
           },
           {
             id: 'Users',

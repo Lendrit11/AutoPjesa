@@ -13,6 +13,7 @@ namespace AutoPjesa.Infrastructure.Persistence
         public DbSet<CarModel> CarModels { get; set; }
         public DbSet<PartReview> PartReviews { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
+
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartCarModel> PartCarModels { get; set; }
         public DbSet<FavoritePart> FavoriteParts { get; set; }
@@ -31,34 +32,15 @@ namespace AutoPjesa.Infrastructure.Persistence
         public DbSet<OrderHistory> OrderHistories { get; set; }
         public DbSet<PartImage> PartImages { get; set; }
 
-        // 🎯 Tabela e re për furnitorët
-        public DbSet<Supplier> Suppliers { get; set; }
-        // 🎯 Tabela lidhëse many-to-many Supplier-Manufacturer
-        public DbSet<SupplierManufacturer> SupplierManufacturers { get; set; }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Primary keys
+            // Primary keys for many-to-many and composite keys
             modelBuilder.Entity<PartCarModel>().HasKey(pc => new { pc.PartId, pc.CarModelId });
-            modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.UserId, ur.RoleId });
-            modelBuilder.Entity<CartItem>().HasKey(ci => ci.CartItemId);
-            modelBuilder.Entity<OrderDetail>().HasKey(od => od.OrderDetailId);
+            modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.userId, ur.roleId });
+            modelBuilder.Entity<CartItem>().HasKey(ci => ci.CartItemId); // sepse ka ID
+            modelBuilder.Entity<OrderDetail>().HasKey(od => od.OrderDetailId); // ka ID
 
-            // Many-to-many Supplier-Manufacturer
-            modelBuilder.Entity<SupplierManufacturer>()
-                .HasKey(sm => new { sm.SupplierId, sm.ManufacturerId });
-
-            modelBuilder.Entity<SupplierManufacturer>()
-                .HasOne(sm => sm.Supplier)
-                .WithMany(s => s.SupplierManufacturers)
-                .HasForeignKey(sm => sm.SupplierId);
-
-            modelBuilder.Entity<SupplierManufacturer>()
-                .HasOne(sm => sm.Manufacturer)
-                .WithMany(m => m.SupplierManufacturers)
-                .HasForeignKey(sm => sm.ManufacturerId);
-
-            // Relationships për pjesët e tjera
+            // Relationships
             modelBuilder.Entity<Part>()
                 .HasMany(p => p.PartCarModels)
                 .WithOne(pc => pc.Part)
@@ -92,22 +74,19 @@ namespace AutoPjesa.Infrastructure.Persistence
             modelBuilder.Entity<AppUser>()
                 .HasMany(u => u.UserRoles)
                 .WithOne(ur => ur.User)
-                .HasForeignKey(ur => ur.UserId);
-
+                .HasForeignKey(ur => ur.userId);
             modelBuilder.Entity<Role>()
                 .HasMany(r => r.UserRoles)
                 .WithOne(ur => ur.Role)
-                .HasForeignKey(ur => ur.RoleId);
-
+                .HasForeignKey(ur => ur.roleId);
             modelBuilder.Entity<Blog>()
-                .HasOne(b => b.User)
-                .WithMany(u => u.Blogs)
-                .HasForeignKey(b => b.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+              .HasOne(b => b.User)
+              .WithMany(u => u.Blogs)
+              .HasForeignKey(b => b.UserId)
+              .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<FavoritePart>()
-                .HasIndex(fp => new { fp.userid, fp.partid })
-                .IsUnique();
+                 .HasIndex(fp => new { fp.userid, fp.partid })
+                     .IsUnique(); 
 
             modelBuilder.Entity<FavoritePart>()
                 .HasOne(fp => fp.User)
@@ -120,9 +99,8 @@ namespace AutoPjesa.Infrastructure.Persistence
                 .WithMany(p => p.FavoritedByUsers)
                 .HasForeignKey(fp => fp.partid)
                 .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<PartReview>()
-                .HasKey(pr => pr.ReviewId);
+              .HasKey(pr => pr.ReviewId);
 
             modelBuilder.Entity<PartReview>()
                 .HasOne(pr => pr.Part)
@@ -135,6 +113,7 @@ namespace AutoPjesa.Infrastructure.Persistence
                 .WithMany(u => u.Reviews)
                 .HasForeignKey(pr => pr.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
 
             base.OnModelCreating(modelBuilder);
         }

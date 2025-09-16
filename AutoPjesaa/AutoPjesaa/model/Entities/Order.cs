@@ -15,8 +15,6 @@ namespace AutoPjesa.Domain.Entities
         public string OrderStatus { get; set; } // e.g., "Pending", "Shipped", "Delivered"
         [Required]
         public decimal TotalAmount { get; set; } // Total amount for the order
-        [Required]
-        public string ShippingAddress { get; set; } = string.Empty;
         public AppUser User { get; set; } = null!; // Navigation property to AppUser 
 
         public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

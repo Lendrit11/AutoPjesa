@@ -10,7 +10,6 @@
         public DateTime expireddiscount { get; set; }  
         public DateTime LastUpdated { get; set; }
         public Part Part { get; set; } = null!;
-        public int? ReorderLevel { get; set; }
-
+     
     }
 }

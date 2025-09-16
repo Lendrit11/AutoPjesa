@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AutoPjesaa")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b70b16874de0fcb05b77ea1fdb8943e274c17822")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6b51208d40301fbbbb700f0544a6c792e9713369")]
 [assembly: System.Reflection.AssemblyProductAttribute("AutoPjesaa")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AutoPjesaa")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
