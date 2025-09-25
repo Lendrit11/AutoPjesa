@@ -64,6 +64,8 @@ const descriptionArray = [
  
 
  <Related/>
+ <br />
+ <br />
 <Footer/>
 </div>
 

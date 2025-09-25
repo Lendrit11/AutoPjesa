@@ -47,7 +47,7 @@ const LoginRegisterPage = () => {
         });
 
         const { token, user } = res.data;
-        document.cookie = `token=${token}; path=/;`;
+document.cookie = `user_token=${token}; path=/;`;
           
         toast.success("✅ Login successful!");
         navigate("/Home");

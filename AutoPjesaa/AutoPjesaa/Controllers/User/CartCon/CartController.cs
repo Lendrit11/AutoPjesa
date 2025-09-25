@@ -55,9 +55,10 @@ namespace AutoPjesaa.Controllers.User.CartCon
                 // Marrim stokun më të fundit (ose të parin)
                 var stock = part.Stocks.OrderByDescending(s => s.LastUpdated).FirstOrDefault();
 
-                decimal finalPrice = stock != null && stock.Discount > 0 && stock.expireddiscount > DateTime.UtcNow
-                    ? stock.Price - (stock.Price * stock.Discount / 100)
-                    : stock?.Price ?? 0;
+                decimal finalPrice = stock != null && stock.Discount > 0
+    ? Math.Round(stock.Price * (1 - stock.Discount / 100), 2)
+    : stock?.Price ?? 0;
+
 
                 return new
                 {
@@ -105,23 +106,42 @@ namespace AutoPjesaa.Controllers.User.CartCon
                 }
                 else
                 {
+                    var stock = await _context.Stocks
+                        .Where(s => s.PartId == request.PartId)
+                        .OrderByDescending(s => s.LastUpdated)
+                        .FirstOrDefaultAsync();
+
+                    if (stock == null)
+                        return BadRequest("Produkti nuk ka stok.");
+                    decimal finalPrice = stock.Discount > 0
+        ? Math.Round(stock.Price * (1 - stock.Discount / 100), 2)
+        : stock.Price;
+
+
                     var newCartItem = new CartItem
                     {
                         PartId = request.PartId,
                         Quantity = request.Quantity,
-                        CartId = cart.CartId // **Sigurohu që po cakton CartId!**
+                        CartId = cart.CartId,
+                        Price = finalPrice
                     };
                     _context.CartItems.Add(newCartItem);
                 }
+
 
                 await _context.SaveChangesAsync();
                 return Ok(new { Message = "Item added to cart successfully." });
             }
             catch (Exception ex)
             {
-                // Kthe mesazh të detajuar për debug (nuk rekomandohet në prodhim)
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new
+                {
+                    error = ex.Message,
+                    stackTrace = ex.StackTrace,
+                    inner = ex.InnerException?.Message
+                });
             }
+
         }
         [HttpDelete("remove-cart-item/{cartItemId}")]
         [Authorize]

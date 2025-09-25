@@ -37,7 +37,8 @@ namespace AutoPjesaa.Controllers.User.Blog
             {
                 BlogId = b.blogId,
                 Title = b.Title,
-                PhotoUrl = string.IsNullOrEmpty(b.photoUrl) ? null : baseUrl + b.photoUrl,
+                PhotoUrl = string.IsNullOrEmpty(b.photoUrl) ? null
+           : (b.photoUrl.StartsWith("http") ? b.photoUrl : baseUrl + "/" + b.photoUrl.TrimStart('/')),
                 Description = b.description,
                 CreatedAt = b.CreatedAt,
                 UserId = b.UserId,

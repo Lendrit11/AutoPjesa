@@ -46,9 +46,14 @@ namespace AutoPjesaa.Controllers.User.Home
                         ImageId = img.ImgId,
                         ImageUrl = img.ImgUrl
                     }).ToList(),
-                    Price = p.Stocks.OrderByDescending(s => s.LastUpdated)
-                                    .Select(s => s.Price)
-                                    .FirstOrDefault()
+
+                    // Merr stokun më të fundit dhe aplikon zbritjen në çmim nëse ka
+                    Price = p.Stocks
+                        .OrderByDescending(s => s.LastUpdated)
+                        .Select(s => s.Discount > 0
+                            ? Math.Round(s.Price * (1 - s.Discount / 100), 2)
+                            : s.Price)
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 

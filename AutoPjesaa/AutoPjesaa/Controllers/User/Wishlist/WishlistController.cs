@@ -28,31 +28,49 @@ namespace AutoPjesaa.Controllers.User.Wishlist
         public async Task<IActionResult> getWishlist()
         {
             var userId = GetUserIdFromToken();
+            if (userId == null)
+                return Unauthorized("User not authenticated");
 
             var favorites = await _context.FavoriteParts
                 .Where(fp => fp.userid == userId.Value)
-                .Include(fp=> fp.Part)
-                  .ThenInclude(p => p.Stocks)
-                   .Include(fp => fp.Part.PartImages)
-                   .Select(fp => new FavoritePartDto
-                   {
-                       PartId = fp.Part.PartId,
-                       Name = fp.Part.Name,
-                       Description = fp.Part.Description,
-                       PartNumber = fp.Part.PartNumber,
-                       Price = fp.Part.Stocks.FirstOrDefault().Price,
-                       Discount = fp.Part.Stocks.FirstOrDefault().Discount,
-                       Stock = fp.Part.Stocks.FirstOrDefault().Quantity,
-                       ImgUrl = fp.Part.PartImages
-                         .Where(img => img.IsPrimary)
-                            .Select(img => img.ImgUrl)
-                            .FirstOrDefault()
-                   })
-                   .ToListAsync();
+                .Include(fp => fp.Part)
+                    .ThenInclude(p => p.Stocks)
+                .Include(fp => fp.Part.PartImages)
+                .Select(fp => new FavoritePartDto
+                {
+                    PartId = fp.Part.PartId,
+                    Name = fp.Part.Name,
+                    Description = fp.Part.Description,
+                    PartNumber = fp.Part.PartNumber,
+
+                    // Merr stokun më të fundit
+                    Price = fp.Part.Stocks
+                        .OrderByDescending(s => s.LastUpdated)
+                        .Select(s => s.Discount > 0
+                            ? Math.Round(s.Price * (1 - s.Discount / 100), 2)
+                            : s.Price)
+                        .FirstOrDefault(),
+
+                    Discount = fp.Part.Stocks
+                        .OrderByDescending(s => s.LastUpdated)
+                        .Select(s => s.Discount)
+                        .FirstOrDefault(),
+
+                    Stock = fp.Part.Stocks
+                        .OrderByDescending(s => s.LastUpdated)
+                        .Select(s => s.Quantity)
+                        .FirstOrDefault(),
+
+                    ImgUrl = fp.Part.PartImages
+                        .Where(img => img.IsPrimary)
+                        .Select(img => img.ImgUrl)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
 
             return Ok(favorites);
-
         }
+
         [HttpDelete("remove-from-wishlist/{partId}")]
         public async Task<IActionResult> RemoveFromWishlist(int partId)
         {

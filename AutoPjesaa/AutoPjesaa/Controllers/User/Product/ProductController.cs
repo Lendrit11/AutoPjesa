@@ -47,8 +47,8 @@ namespace AutoPjesaa.Controllers.User.Product
                 Description = product.Description,
                 Code = product.PartNumber,
                 Available = stock != null && stock.Quantity > 0,
-                Price = stock != null ? stock.Price : 0,
-                OldPrice = stock != null && stock.Discount > 0 ? stock.Price * (1 - stock.Discount / 100) : null,
+                Price = stock != null && stock.Discount > 0? Math.Round(stock.Price * (1 - stock.Discount / 100), 2): stock?.Price ?? 0,
+                OldPrice = stock != null && stock.Discount > 0 ? stock.Price: null,
                 PrimaryImage = product.PartImages.FirstOrDefault()?.ImgUrl,
                 OtherImages = product.PartImages.Skip(1).Select(img => img.ImgUrl).ToList()
             };
@@ -162,9 +162,12 @@ namespace AutoPjesaa.Controllers.User.Product
                         ImageId = img.ImgId,
                         ImageUrl = img.ImgUrl
                     }).ToList(),
-                    Price = p.Stocks.OrderByDescending(s => s.LastUpdated)
-                                    .Select(s => s.Price)
-                                    .FirstOrDefault()
+                    Price = p.Stocks
+                .OrderByDescending(s => s.LastUpdated)
+                .Select(s => s.Discount > 0
+                    ? Math.Round(s.Price * (1 - s.Discount / 100), 2)
+                    : s.Price)
+                .FirstOrDefault()
                 })
                 .ToListAsync();
 

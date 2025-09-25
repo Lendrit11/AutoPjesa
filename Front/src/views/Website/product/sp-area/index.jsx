@@ -28,14 +28,14 @@ const Single_Product_area = ({ product }) => {
     try {
       const quantity = parseInt(document.querySelector('.cart-plus-minus-box').value) || 1;
 
-      await axiosWithCredentials.post('/api/user/cart/add-cart', {
+    const post=  await axiosWithCredentials.post('/api/user/cart/add-cart', {
         partId: product.id,
         quantity: quantity,
       });
-
       toast.success("Produkti u shtua në cart!");
       window.dispatchEvent(new Event("refresh-cart"));
     } catch (err) {
+      console.log(err);
       if (err.response?.status === 401) {
         toast.warn("Ju lutemi kyçuni për të shtuar në cart.");
       } else {

@@ -63,7 +63,10 @@ namespace AutoPjesaa.Controllers.User.OrderCon
                     return BadRequest($"Insufficient stock for part: {cartItem.Part.Name}");
                 }
 
-                var price = stock.Price;
+                decimal price = (stock.Discount > 0)
+    ? Math.Round(stock.Price * (1 - stock.Discount / 100), 2)
+    : stock.Price;
+
 
                 // Zbritja nga stock
                 stock.Quantity -= cartItem.Quantity;
@@ -118,16 +121,28 @@ namespace AutoPjesaa.Controllers.User.OrderCon
                 return NotFound("Cart is empty.");
             }
 
-            var items = cart.CartItems.Select(ci => new
+            var items = cart.CartItems.Select(ci =>
             {
-                PartId = ci.PartId,
-                PartName = ci.Part.Name,
-                Description = ci.Part.Description,
-                Quantity = ci.Quantity,
-                Price = ci.Part.Stocks.FirstOrDefault()?.Price ?? 0,
-                Total = (ci.Part.Stocks.FirstOrDefault()?.Price ?? 0) * ci.Quantity,
-                Images = ci.Part.PartImages.Select(pi => pi.ImgUrl).ToList()
+                var stock = ci.Part.Stocks
+                    .OrderByDescending(s => s.LastUpdated)
+                    .FirstOrDefault();
+
+                decimal price = (stock != null && stock.Discount > 0)
+                    ? Math.Round(stock.Price * (1 - stock.Discount / 100), 2)
+                    : stock?.Price ?? 0;
+
+                return new
+                {
+                    PartId = ci.PartId,
+                    PartName = ci.Part.Name,
+                    Description = ci.Part.Description,
+                    Quantity = ci.Quantity,
+                    Price = price,
+                    Total = price * ci.Quantity,
+                    Images = ci.Part.PartImages.Select(pi => pi.ImgUrl).ToList()
+                };
             }).ToList();
+
 
             return Ok(items);
         }
