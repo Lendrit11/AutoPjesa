@@ -58,11 +58,11 @@ const navigate = useNavigate();
   const userId = localStorage.getItem('userId');
 
   const statusColors = {
-    'Pending': 'orange',
-    'Processing': 'blue',
-    'Shipped': 'purple',
-    'Completed': 'green',
-    'Cancelled': 'red'
+    'Pritje': 'orange',
+    'Proces': 'blue',
+    'Dërguar': 'purple',
+    'Përfunduar': 'green',
+    'Anuluar': 'red'
   };
  const fetchOrders = async () => {
   setLoading(true);
@@ -92,12 +92,14 @@ const navigate = useNavigate();
 
   // Filter
   const filteredOrders = orders.filter(order => {
-    const matchesSearch =
-      order.orderNumber?.includes(searchText) ||
-      order.customer?.toLowerCase().includes(searchText.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const matchesSearch =
+    order.orderNumber?.toLowerCase().includes(searchText.toLowerCase());
+
+  const matchesStatus =
+    statusFilter === 'all' || order.status === statusFilter;
+
+  return matchesSearch && matchesStatus;
+});
 
   // Modals
   const viewOrderDetails = (order) => {
@@ -201,10 +203,10 @@ const deleteOrder = async (orderId) => {
           menu={{
             items: [
               { key: 'view', label: 'Shiko', icon: <SearchOutlined />, onClick: () => viewOrderDetails(record) },
-              { key: 'process', label: 'Shëno si Proces', onClick: () => updateOrderStatus(record.id, 'Processing') },
-              { key: 'ship', label: 'Shëno si Dërguar', onClick: () => updateOrderStatus(record.id, 'Shipped') },
-              { key: 'complete', label: 'Shëno si Përfunduar', onClick: () => updateOrderStatus(record.id, 'Completed') },
-              { key: 'cancel', label: 'Anulo Porosinë', danger: true, onClick: () => updateOrderStatus(record.id, 'Cancelled') },
+              { key: 'process', label: 'Shëno si Proces', onClick: () => updateOrderStatus(record.id, 'Pritje') },
+              { key: 'ship', label: 'Shëno si Dërguar', onClick: () => updateOrderStatus(record.id, 'Dërguar') },
+              { key: 'complete', label: 'Shëno si Përfunduar', onClick: () => updateOrderStatus(record.id, 'Përfunduar') },
+              { key: 'cancel', label: 'Anulo Porosinë', danger: true, onClick: () => updateOrderStatus(record.id, 'Anuluar') },
               { type: 'divider' },
               { key: 'delete', label: 'Fshi Porosinë', danger: true, onClick: () => deleteOrder(record.id) }
             ]
@@ -244,14 +246,14 @@ const deleteOrder = async (orderId) => {
               size={isMobile ? 'small' : 'middle'}
               options={[
                 { value: 'all', label: isMobile ? 'Të gjitha' : 'Të gjitha statuset' },
-                { value: 'Pending', label: isMobile ? 'Pritje' : 'Në pritje' },
-                { value: 'Processing', label: isMobile ? 'Proces' : 'Në proces' },
-                { value: 'Shipped', label: isMobile ? 'Dërguar' : 'Dërguar' },
-                { value: 'Completed', label: isMobile ? 'Përfunduar' : 'Përfunduar' },
-                { value: 'Cancelled', label: isMobile ? 'Anuluar' : 'Anuluar' }
+                { value: 'Pritje', label: isMobile ? 'Pritje' : 'Në pritje' },
+                { value: 'Proces', label: isMobile ? 'Proces' : 'Në proces' },
+                { value: 'Dërguar', label: isMobile ? 'Dërguar' : 'Dërguar' },
+                { value: 'Përfunduar', label: isMobile ? 'Përfunduar' : 'Përfunduar' },
+                { value: 'Anuluar', label: isMobile ? 'Anuluar' : 'Anuluar' }
               ]}
             />
-            <Button icon={<FileExcelOutlined />} onClick={handleExport} size={isMobile ? 'small' : 'middle'}>Eksporto</Button>
+            
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsCreateModalOpen(true)} size={isMobile ? 'small' : 'middle'}>Porosi e Re</Button>
           </Space>
         }

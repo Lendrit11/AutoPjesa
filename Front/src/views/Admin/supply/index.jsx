@@ -89,7 +89,7 @@ const SupplyInventoryDashboard = () => {
   const [editingCarModel, setEditingCarModel] = useState(null);
 
   // upload preview
-  const [fileList, setFileList] = useState([]);
+const [fileList, setFileList] = useState([]);
 
   // quick add car model in dropdown
   const [newCarModelName, setNewCarModelName] = useState('');
@@ -161,15 +161,15 @@ useEffect(() => {
       compatibleFromYear: editingPart.compatibleFromYear,
       compatibleToYear: editingPart.compatibleToYear,
     });
-
-    setFileList(
-      (editingPart.imageUrls || editingPart.images?.map(img => img.imgUrl) || []).map((url, index) => ({
-        uid: index,
-        name: `Image-${index + 1}`,
-        status: 'done',
-        url: url,
-      }))
-    );
+setFileList(
+  (editingPart.imageUrls || editingPart.images?.map(img => img.imgUrl) || []).map((url, index) => ({
+    uid: index,
+    name: `Image-${index + 1}`,
+    status: 'done',
+    url: url.startsWith('http') ? url : `${API_BASE_URL}${url}`,
+    thumbUrl: url.startsWith('http') ? url : `${API_BASE_URL}${url}`,
+  }))
+);
   } else {
     form.resetFields();
     setFileList([]);
@@ -231,10 +231,10 @@ const handleAddPart = async (values) => {
       Price: Number(values.price),
       ReorderLevel: Number(values.reorderLevel),
       Discount: Number(values.discount),
-      imageUrls: fileList.map(f => f.url || f.thumbUrl),
+      ImageUrls: fileList.map(f => f.url || f.thumbUrl),
       compatibleModelIds: values.compatibleModelIds?.map(id => Number(id)) || [],
     };
-
+ console.log('Payload:', payload);
     const token = getCookie('token');
 
     const res = await axios.post(
@@ -767,6 +767,43 @@ const handleDeleteCarModel = async (id) => {
 };
 
   
+  // ------------------ Upload handling (preview only) ------------------
+const uploadBefore = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const token = getCookie('token');
+    const response = await axios.post(`${API_BASE_URL}/api/Parts/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
+      }
+    });
+const uploadedUrl = response.data.url;
+const fullUrl = uploadedUrl.startsWith('http') ? uploadedUrl : `${API_BASE_URL}${uploadedUrl}`;
+
+const newFile = {
+  uid: Date.now(),
+  name: file.name,
+  status: 'done',
+  url: fullUrl,
+  thumbUrl: fullUrl,
+};
+
+   setFileList(prevList => [...prevList, newFile]);
+
+  } catch (err) {
+    message.error('Ngarkimi i fotos dështoi');
+    console.error(err);
+  }
+
+  return false; // ndal upload-in automatik
+};
+
+const handleRemove = (file) => {
+  setFileList(prevList => prevList.filter(f => f.uid !== file.uid));
+};
   
   // load data per active tab
   useEffect(() => {
@@ -786,19 +823,6 @@ const handleDeleteCarModel = async (id) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
-  // ------------------ Upload handling (preview only) ------------------
-  const uploadBefore = (file) => {
-    setFileList([file]);
-    // set imageUrls in form as local preview
-    const preview = URL.createObjectURL(file);
-    form.setFieldsValue({ imageUrls: [preview] });
-    return false; // prevent auto upload
-  };
-
-  const uploadRemove = () => {
-    setFileList([]);
-    form.setFieldsValue({ imageUrls: [] });
-  };
 
   // ------------------ Filters / Derived ------------------
   const filteredParts = parts.filter(p =>
@@ -1080,17 +1104,23 @@ const handleDeleteCarModel = async (id) => {
               <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingPart(null); form.resetFields(); setIsPartModalVisible(true); }} style={{ marginLeft: 'auto' }}>{screens.xs ? 'Shto' : 'Shto Pjesë'}</Button>
             </div>
 
-            {parts.filter(p => {
-              const qty = p.stock ?? (p.Stock ? p.Stock.quantity : 0);
-              const reorder = p.reorderLevel ?? (p.Stock ? p.Stock.reorderLevel : 0);
-              return qty <= reorder;
-            }).length > 0 && (
-              <Alert type="warning" showIcon message={`${parts.filter(p => {
-                const qty = p.stock ?? (p.Stock ? p.Stock.quantity : 0);
-                const reorder = p.reorderLevel ?? (p.Stock ? p.Stock.reorderLevel : 0);
-                return qty <= reorder;
-              }).length} pjesë në stok kritik`} description="Këto pjesë kanë nevojë për rimbushje." style={{ marginBottom: 16 }} />
-            )}
+           {parts.filter(p => {
+  const qty = Number(p.stockQuantity) || 0;
+  const reorder = Number(p.stockReorderLevel) || 0;
+  return qty <= reorder;
+}).length > 0 && (
+  <Alert
+    type="warning"
+    showIcon
+    message={`${parts.filter(p => {
+      const qty = Number(p.stockQuantity) || 0;
+      const reorder = Number(p.stockReorderLevel) || 0;
+      return qty <= reorder;
+    }).length} pjesë në stok kritik`}
+    description="Këto pjesë kanë nevojë për rimbushje."
+    style={{ marginBottom: 16 }}
+  />
+)}
 
             <Table columns={partColumns} dataSource={filteredParts} rowKey={r => r.partId ?? r.PartId ?? r.id} loading={loading} scroll={{ x: true }} size={screens.xs ? 'small' : 'middle'} pagination={{ pageSize: 6 }} />
           </TabPane>
@@ -1301,14 +1331,16 @@ onCancel={() => {
         </Form.Item>
 
         <Form.Item label="Foto">
-          <Upload
-            beforeUpload={uploadBefore}
-            onRemove={uploadRemove}
-            fileList={fileList}
-            listType="picture"
-          >
-            <Button icon={<UploadOutlined />}>Ngarko Foto</Button>
-          </Upload>
+        <Upload
+         beforeUpload={uploadBefore}
+           onRemove={handleRemove}
+          fileList={fileList}
+          listType="picture"
+         multiple // kjo është kryesorja
+         >
+  <Button icon={<UploadOutlined />}>Ngarko Foto</Button>
+        </Upload>
+
         </Form.Item>
       </Col>
     </Row>
