@@ -65,6 +65,7 @@ dotnet run
 cd frontend
 npm install
 npm run dev
+```
 ---
 ### Licenca
 Ky projekt është zhvilluar për qëllime akademike dhe nuk ka licencë komerciale. Nuk Mund të përdoret për mësim, demonstrim ose zgjerim personal, pa lejen e autoreve.
