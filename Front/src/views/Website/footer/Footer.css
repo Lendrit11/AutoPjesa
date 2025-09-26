@@ -1,0 +1,117 @@
+.ffa-footer {
+    background-color: #1a1a1a;
+    /* sfond klasik */
+    color: #eaeaea;
+    padding: 40px 20px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.ffa-newsletter {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.ffa-newsletter h3 {
+    color: #ff6600;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.ffa-newsletter p {
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.ffa-form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ffa-form input {
+    padding: 10px;
+    width: 250px;
+    border: 1px solid #ff6600;
+    border-radius: 4px;
+    background-color: #2a2a2a;
+    color: #fff;
+}
+
+.ffa-form button {
+    padding: 10px 20px;
+    background-color: #ff6600;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.ffa-form button:hover {
+    background-color: #e65c00;
+}
+
+.ffa-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 40px;
+    border-top: 1px solid #333;
+    padding-top: 30px;
+}
+
+.ffa-column {
+    flex: 1 1 200px;
+}
+
+.ffa-column h4 {
+    color: #ff6600;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.ffa-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ffa-column ul li {
+    margin-bottom: 10px;
+    color: #bbb;
+}
+
+.ffa-column ul li a {
+    color: #bbb;
+    text-decoration: none;
+}
+
+.ffa-column ul li a:hover {
+    color: #fff;
+}
+
+.ffa-bottom {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 14px;
+    color: #888;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .ffa-links {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ffa-form {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .ffa-form input {
+        width: 100%;
+        max-width: 300px;
+    }
+}

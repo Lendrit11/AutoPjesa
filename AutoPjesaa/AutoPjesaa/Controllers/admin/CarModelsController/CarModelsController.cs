@@ -30,8 +30,7 @@ namespace AutoPjesaa.Controllers
                 {
                     cm.CarModelId,
                     Name = cm.modelName,
-                    YearStart = cm.YearStart.Year,
-                    YearEnd = cm.YearEnd.HasValue ? cm.YearEnd.Value.Year : (int?)null,
+                    yearDto = cm.Year.Year,
                     ManufacturerId = cm.ManufacturerId,
                     ManufacturerName = cm.Manufacturer != null ? cm.Manufacturer.Name : null
                 })
@@ -51,8 +50,7 @@ namespace AutoPjesaa.Controllers
             {
                 modelName = dto.ModelName ?? "",
                 ManufacturerId = dto.ManufacturerId,
-                YearStart = dto.YearStart.HasValue ? new DateOnly(dto.YearStart.Value, 1, 1) : new DateOnly(2000, 1, 1),
-                YearEnd = dto.YearEnd.HasValue ? new DateOnly(dto.YearEnd.Value, 1, 1) : null
+                Year = dto.YearDto.HasValue ? new DateOnly(dto.YearDto.Value, 1, 1) : new DateOnly(2000, 1, 1),
             };
 
             _context.CarModels.Add(carModel);
@@ -63,8 +61,7 @@ namespace AutoPjesaa.Controllers
                 carModel.CarModelId,
                 carModel.modelName,
                 carModel.ManufacturerId,
-                YearStart = carModel.YearStart.Year,
-                YearEnd = carModel.YearEnd?.Year
+                YearStart = carModel.Year.Year,
             });
         }
 
@@ -78,8 +75,7 @@ namespace AutoPjesaa.Controllers
 
             carModel.modelName = dto.ModelName ?? carModel.modelName;
             carModel.ManufacturerId = dto.ManufacturerId != 0 ? dto.ManufacturerId : carModel.ManufacturerId;
-            carModel.YearStart = dto.YearStart.HasValue ? new DateOnly(dto.YearStart.Value, 1, 1) : carModel.YearStart;
-            carModel.YearEnd = dto.YearEnd.HasValue ? new DateOnly(dto.YearEnd.Value, 1, 1) : carModel.YearEnd;
+            carModel.Year = dto.YearDto.HasValue ? new DateOnly(dto.YearDto.Value, 1, 1) : carModel.Year;
 
             await _context.SaveChangesAsync();
 
@@ -88,8 +84,7 @@ namespace AutoPjesaa.Controllers
                 carModel.CarModelId,
                 carModel.modelName,
                 carModel.ManufacturerId,
-                YearStart = carModel.YearStart.Year,
-                YearEnd = carModel.YearEnd?.Year
+                YearStart = carModel.Year.Year,
             });
         }
 

@@ -4,7 +4,6 @@
     {
         public string ModelName { get; set; } = null!;
         public int ManufacturerId { get; set; }
-        public int? YearStart { get; set; }
-        public int? YearEnd { get; set; }
+        public int? YearDto { get; set; }
     }
 }

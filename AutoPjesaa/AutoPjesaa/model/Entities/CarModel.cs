@@ -10,8 +10,7 @@ namespace AutoPjesa.Domain.Entities
         public int ManufacturerId { get; set; }
         [Required]
         public string modelName { get; set; } 
-       public DateOnly YearStart { get; set; }
-        public DateOnly? YearEnd { get; set; }
+       public DateOnly Year { get; set; }
         public ICollection<PartCarModel> PartCarModels { get; set; } = new List<PartCarModel>();
         public Manufacturer Manufacturer { get; set; } = null!; // Navigation property to Manufacturer entity
     }

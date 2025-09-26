@@ -649,8 +649,7 @@ const fetchCarModels = async () => {
       modelName: cm.modelName ?? cm.model ?? cm.name ?? cm.Name,
       manufacturerId: cm.manufacturerId ?? cm.ManufacturerId ?? cm.manufacturerId,
       manufacturerName: cm.manufacturerName ?? cm.ManufacturerName ?? (cm.Manufacturer ? cm.Manufacturer.Name : undefined),
-      yearStart: cm.yearStart ?? cm.YearStart ?? cm.yearStartValue,
-      yearEnd: cm.yearEnd ?? cm.YearEnd ?? cm.yearEndValue
+      yearDto: cm.yearDto ?? cm.yearDto ?? cm.yearDto,
     }));
 
     setCarModels(normalized);
@@ -675,8 +674,7 @@ const handleAddCarModel = async (values) => {
     const res = await axios.post(`${API_BASE_URL}/api/CarModels`, {
       modelName: values.modelName,
       manufacturerId: Number(values.manufacturerId),
-      yearStart: values.yearStart,    // nëse ke këto fusha
-      yearEnd: values.yearEnd
+      yearDto: values.yearDto,    // nëse ke këto fusha
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -717,8 +715,7 @@ const handleEditCarModel = async (values) => {
     await axios.put(`${API_BASE_URL}/api/CarModels/${editingCarModel.carModelId}`, {
       modelName: values.modelName,
       manufacturerId: Number(values.manufacturerId),
-      yearStart: values.yearStart,
-      yearEnd: values.yearEnd
+      yearDto: values.yearDto,
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -727,7 +724,7 @@ const handleEditCarModel = async (values) => {
     });
 
     setCarModels(prev => prev.map(cm => cm.carModelId === editingCarModel.carModelId
-      ? { ...cm, modelName: values.modelName, manufacturerId: Number(values.manufacturerId), manufacturerName: manufacturers.find(m => m.manufacturerId === Number(values.manufacturerId))?.name, yearStart: values.yearStart, yearEnd: values.yearEnd }
+      ? { ...cm, modelName: values.modelName, manufacturerId: Number(values.manufacturerId), manufacturerName: manufacturers.find(m => m.manufacturerId === Number(values.manufacturerId))?.name, yearDto: values.yearDto }
       : cm
     ));
     setIsEditCarModelModalVisible(false);
@@ -1012,8 +1009,7 @@ const handleRemove = (file) => {
   const carModelColumns = [
     { title: 'Emri i Modelit', dataIndex: 'modelName', key: 'modelName', sorter: (a,b)=> (a.modelName||'').localeCompare(b.modelName||'') },
     { title: 'Prodhuesi', dataIndex: 'manufacturerId', key: 'manufacturerId', render: (mid) => manufacturers.find(m => m.manufacturerId === mid)?.name ?? 'Unknown' },
-    { title: 'Viti Start', dataIndex: 'yearStart', key: 'yearStart', render: y => y ? Number(y) : '-' },
-    { title: 'Viti End', dataIndex: 'yearEnd', key: 'yearEnd', render: y => y ? Number(y) : 'Present' },
+    { title: 'Viti Makines', dataIndex: 'yearDto', key: 'yearDto', render: y => y ? Number(y) : '-' },
     {
       title: 'Veprime',
       key: 'actions',
@@ -1022,8 +1018,7 @@ const handleRemove = (file) => {
           <Button icon={<EditOutlined />} onClick={() => { setEditingCarModel(record); setIsEditCarModelModalVisible(true); form.setFieldsValue({
             modelName: record.modelName,
             manufacturerId: record.manufacturerId,
-            yearStart: record.yearStart,
-            yearEnd: record.yearEnd
+            yearDto: record.yearDto,
           }); }}>
             {!screens.xs && 'Edito'}
           </Button>
@@ -1424,10 +1419,7 @@ onCancel={() => {
           </Form.Item>
           <Row gutter={16}>
             <Col xs={12}>
-              <Form.Item name="yearStart" label="Viti i Fillimit" rules={[{ required: true }]}><InputNumber min={1900} max={new Date().getFullYear()} style={{ width: '100%' }} /></Form.Item>
-            </Col>
-            <Col xs={12}>
-              <Form.Item name="yearEnd" label="Viti i Mbarimit"><InputNumber min={1900} max={new Date().getFullYear()+10} style={{ width: '100%' }} /></Form.Item>
+              <Form.Item name="yearDto" label="Viti i Makines" rules={[{ required: true }]}><InputNumber min={1900} max={new Date().getFullYear()} style={{ width: '100%' }} /></Form.Item>
             </Col>
           </Row>
           <Form.Item><Button type="primary" htmlType="submit" block loading={loading}>{editingCarModel ? 'Ruaj Ndryshimet' : 'Shto Model'}</Button></Form.Item>
