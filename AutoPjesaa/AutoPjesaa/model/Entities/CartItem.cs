@@ -8,6 +8,7 @@ namespace AutoPjesa.Domain.Entities
         public int CartItemId { get; set; }
         public int CartId { get; set; }
         public int PartId { get; set; }
+        public decimal Price { get; set; }
         public int Quantity { get; set; }
 
         public Cart Cart { get; set; } = null!; // Navigation property to Cart
