@@ -82,15 +82,22 @@ namespace AutoPjesaa.Controllers.User.Login
             if (!isPasswordValid)
                 return Unauthorized("Invalid email or password");
 
+            //  Kontrollo rolin
+            bool hasUserRole = user.UserRoles.Any(ur => ur.Role.Name.ToLower() == "user");
+            if (!hasUserRole)
+            {
+                return Unauthorized("You are not authorized to login. Role 'user' is required.");
+            }
+
             var authResponse = _tokenService.GenerateToken(user);
+
             Response.Cookies.Append("refreshToken", authResponse.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite=SameSiteMode.Strict,
+                SameSite = SameSiteMode.Strict,
                 Expires = authResponse.RefreshTokenExpiration
             });
-
 
             return Ok(new
             {

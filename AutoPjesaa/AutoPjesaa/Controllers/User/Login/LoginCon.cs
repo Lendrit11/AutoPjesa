@@ -49,7 +49,7 @@ namespace AutoPjesaa.Controllers.User.Login
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            var token = Request.Cookies["token"]; // Përdor emrin që përdor ti në cookie
+            var token = Request.Cookies["user_token"]; // Përdor emrin që përdor ti në cookie
 
             // Backup: Lexo edhe nga header nëse s’ka në cookie
             if (string.IsNullOrEmpty(token))
@@ -108,7 +108,7 @@ namespace AutoPjesaa.Controllers.User.Login
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddDays(-1)
             });
-            Response.Cookies.Delete("token");
+            Response.Cookies.Delete("user_token");
 
             return Ok(new { message = "Logged out successfully" });
         }

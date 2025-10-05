@@ -6,10 +6,20 @@ import { FiUser, FiLogOut } from 'react-icons/fi';
 const MobileNavRight = ({ onClose }) => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+   const handleLogout = () => {
     try {
-      navigate('/login/signin');
-      if (onClose) onClose();
+      // ✅ Hiq token nga cookie
+      document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      // ✅ Hiq gjithashtu çdo info tjetër në localStorage/sessionStorage (nëse përdor)
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // ✅ Ridrejto përdoruesin te login
+      navigate('/admin/login');
+
+      // ✅ Opsionale: rifresko faqen
+      window.location.reload();
     } catch (err) {
       console.error('Gabim gjatë logout:', err);
     }

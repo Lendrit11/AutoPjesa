@@ -1,8 +1,10 @@
 /* Hamburger (left) */
 .mobile-menu {
-  display: none;
-  cursor: pointer;
-  padding: 10px;
+  width: 35px;
+  height: auto;
+  position: relative;
+  bottom: 10%;
+  /* shtrij listën në gjerësi të plotë */
 }
 
 @media (max-width: 768px) {
@@ -13,11 +15,10 @@
 
 /* Hamburger icon (right) */
 .mob-toggler {
-  display: inline-block;
-  padding: 8px;
-  font-size: 24px;
-  cursor: pointer;
-  color: #000;
+  display: flex;
+  color: #fff;
+  position: absolute;
+  right: 30px;
 }
 
 /* M-header */

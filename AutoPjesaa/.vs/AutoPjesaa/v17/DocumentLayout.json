@@ -1,58 +1,18 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\",
+  "WorkspaceRootPath": "C:\\Users\\Jahir\\OneDrive\\Desktop\\server-cpo\\AutoPjesa\\AutoPjesaa\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\infrastructure\\authentication\\tokencontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\infrastructure\\authentication\\tokencontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\controllers\\user\\login\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\server-cpo\\autopjesa\\autopjesaa\\autopjesaa\\controllers\\user\\login\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\controllers\\user\\login\\logincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\controllers\\user\\login\\logincon.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\server-cpo\\autopjesa\\autopjesaa\\autopjesaa\\controllers\\admin\\orders\\orderscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\controllers\\admin\\orders\\orderscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\server-cpo\\autopjesa\\autopjesaa\\autopjesaa\\controllers\\user\\login\\logincon.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\controllers\\user\\login\\logincon.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\controllers\\user\\accountcon\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\controllers\\user\\accountcon\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\infrastructure\\authentication\\tokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\infrastructure\\authentication\\tokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\model\\dto\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\model\\dto\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\model\\dto\\user\\product\\addfavoriterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\model\\dto\\user\\product\\addfavoriterequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\model\\token\\token.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\model\\token\\token.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\controllers\\user\\shop\\shop.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\controllers\\user\\shop\\shop.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\model\\dto\\user\\partdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\model\\dto\\user\\partdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\model\\dto\\user\\shop\\partimagedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\model\\dto\\user\\shop\\partimagedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|c:\\users\\jahir\\onedrive\\desktop\\fixflow-auto\\autopjesaa\\autopjesaa\\controllers\\user\\cartcon\\cartcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C17BCC36-FC1E-423B-AAFB-BDD7FE11D86F}|AutoPjesaa\\AutoPjesaa.csproj|solutionrelative:autopjesaa\\controllers\\user\\cartcon\\cartcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -62,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedHeight": 383,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -78,171 +38,40 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "AuthResponse.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\DTO\\AuthResponse.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\model\\DTO\\AuthResponse.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\DTO\\AuthResponse.cs",
-              "RelativeToolTip": "AutoPjesaa\\model\\DTO\\AuthResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAA8AAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "OrdersController.cs",
+              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\server-cpo\\AutoPjesa\\AutoPjesaa\\AutoPjesaa\\Controllers\\admin\\Orders\\OrdersController.cs",
+              "RelativeDocumentMoniker": "AutoPjesaa\\Controllers\\admin\\Orders\\OrdersController.cs",
+              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\server-cpo\\AutoPjesa\\AutoPjesaa\\AutoPjesaa\\Controllers\\admin\\Orders\\OrdersController.cs",
+              "RelativeToolTip": "AutoPjesaa\\Controllers\\admin\\Orders\\OrdersController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-26T00:47:53.497Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-01T08:26:57.619Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\appsettings.json",
-              "RelativeDocumentMoniker": "AutoPjesaa\\appsettings.json",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\appsettings.json",
-              "RelativeToolTip": "AutoPjesaa\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-08-26T00:44:46.556Z",
+              "DocumentIndex": 0,
+              "Title": "LoginController.cs",
+              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\server-cpo\\AutoPjesa\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\Login\\LoginController.cs",
+              "RelativeDocumentMoniker": "AutoPjesaa\\Controllers\\User\\Login\\LoginController.cs",
+              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\server-cpo\\AutoPjesa\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\Login\\LoginController.cs",
+              "RelativeToolTip": "AutoPjesaa\\Controllers\\User\\Login\\LoginController.cs",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAmwE4AAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-30T22:50:52.701Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
               "Title": "LoginCon.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\Login\\LoginCon.cs",
+              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\server-cpo\\AutoPjesa\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\Login\\LoginCon.cs",
               "RelativeDocumentMoniker": "AutoPjesaa\\Controllers\\User\\Login\\LoginCon.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\Login\\LoginCon.cs",
+              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\server-cpo\\AutoPjesa\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\Login\\LoginCon.cs",
               "RelativeToolTip": "AutoPjesaa\\Controllers\\User\\Login\\LoginCon.cs",
-              "ViewState": "AgIAABEAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAG4AAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-26T00:41:39.17Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "AccountController.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\AccountCon\\AccountController.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\Controllers\\User\\AccountCon\\AccountController.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\AccountCon\\AccountController.cs",
-              "RelativeToolTip": "AutoPjesaa\\Controllers\\User\\AccountCon\\AccountController.cs",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-26T00:37:13.613Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "TokenService.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Infrastructure\\authentication\\TokenService.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\Infrastructure\\authentication\\TokenService.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Infrastructure\\authentication\\TokenService.cs",
-              "RelativeToolTip": "AutoPjesaa\\Infrastructure\\authentication\\TokenService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFwAAAAPAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-25T22:49:17.383Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "TokenController.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Infrastructure\\authentication\\TokenController.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\Infrastructure\\authentication\\TokenController.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Infrastructure\\authentication\\TokenController.cs",
-              "RelativeToolTip": "AutoPjesaa\\Infrastructure\\authentication\\TokenController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-25T22:49:24.964Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "LoginController.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\Login\\LoginController.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\Controllers\\User\\Login\\LoginController.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\Login\\LoginController.cs",
-              "RelativeToolTip": "AutoPjesaa\\Controllers\\User\\Login\\LoginController.cs",
-              "ViewState": "AgIAAE0AAAAAAAAAAAAgwEsAAAA7AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-21T19:38:28.285Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "AddFavoriteRequest.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\DTO\\User\\product\\AddFavoriteRequest.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\model\\DTO\\User\\product\\AddFavoriteRequest.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\DTO\\User\\product\\AddFavoriteRequest.cs",
-              "RelativeToolTip": "AutoPjesaa\\model\\DTO\\User\\product\\AddFavoriteRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-25T22:54:12.693Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Token.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\Token\\Token.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\model\\Token\\Token.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\Token\\Token.cs",
-              "RelativeToolTip": "AutoPjesaa\\model\\Token\\Token.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-26T00:35:54.042Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "shop.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\shop\\shop.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\Controllers\\User\\shop\\shop.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\shop\\shop.cs",
-              "RelativeToolTip": "AutoPjesaa\\Controllers\\User\\shop\\shop.cs",
-              "ViewState": "AgIAAEAAAAAAAAAAAAAAwFwAAABbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-25T23:05:54.674Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "CartController.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\CartCon\\CartController.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\Controllers\\User\\CartCon\\CartController.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\Controllers\\User\\CartCon\\CartController.cs",
-              "RelativeToolTip": "AutoPjesaa\\Controllers\\User\\CartCon\\CartController.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAYwEsAAABOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-25T22:54:19.196Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "PartImageDto.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\DTO\\User\\shop\\PartImageDto.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\model\\DTO\\User\\shop\\PartImageDto.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\DTO\\User\\shop\\PartImageDto.cs",
-              "RelativeToolTip": "AutoPjesaa\\model\\DTO\\User\\shop\\PartImageDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-25T23:22:49.158Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "PartDto.cs",
-              "DocumentMoniker": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\DTO\\User\\PartDto.cs",
-              "RelativeDocumentMoniker": "AutoPjesaa\\model\\DTO\\User\\PartDto.cs",
-              "ToolTip": "C:\\Users\\Jahir\\OneDrive\\Desktop\\Fixflow-auto\\AutoPjesaa\\AutoPjesaa\\model\\DTO\\User\\PartDto.cs",
-              "RelativeToolTip": "AutoPjesaa\\model\\DTO\\User\\PartDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-25T23:26:24.963Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-30T22:46:34.699Z"
             }
           ]
         }
